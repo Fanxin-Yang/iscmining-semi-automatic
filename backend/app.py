@@ -13,5 +13,10 @@ def greetings():
     return("Hello")
 
 
+@app.route('/upload', methods=['GET'])
+def upload():
+    return("Upload button")
+
+
 if __name__ == "__main__":
     app.run(debug=True)

@@ -14,11 +14,12 @@ import HelloWorld from "@/components/HelloWorld.vue";
     />
 
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <HelloWorld msg="ISC Mining" />
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/upload">Upload</RouterLink>
       </nav>
     </div>
   </header>
@@ -27,6 +28,12 @@ import HelloWorld from "@/components/HelloWorld.vue";
 </template>
 
 <style>
+#app {
+  margin-top: 60px;
+}
+</style>
+
+<!-- <style>
 @import "@/assets/base.css";
 
 #app {
@@ -122,4 +129,4 @@ nav a:first-of-type {
     margin-top: 1rem;
   }
 }
-</style>
+</style> -->

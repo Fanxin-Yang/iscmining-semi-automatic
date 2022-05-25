@@ -1,7 +1,6 @@
 from flask import Flask, abort, jsonify, flash, make_response, request, redirect, url_for
 from flask_cors import CORS
 import os
-# import secrets
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = "./uploads"
@@ -20,7 +19,7 @@ CORS(app, resources={r"/*": {'origins': "*"}})
 
 @app.route('/', methods=['GET'])
 def greetings():
-    return('Hello')
+    return('Main Page')
 
 # check if the filname inculde "." and the suffix of it is allowed
 

@@ -1,7 +1,7 @@
 <template lang="">
-  <form>
-    <div class="mb-3">
-      <label for="formFile" class="form-label">{{ msg }}</label>
+  <form class="row g-3">
+    <h3>{{ msg }}</h3>
+    <div class="col-md-6">
       <input
         class="form-control"
         type="file"
@@ -9,18 +9,20 @@
         @change="upload_file"
         ref="file"
       />
+    </div>
+    <div class="col-md-2">
       <button type="button" class="btn btn-primary" @click="submit_file">
         Upload
       </button>
-      <div v-if="status == 400" class="alert alert-danger" role="alert">
-        {{ info }}
-      </div>
-      <div v-if="status == 406" class="alert alert-warning" role="alert">
-        {{ info }}
-      </div>
-      <div v-if="status == 200" class="alert alert-success" role="alert">
-        {{ info }}
-      </div>
+    </div>
+    <div v-if="status == 400" class="alert alert-danger" role="alert">
+      {{ info }}
+    </div>
+    <div v-if="status == 406" class="alert alert-warning" role="alert">
+      {{ info }}
+    </div>
+    <div v-if="status == 200" class="alert alert-success" role="alert">
+      {{ info }}
     </div>
   </form>
 </template>

@@ -1,3 +1,8 @@
+<script setup>
+import axios from "axios";
+import ProcessModel from "./ProcessModel.vue";
+</script>
+
 <template lang="">
   <form class="row g-3">
     <h3>{{ msg }}</h3>
@@ -24,13 +29,17 @@
     <div v-if="status == 200" class="alert alert-success" role="alert">
       {{ info }}
     </div>
+    <div class="col-md-12">
+      <ProcessModel :processModel="msg" />
+    </div>
   </form>
 </template>
 
 <script>
-import axios from "axios";
 export default {
-  name: "UploadFile",
+  components: {
+    ProcessModel,
+  },
   data() {
     return {
       msg: "",

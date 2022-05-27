@@ -20,7 +20,7 @@ const router = createRouter({
     {
       path: "/upload",
       name: "upload",
-      component: () => import("../components/Upload.vue"),
+      component: () => import("../components/UploadFile.vue"),
     },
   ],
 });

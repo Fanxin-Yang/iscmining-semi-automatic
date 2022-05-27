@@ -2,6 +2,8 @@ from flask import Flask, abort, jsonify, flash, make_response, request, redirect
 from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename
+from pm4py.objects.log.importer.xes import importer as xes_importer
+import pm4py
 
 UPLOAD_FOLDER = "./uploads"
 ALLOWED_EXTENSIONS = {"xes"}
@@ -29,9 +31,16 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# @app.errorhandler(401)
-# def resource_not_found(e):
-#     return make_response(e)
+def mining_pmodel(file_path):
+    log = xes_importer.apply(file_path)
+    print(log[0])  # prints the first trace of the log
+    print(log[0][0])  # prints the first event of the first trace
+    bpmn_model = pm4py.discover_bpmn_inductive(log)
+    # gviz_model = pm4py.visualization.bpmn.visualizer.apply(
+    #     bpmn_model)
+    # print(gviz_model)
+    pm4py.view_bpmn(bpmn_model)
+    return
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -53,7 +62,9 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             print(filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            pmodel = mining_pmodel(file_path)
             # print((url_for('download_file', name=filename)))
             # return redirect(url_for('download_file', name=filename))
             return "The file has been successfully uploaded.", 200

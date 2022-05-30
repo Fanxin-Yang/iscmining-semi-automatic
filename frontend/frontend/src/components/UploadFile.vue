@@ -26,11 +26,15 @@ import ProcessModel from "./ProcessModel.vue";
     <div v-if="status == 406" class="alert alert-warning" role="alert">
       {{ info }}
     </div>
-    <div v-if="status == 200" class="alert alert-success" role="alert">
+    <div
+      v-if="status == 200 || status == 0"
+      class="alert alert-success"
+      role="alert"
+    >
       {{ info }}
     </div>
     <div class="col-md-12">
-      <ProcessModel :processModel="msg" />
+      <ProcessModel :processModel="graph" />
     </div>
   </form>
 </template>
@@ -46,6 +50,7 @@ export default {
       info: "",
       status: null,
       file: "",
+      graph: "",
     };
   },
   methods: {
@@ -76,9 +81,9 @@ export default {
         .post(path, formData, { headers })
         .then((res) => {
           console.log(res);
-          res.data.files;
           this.status = res.status;
-          this.info = res.data;
+          this.info = res.statusText;
+          this.graph = res.data;
         })
         .catch((err) => {
           console.error(err);

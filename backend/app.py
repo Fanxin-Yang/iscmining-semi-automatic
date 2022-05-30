@@ -1,4 +1,4 @@
-from flask import Flask, abort, jsonify, flash, make_response, request, redirect, url_for
+from flask import Flask, abort, jsonify, flash, make_response, render_template, request, redirect, send_file, send_from_directory, url_for
 from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename
@@ -6,6 +6,7 @@ from pm4py.objects.log.importer.xes import importer as xes_importer
 import pm4py
 
 UPLOAD_FOLDER = "./uploads"
+GRAPH_FOLDER = "./graphs"
 ALLOWED_EXTENSIONS = {"xes"}
 app = Flask(__name__)
 # The secret key will change after each start, and incalidate any signed cookies.
@@ -16,6 +17,7 @@ app.secret_key = "secret_key#!"
 
 app.config.from_object(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['GRAPH_FOLDER'] = GRAPH_FOLDER
 CORS(app, resources={r"/*": {'origins': "*"}})
 
 
@@ -31,16 +33,16 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def mining_pmodel(file_path):
+def mining_process_model(file_path):
     log = xes_importer.apply(file_path)
-    print(log[0])  # prints the first trace of the log
-    print(log[0][0])  # prints the first event of the first trace
+    print("the first trace of the log")
+    print(log[0])
+    print("the first event of the first trace")
+    print(log[0][0])
     bpmn_model = pm4py.discover_bpmn_inductive(log)
-    # gviz_model = pm4py.visualization.bpmn.visualizer.apply(
-    #     bpmn_model)
-    # print(gviz_model)
-    pm4py.view_bpmn(bpmn_model)
-    return
+    gviz_model = pm4py.visualization.bpmn.visualizer.apply(
+        bpmn_model)
+    return gviz_model
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -51,7 +53,6 @@ def upload_file():
         if 'file' not in request.files:
             print('No file part')
             return "No file uploaded. Please select a file.", 400
-            # return redirect(request.url)
         file = request.files['file']
         print(file)
         # If the user does not select a file, the browser submits an empty file without a filename.
@@ -64,14 +65,14 @@ def upload_file():
             print(filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            pmodel = mining_pmodel(file_path)
-            # print((url_for('download_file', name=filename)))
-            # return redirect(url_for('download_file', name=filename))
-            return "The file has been successfully uploaded.", 200
+            processModel = mining_process_model(file_path)
+            graph_path = os.path.join(app.config['GRAPH_FOLDER'], filename.rsplit('.', 1)[
+                                      0].lower()+".js")
+            processModel.save(graph_path)
+            return send_file(graph_path, as_attachment=True), "The file has been successfully uploaded."
         else:
             print("not allowed type")
             return "This file type is not allowed. Please select a XES file.", 406
-            # return redirect(request.url)
     else:
         return ("Upload a new dataset")
 

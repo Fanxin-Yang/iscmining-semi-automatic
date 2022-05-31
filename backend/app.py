@@ -4,6 +4,7 @@ import os
 from werkzeug.utils import secure_filename
 from pm4py.objects.log.importer.xes import importer as xes_importer
 import pm4py
+import graphviz
 
 UPLOAD_FOLDER = "./uploads"
 GRAPH_FOLDER = "./graphs"
@@ -24,6 +25,12 @@ CORS(app, resources={r"/*": {'origins': "*"}})
 @app.route('/', methods=['GET'])
 def greetings():
     return('Main Page')
+
+
+@app.route('/graphs/<path:name>', methods=['GET'])
+def getGraphs(name):
+    return send_from_directory(app.config['GRAPH_FOLDER'], name, as_attachment=True)
+
 
 # check if the filname inculde "." and the suffix of it is allowed
 
@@ -67,9 +74,12 @@ def upload_file():
             file.save(file_path)
             processModel = mining_process_model(file_path)
             graph_path = os.path.join(app.config['GRAPH_FOLDER'], filename.rsplit('.', 1)[
-                                      0].lower()+".js")
+                                      0].lower()+".gv")
+            # pm4py.visualization.bpmn.visualizer.save(processModel, graph_path)
             processModel.save(graph_path)
-            return send_file(graph_path, as_attachment=True), "The file has been successfully uploaded."
+            graphviz.render('dot', 'png', graph_path).replace('\\', '/')
+            graph_path + '.png'
+            return filename.rsplit('.', 1)[0].lower()+".gv.png", "The file has been successfully uploaded."
         else:
             print("not allowed type")
             return "This file type is not allowed. Please select a XES file.", 406

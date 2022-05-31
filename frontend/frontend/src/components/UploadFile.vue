@@ -1,8 +1,3 @@
-<script setup>
-import axios from "axios";
-import ProcessModel from "./ProcessModel.vue";
-</script>
-
 <template lang="">
   <form class="row g-3">
     <h3>{{ msg }}</h3>
@@ -40,6 +35,8 @@ import ProcessModel from "./ProcessModel.vue";
 </template>
 
 <script>
+import axios from "axios";
+import ProcessModel from "./ProcessModel.vue";
 export default {
   components: {
     ProcessModel,

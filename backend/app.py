@@ -79,7 +79,7 @@ def upload_file():
             processModel.save(graph_path)
             graphviz.render('dot', 'png', graph_path).replace('\\', '/')
             graph_path + '.png'
-            return filename.rsplit('.', 1)[0].lower()+".gv.png", "The file has been successfully uploaded."
+            return filename.rsplit('.', 1)[0].lower(), "The file has been successfully uploaded."
         else:
             print("not allowed type")
             return "This file type is not allowed. Please select a XES file.", 406

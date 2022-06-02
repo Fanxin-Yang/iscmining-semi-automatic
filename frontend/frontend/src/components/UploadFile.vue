@@ -18,18 +18,26 @@
     <div v-if="status == 400" class="alert alert-danger" role="alert">
       {{ info }}
     </div>
-    <div v-if="status == 406" class="alert alert-warning" role="alert">
+    <div v-else-if="status == 406" class="alert alert-warning" role="alert">
       {{ info }}
     </div>
     <div
-      v-if="status == 200 || status == 0"
+      v-else-if="status == 200 || status == 0"
       class="alert alert-success"
       role="alert"
     >
       {{ info }}
     </div>
-    <div class="col-md-12">
-      <ProcessModel :processModel="graph" />
+    <div v-else-if="!this.file" class="alert alert-light" role="alert">
+      Please choose a .xes file and click the upload button.
+    </div>
+    <div v-else class="alert alert-light" role="alert">
+      You have choose the file {{ this.file.name }}. Please click the "Upload"
+      button to complete.
+    </div>
+    <slot><h3>Process Model</h3></slot>
+    <div v-if="status == 0" class="col-md-12">
+      <ProcessModel :processModel="graph + '.gv.png'" />
     </div>
   </form>
 </template>
@@ -65,10 +73,8 @@ export default {
     },
     upload_file() {
       this.file = this.$refs.file.files[0];
+      this.status = null;
     },
-    // upload_file(event) {
-    //   this.file = event.target.files[0];
-    // },
     submit_file() {
       const path = "http://localhost:5000/upload";
       let formData = new FormData();

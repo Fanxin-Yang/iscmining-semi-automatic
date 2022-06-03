@@ -39,15 +39,21 @@
     <div v-if="status == 0" class="col-md-12">
       <ProcessModel :processModel="graph + '.gv.png'" />
     </div>
+    <slot><h3>Projection & Transformation</h3></slot>
+    <div v-if="status == 0" class="row">
+      <ProjectionTransformation :dataSet="graph" />
+    </div>
   </form>
 </template>
 
 <script>
 import axios from "axios";
 import ProcessModel from "./ProcessModel.vue";
+import ProjectionTransformation from "./ProjectionTransformation.vue";
 export default {
   components: {
     ProcessModel,
+    ProjectionTransformation,
   },
   data() {
     return {

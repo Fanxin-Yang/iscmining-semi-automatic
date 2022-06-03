@@ -5,8 +5,10 @@ from werkzeug.utils import secure_filename
 from pm4py.objects.log.importer.xes import importer as xes_importer
 import pm4py
 import graphviz
+import projection_transformation_algorithm
 
 UPLOAD_FOLDER = "./uploads"
+OUTPUT_FOLDER = "./outputs"
 GRAPH_FOLDER = "./graphs"
 ALLOWED_EXTENSIONS = {"xes"}
 app = Flask(__name__)
@@ -18,8 +20,16 @@ app.secret_key = "secret_key#!"
 
 app.config.from_object(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
 app.config['GRAPH_FOLDER'] = GRAPH_FOLDER
 CORS(app, resources={r"/*": {'origins': "*"}})
+
+# Centralized URL Map
+# https://flask.palletsprojects.com/en/1.1.x/patterns/lazyloading/converting-to-centralized-url-map
+app.add_url_rule('/projection_transformation/<filename>',
+                 view_func=projection_transformation_algorithm.get_attributes)
+app.add_url_rule('/projection_transformation/<filename>/<att>',
+                 view_func=projection_transformation_algorithm.projection_transformation)
 
 
 @app.route('/', methods=['GET'])
@@ -27,8 +37,8 @@ def greetings():
     return('Main Page')
 
 
-@app.route('/graphs/<path:name>', methods=['GET'])
-def getGraphs(name):
+@app.route('/graphs/<name>', methods=['GET'])
+def get_graphs(name):
     return send_from_directory(app.config['GRAPH_FOLDER'], name, as_attachment=True)
 
 
@@ -42,10 +52,10 @@ def allowed_file(filename):
 
 def mining_process_model(file_path):
     log = xes_importer.apply(file_path)
-    print("the first trace of the log")
-    print(log[0])
-    print("the first event of the first trace")
-    print(log[0][0])
+    # print("the first trace of the log")
+    # print(log[0])
+    # print("the first event of the first trace")
+    # print(log[0][0])
     bpmn_model = pm4py.discover_bpmn_inductive(log)
     gviz_model = pm4py.visualization.bpmn.visualizer.apply(
         bpmn_model)

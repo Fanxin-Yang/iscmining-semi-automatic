@@ -2,7 +2,7 @@
   <div class="col-md-6">
     <select v-model="selectedAtt" class="form-select">
       <option selected disabled value="">
-        Choose a event attribute (recommand org:resource)
+        Choose a event attribute (recommanded org:resource)
       </option>
       <option v-for="(att, index) in attributes" :key="index">{{ att }}</option>
     </select>
@@ -20,6 +20,9 @@
       Start Transformation
     </button>
   </div>
+  <div v-if="classifiers == {}" class="alert alert-success" role="alert">
+    There are {{ Object.keys(classifiers).length }} files saved.
+  </div>
 </template>
 
 <script>
@@ -27,27 +30,46 @@ import axios from "axios";
 export default {
   data() {
     return {
-      attributes: [],
+      attributes: {},
       selectedAtt: "",
+      classifiers: {},
     };
   },
   props: ["dataSet"],
   methods: {
     getAttributes() {
-      console.log(this.dataSet);
+      // console.log(this.dataSet);
       const path =
         "http://localhost:5000/projection_transformation/" + this.dataSet;
       axios
         .get(path)
         .then((res) => {
-          console.log(res.data);
+          // console.log(res.data);
+          this.attributes = res.data;
+          // console.log(this.attributes);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    },
+    transformation() {
+      console.log(this.selectedAtt);
+      const path =
+        "http://localhost:5000/projection_transformation/" +
+        this.dataSet +
+        "/" +
+        this.selectedAtt;
+      console.log(path);
+      axios
+        .get(path)
+        .then((res) => {
+          // console.log(res.data);
           this.attributes = res.data;
         })
         .catch((err) => {
           console.error(err);
         });
     },
-    transformation() {},
   },
   created() {
     this.getAttributes();

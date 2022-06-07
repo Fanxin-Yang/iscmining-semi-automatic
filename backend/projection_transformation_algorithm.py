@@ -10,7 +10,7 @@ import pandas
 from flask import request, current_app
 from pm4py.objects.log.importer.xes import importer as xes_importer
 from pm4py.objects.conversion.log import converter as log_converter
-from sympy import false
+from pm4py.algo.filtering.log.attributes import attributes_filter
 
 
 def convert(type):
@@ -31,7 +31,7 @@ def exist_file(filename):
     input_path = os.path.join(
         current_app.config['UPLOAD_FOLDER'], filename + '.xes')
     if not os.path.exists(input_path):
-        return false
+        return False
     else:
         return input_path
 
@@ -40,7 +40,7 @@ def get_attributes(filename):
     print(request)
     attributes = {"org:resource", "concept:name"}
     input_path = exist_file(filename)
-    if input_path == false:
+    if input_path == False:
         return "No file found.", 404
     log = xes_importer.apply(input_path)
     # variant = xes_importer.Variants.ITERPARSE
@@ -65,16 +65,26 @@ def get_attributes(filename):
 def projection_transformation(filename, att):
     print(request)
     input_path = exist_file(filename)
-    if input_path == false:
+    if input_path == False:
         return "No file found.", 404
     # check if att is contained in the file?
     log = xes_importer.apply(input_path)
-    output_path = os.path.join(current_app.config['OUTPUT_FOLDER'])
-
-    dataframe = log_converter.apply(
-        log, variant=log_converter.Variants.TO_DATA_FRAME)
-    dataframe.to_csv("attribute_value.csv")
+    # values: all attribute values of selected attribute and the number each of them occur
+    attValues = attributes_filter.get_attribute_values(log, att)
+    # Necessary to sort attributes values?
+    # orderedValues = []
+    # for value in attValues.keys():
+    #     orderedValues.append(value)
+    # orderedValues.sort()
+    for key in attValues.keys():
+        filterLog = attributes_filter.apply_events(log, [key], parameters={
+                                                   attributes_filter.Parameters.ATTRIBUTE_KEY: "org:resource", attributes_filter.Parameters.POSITIVE: True})
+        dataframe = log_converter.apply(
+            filterLog, variant=log_converter.Variants.TO_DATA_FRAME)
+        output_path = os.path.join(
+            current_app.config['OUTPUT_FOLDER'], key + ".csv")
+        dataframe.to_csv(output_path)
 
     # print(log[0][0]['concept:name'])
     # return send_from_directory(app.config['GRAPH_FOLDER'], name, as_attachment=True)
-    return "yes", 200
+    return attValues, 200

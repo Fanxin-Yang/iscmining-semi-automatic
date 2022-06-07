@@ -59,12 +59,12 @@ export default {
         this.dataSet +
         "/" +
         this.selectedAtt;
-      console.log(path);
+      // console.log(path);
       axios
         .get(path)
         .then((res) => {
           // console.log(res.data);
-          this.attributes = res.data;
+          this.classifiers = res.data;
         })
         .catch((err) => {
           console.error(err);

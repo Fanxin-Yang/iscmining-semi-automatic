@@ -1,6 +1,6 @@
 <template lang="">
   <form class="row g-3">
-    <h3>{{ msg }}</h3>
+    <h3>Upload a new Dataset</h3>
     <div class="col-md-6">
       <input
         class="form-control"
@@ -35,13 +35,19 @@
       You have choose the file {{ this.file.name }}. Please click the "Upload"
       button to complete.
     </div>
-    <slot><h3>Process Model</h3></slot>
+
     <div v-if="status == 0" class="col-md-12">
       <ProcessModel :processModel="graph + '.gv.png'" />
     </div>
-    <slot><h3>Projection & Transformation</h3></slot>
+
     <div v-if="status == 0" class="row">
-      <ProjectionTransformation :dataSet="graph" />
+      <ProjectionTransformation
+        :dataSet="graph"
+        v-model:projections="projections"
+      />
+    </div>
+    <div v-if="Object.keys(projections).length > 0" class="row">
+      <DiscoveryAlgorithm :dataSet="graph" :projections="projections" />
     </div>
   </form>
 </template>
@@ -50,28 +56,31 @@
 import axios from "axios";
 import ProcessModel from "./ProcessModel.vue";
 import ProjectionTransformation from "./ProjectionTransformation.vue";
+import DiscoveryAlgorithm from "./DiscoveryAlgorithm.vue";
 export default {
   components: {
     ProcessModel,
     ProjectionTransformation,
+    DiscoveryAlgorithm,
   },
   data() {
     return {
-      msg: "",
+      // msg: "",
       info: "",
       status: null,
       file: "",
       graph: "",
+      projections: {},
     };
   },
   methods: {
-    getResponse() {
+    get_response() {
       const path = "http://localhost:5000/upload";
       axios
         .get(path)
         .then((res) => {
           console.log(res.data);
-          this.msg = res.data;
+          // this.msg = res.data;
         })
         .catch((err) => {
           console.error(err);
@@ -89,7 +98,6 @@ export default {
       axios
         .post(path, formData, { headers })
         .then((res) => {
-          console.log(res);
           this.status = res.status;
           this.info = res.statusText;
           this.graph = res.data;
@@ -100,9 +108,12 @@ export default {
           this.info = err.response.data;
         });
     },
+    // change_projections(projections) {
+    //   this.projections = projections;
+    // },
   },
   created() {
-    this.getResponse();
+    this.get_response();
   },
 };
 </script>

@@ -13,18 +13,18 @@ from pm4py.objects.conversion.log import converter as log_converter
 from pm4py.algo.filtering.log.attributes import attributes_filter
 
 
-def convert(type):
-    if type == "string":
-        return "STRING"
-    if type == "date":
-        return 'DATE "yyyy-MM-dd\'T\'HH:mm:ss.SSSZ"'
-    if type == "float":
-        return "NUMERIC"
-    if type == "int":
-        return "NUMERIC"
-    if type == "boolean":
-        return "STRING"
-    return type
+# def convert(type):
+#     if type == "string":
+#         return "STRING"
+#     if type == "date":
+#         return 'DATE "yyyy-MM-dd\'T\'HH:mm:ss.SSSZ"'
+#     if type == "float":
+#         return "NUMERIC"
+#     if type == "int":
+#         return "NUMERIC"
+#     if type == "boolean":
+#         return "STRING"
+#     return type
 
 
 def exist_file(filename):
@@ -71,20 +71,17 @@ def projection_transformation(filename, att):
     log = xes_importer.apply(input_path)
     # values: all attribute values of selected attribute and the number each of them occur
     attValues = attributes_filter.get_attribute_values(log, att)
-    # Necessary to sort attributes values?
-    # orderedValues = []
-    # for value in attValues.keys():
-    #     orderedValues.append(value)
-    # orderedValues.sort()
+
+    if not os.path.exists("outputs/" + filename):
+        os.makedirs("outputs/" + filename)
     for key in attValues.keys():
         filterLog = attributes_filter.apply_events(log, [key], parameters={
                                                    attributes_filter.Parameters.ATTRIBUTE_KEY: "org:resource", attributes_filter.Parameters.POSITIVE: True})
         dataframe = log_converter.apply(
             filterLog, variant=log_converter.Variants.TO_DATA_FRAME)
         output_path = os.path.join(
-            current_app.config['OUTPUT_FOLDER'], key + ".csv")
+            current_app.config['OUTPUT_FOLDER'], filename + "/" + key + ".csv")
         dataframe.to_csv(output_path)
 
-    # print(log[0][0]['concept:name'])
     # return send_from_directory(app.config['GRAPH_FOLDER'], name, as_attachment=True)
     return attValues, 200

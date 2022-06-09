@@ -1,4 +1,5 @@
 <template lang="">
+  <h3>Projection & Transformation</h3>
   <div class="col-md-6">
     <select v-model="selectedAtt" class="form-select">
       <option selected disabled value="">
@@ -20,8 +21,12 @@
       Start Transformation
     </button>
   </div>
-  <div v-if="classifiers == {}" class="alert alert-success" role="alert">
-    There are {{ Object.keys(classifiers).length }} files saved.
+  <div
+    v-if="Object.keys(projections).length > 0"
+    class="alert alert-success"
+    role="alert"
+  >
+    There are {{ Object.keys(projections).length }} files saved.
   </div>
 </template>
 
@@ -32,12 +37,11 @@ export default {
     return {
       attributes: {},
       selectedAtt: "",
-      classifiers: {},
     };
   },
-  props: ["dataSet"],
+  props: ["dataSet", "projections"],
   methods: {
-    getAttributes() {
+    get_attributes() {
       // console.log(this.dataSet);
       const path =
         "http://localhost:5000/projection_transformation/" + this.dataSet;
@@ -53,7 +57,6 @@ export default {
         });
     },
     transformation() {
-      console.log(this.selectedAtt);
       const path =
         "http://localhost:5000/projection_transformation/" +
         this.dataSet +
@@ -63,8 +66,8 @@ export default {
       axios
         .get(path)
         .then((res) => {
-          // console.log(res.data);
-          this.classifiers = res.data;
+          this.$emit("update:projections", res.data);
+          console.log(this.projections);
         })
         .catch((err) => {
           console.error(err);
@@ -72,7 +75,7 @@ export default {
     },
   },
   created() {
-    this.getAttributes();
+    this.get_attributes();
   },
 };
 </script>

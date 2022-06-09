@@ -1,4 +1,5 @@
 <template lang="">
+  <h3>Process Model</h3>
   <div>
     <!-- <button type="button" class="btn btn-primary" @click="showPNG">Show</button>
     <button type="button" class="btn btn-link" @click="hidePNG">Hide</button>

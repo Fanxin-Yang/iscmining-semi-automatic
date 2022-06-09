@@ -6,6 +6,7 @@ from pm4py.objects.log.importer.xes import importer as xes_importer
 import pm4py
 import graphviz
 import projection_transformation_algorithm
+import discovery_algorithm
 
 UPLOAD_FOLDER = "./uploads"
 OUTPUT_FOLDER = "./outputs"
@@ -30,6 +31,9 @@ app.add_url_rule('/projection_transformation/<filename>',
                  view_func=projection_transformation_algorithm.get_attributes)
 app.add_url_rule('/projection_transformation/<filename>/<att>',
                  view_func=projection_transformation_algorithm.projection_transformation)
+
+app.add_url_rule('/discovery/<filename>/<csv>',
+                 view_func=discovery_algorithm.get_events)
 
 
 @app.route('/', methods=['GET'])

@@ -34,6 +34,14 @@ app.add_url_rule('/projection_transformation/<filename>/<att>',
 
 app.add_url_rule('/discovery/<filename>/<csv>',
                  view_func=discovery_algorithm.get_events)
+app.add_url_rule('/discovery/<filename>/<csv>/<event>',
+                 view_func=discovery_algorithm.delete_event)
+app.add_url_rule('/discovery/<filename>/<csv>/<level>',
+                 view_func=discovery_algorithm.adapt_timestamps)
+app.add_url_rule('/discovery',
+                 view_func=discovery_algorithm.get_algorithms)
+app.add_url_rule('/discovery/<filename>/<csv>/<alg>',
+                 view_func=discovery_algorithm.appy_algorithm)
 
 
 @app.route('/', methods=['GET'])

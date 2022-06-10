@@ -7,7 +7,10 @@
     <div v-else-if="alert" class="alert alert-warning" role="alert">
       No process model available
     </div> -->
-    <img :src="'http://localhost:5000/graphs/' + this.processModel" />
+    <img
+      :src="'http://localhost:5000/graphs/' + this.processModel"
+      class="img-fluid"
+    />
   </div>
 </template>
 

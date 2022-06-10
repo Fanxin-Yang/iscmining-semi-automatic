@@ -65,7 +65,7 @@ def get_attributes(filename):
 def projection_transformation(filename, att):
     print(request)
     input_path = exist_file(filename)
-    if input_path == False:
+    if not input_path:
         return "No file found.", 404
     # check if att is contained in the file?
     log = xes_importer.apply(input_path)

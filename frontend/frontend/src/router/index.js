@@ -22,6 +22,11 @@ const router = createRouter({
       name: "upload",
       component: () => import("../components/UploadFile.vue"),
     },
+    {
+      path: "/discovery",
+      name: "discovery",
+      component: () => import("../components/DiscoveryAlgorithm.vue"),
+    },
   ],
 });
 

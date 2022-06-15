@@ -1,12 +1,13 @@
 import csv
 import json
 import os
-from flask import request, current_app
+from flask import request, current_app, send_from_directory
+import pandas
 
 
 def exist_csv(filename, csv):
     csv_path = os.path.join(
-        current_app.config['OUTPUT_FOLDER'], filename + '/' + csv)
+        current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + '.csv')
     if not os.path.exists(csv_path):
         return False
     else:
@@ -17,8 +18,13 @@ def get_events(filename, csv):
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
-    json = {}
-    return "events", 200
+    json_path = os.path.join(
+        current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + '.json')
+    data = pandas.read_csv(csv_path)
+    # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
+    data.to_json(json_path, orient="records")
+    return send_from_directory(os.path.join(
+        current_app.config['OUTPUT_FOLDER'], filename + '/'), csv.rsplit('.', 1)[0] + '.json', as_attachment=False), 200
 
 
 def delete_event(filename, csv, event):

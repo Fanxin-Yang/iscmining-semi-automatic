@@ -1,29 +1,33 @@
 <template lang="">
-  <h3>Process Model</h3>
-  <div>
-    <!-- <button type="button" class="btn btn-primary" @click="showPNG">Show</button>
+    <h3>Process Model</h3>
+    <div>
+      <!-- <button type="button" class="btn btn-primary" @click="showPNG">Show</button>
     <button type="button" class="btn btn-link" @click="hidePNG">Hide</button>
     <img v-if="show" :src="pngLink" />
     <div v-else-if="alert" class="alert alert-warning" role="alert">
       No process model available
     </div> -->
-    <img
-      :src="'http://localhost:5000/graphs/' + this.processModel"
-      class="img-fluid"
-    />
-  </div>
+      <img
+        :src="
+          'http://localhost:5000/graphs/' +
+          this.$route.params.dataSet +
+          '.gv.png'
+        "
+        class="img-fluid"
+      />
+    </div>
 </template>
 
 <script>
 export default {
-//   data() {
-//     return {
-//       pngLink: "",
-//       show: false,
-//       alert: false,
-//     };
-//   },
-  props: ["processModel"],
+  //   data() {
+  //     return {
+  //       pngLink: "",
+  //       show: false,
+  //       alert: false,
+  //     };
+  //   },
+  // props: ["processModel"],
   methods: {
     // showPNG() {
     //   if (!this.processModel) {

@@ -106,7 +106,13 @@ def upload_file():
             print("not allowed type")
             return "This file type is not allowed. Please select a XES file.", 406
     else:
-        return ("Upload a new dataset")
+        dataSets = os.listdir(app.config['UPLOAD_FOLDER'])
+        dataSets_dict = {}
+        i = 0
+        for dataSet in dataSets:
+            dataSets_dict[i] = dataSet
+            i += 1
+        return dataSets_dict, 200
 
 
 if __name__ == "__main__":

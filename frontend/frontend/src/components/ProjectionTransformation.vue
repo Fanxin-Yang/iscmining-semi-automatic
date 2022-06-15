@@ -1,32 +1,68 @@
 <template lang="">
   <h3>Projection & Transformation</h3>
-  <div class="col-md-6">
-    <select v-model="selectedAtt" class="form-select">
-      <option selected disabled value="">
-        Choose a event attribute (recommanded org:resource)
-      </option>
-      <option v-for="(att, index) in attributes" :key="index">{{ att }}</option>
-    </select>
-    <div class="alert alert-light" role="alert">
-      Selected event attribute: {{ selectedAtt }}
+  <div class="row">
+    <div class="col-md-6">
+      <select v-model="selectedAtt" class="form-select">
+        <option selected disabled value="">
+          Choose a event attribute (recommanded: org:resource)
+        </option>
+        <option v-for="(att, index) in attributes" :key="index">
+          {{ att }}
+        </option>
+      </select>
+      <div class="alert alert-light" role="alert">
+        Selected event attribute: {{ selectedAtt }}
+      </div>
+    </div>
+    <div class="col-md-4">
+      <button
+        type="button"
+        class="btn btn-outline-primary"
+        @click="transformation"
+        :disabled="selectedAtt == ''"
+      >
+        Projection & Transformation
+      </button>
     </div>
   </div>
-  <div class="col-md-4">
-    <button
-      type="button"
-      class="btn btn-primary"
-      @click="transformation"
-      :disabled="selectedAtt == ''"
-    >
-      Start Transformation
-    </button>
+  <div
+    v-if="Object.keys(projections).length > 15"
+    class="alert alert-warning"
+    role="alert"
+  >
+    There are {{ Object.keys(projections).length }} files saved. Recommanded
+    event attribute is org:resource.
   </div>
   <div
-    v-if="Object.keys(projections).length > 0"
+    v-else-if="Object.keys(projections).length > 0"
     class="alert alert-success"
     role="alert"
   >
     There are {{ Object.keys(projections).length }} files saved.
+  </div>
+
+  <div v-if="Object.keys(projections).length > 0" class="row">
+    <div class="col-md-6">
+      <select v-model="selectedProjection" class="form-select">
+        <option selected disabled value="">Choose a file</option>
+        <option v-for="(number, tmp) in projections" :key="tmp">
+          {{ tmp }}.csv
+        </option>
+      </select>
+      <div class="alert alert-light" role="alert">
+        Selected projection: {{ selectedProjection }}
+      </div>
+    </div>
+    <div class="col-md-4">
+      <button
+        type="button"
+        class="btn btn-primary"
+        @click="start_discovery"
+        :disabled="selectedProjection == ''"
+      >
+        Start Discovery
+      </button>
+    </div>
   </div>
 </template>
 
@@ -37,14 +73,19 @@ export default {
     return {
       attributes: {},
       selectedAtt: "",
+      projections: {},
+      selectedProjection: "",
     };
   },
-  props: ["dataSet", "projections"],
+  // props: ["dataSet", "projections"],
   methods: {
     get_attributes() {
       // console.log(this.dataSet);
+      // const path =
+      //   "http://localhost:5000/projection_transformation/" + this.dataSet;
       const path =
-        "http://localhost:5000/projection_transformation/" + this.dataSet;
+        "http://localhost:5000/projection_transformation/" +
+        this.$route.params.dataSet;
       axios
         .get(path)
         .then((res) => {
@@ -59,19 +100,29 @@ export default {
     transformation() {
       const path =
         "http://localhost:5000/projection_transformation/" +
-        this.dataSet +
+        this.$route.params.dataSet +
         "/" +
         this.selectedAtt;
       // console.log(path);
       axios
         .get(path)
         .then((res) => {
-          this.$emit("update:projections", res.data);
-          console.log(this.projections);
+          // this.$emit("update:projections", res.data);
+          this.projections = res.data;
         })
         .catch((err) => {
           console.error(err);
         });
+    },
+    start_discovery() {
+      let tmp =
+        this.$router.currentRoute.value.fullPath +
+        "/" +
+        this.selectedProjection.substring(
+          0,
+          this.selectedProjection.lastIndexOf(".")
+        );
+      this.$router.push(tmp);
     },
   },
   created() {

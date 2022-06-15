@@ -18,16 +18,23 @@ const router = createRouter({
       component: () => import("../views/AboutView.vue"),
     },
     {
-      path: "/upload",
-      name: "upload",
+      path: "/dataset",
+      name: "dataset",
       component: () => import("../components/UploadFile.vue"),
     },
     {
-      path: "/discovery",
+      path: "/:dataSet",
+      name: "one",
+      component: () => import("../views/PreprocessView.vue"),
+    },
+    {
+      path: "/:dataSet/:csv",
       name: "discovery",
       component: () => import("../components/DiscoveryAlgorithm.vue"),
     },
   ],
+  sensitive: true,
+  strict: true,
 });
 
 export default router;

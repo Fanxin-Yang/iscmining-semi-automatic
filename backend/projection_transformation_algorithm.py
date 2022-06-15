@@ -80,7 +80,7 @@ def projection_transformation(filename, att):
         dataframe = log_converter.apply(
             filterLog, variant=log_converter.Variants.TO_DATA_FRAME)
         output_path = os.path.join(
-            current_app.config['OUTPUT_FOLDER'], filename + "/" + key + ".csv")
+            current_app.config['OUTPUT_FOLDER'], filename + "/" + str(key) + ".csv")
         dataframe.to_csv(output_path)
 
     # return send_from_directory(app.config['GRAPH_FOLDER'], name, as_attachment=True)

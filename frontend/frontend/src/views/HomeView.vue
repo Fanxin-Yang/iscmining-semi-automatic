@@ -10,7 +10,7 @@
 export default {
   methods: {
     start() {
-      this.$router.push("/upload");
+      this.$router.push("/dataset");
     },
   },
 };

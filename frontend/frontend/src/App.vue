@@ -13,13 +13,23 @@ import { RouterView } from "vue-router";
         >
       </h5>
 
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <nav class="navbar navbar-expand-sm navbar-light bg-light">
         <div class="container-fluid">
           <a class="navbar-brand" href="/">Home</a>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link" href="/upload">Upload</a>
+                <a class="nav-link" href="/dataset">Dataset</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link disabled" href="/" aria-disabled="true"
+                  >Pre-Process</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link disabled" href="/" aria-disabled="true"
+                  >Discovery</a
+                >
               </li>
               <li class="nav-item dropdown">
                 <a
@@ -40,15 +50,6 @@ import { RouterView } from "vue-router";
                     <a class="dropdown-item" href="#">Something else here</a>
                   </li>
                 </ul>
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link disabled"
-                  href="#"
-                  tabindex="-1"
-                  aria-disabled="true"
-                  >Disabled</a
-                >
               </li>
             </ul>
           </div>

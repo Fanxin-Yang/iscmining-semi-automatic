@@ -20,7 +20,7 @@ const router = createRouter({
     {
       path: "/dataset",
       name: "dataset",
-      component: () => import("../components/UploadFile.vue"),
+      component: () => import("../views/DatasetView.vue"),
     },
     {
       path: "/:dataSet",
@@ -30,7 +30,7 @@ const router = createRouter({
     {
       path: "/:dataSet/:csv",
       name: "discovery",
-      component: () => import("../components/DiscoveryAlgorithm.vue"),
+      component: () => import("../views/DiscoveryView.vue"),
     },
   ],
   sensitive: true,

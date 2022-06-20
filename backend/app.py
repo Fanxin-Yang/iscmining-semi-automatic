@@ -1,3 +1,4 @@
+from crypt import methods
 from flask import Flask, abort, jsonify, flash, make_response, render_template, request, redirect, send_file, send_from_directory, url_for
 from flask_cors import CORS
 import os
@@ -31,12 +32,12 @@ app.add_url_rule('/projection_transformation/<filename>',
                  view_func=projection_transformation_algorithm.get_attributes)
 app.add_url_rule('/projection_transformation/<filename>/<att>',
                  view_func=projection_transformation_algorithm.projection_transformation)
-
 app.add_url_rule('/discovery/<filename>/<csv>',
                  view_func=discovery_algorithm.get_events)
-app.add_url_rule('/discovery/<filename>/<csv>/<event>',
+app.add_url_rule('/discovery/<filename>/<csv>/<int:eventIndex>',
+                 methods=['DELETE'],
                  view_func=discovery_algorithm.delete_event)
-app.add_url_rule('/discovery/<filename>/<csv>/<level>',
+app.add_url_rule('/discovery/<filename>/<csv>/<string:level>',
                  view_func=discovery_algorithm.adapt_timestamps)
 app.add_url_rule('/discovery',
                  view_func=discovery_algorithm.get_algorithms)

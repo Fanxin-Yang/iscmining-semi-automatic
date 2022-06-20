@@ -50,9 +50,6 @@
           {{ name }}
         </option>
       </select>
-      <!-- <div class="alert alert-light" role="alert">
-        Selected data set: {{ selectedFile }}
-      </div> -->
     </div>
     <div class="col-md-4">
       <button
@@ -65,34 +62,12 @@
       </button>
     </div>
     <h4>Selected data set: {{ selectedFile }}</h4>
-
-    <div v-if="!!dataSet" class="col-md-12">
-      <ProcessModel :processModel="dataSet + '.gv.png'" />
-    </div>
-
-    <div v-if="!!dataSet" class="row">
-      <ProjectionTransformation
-        :dataSet="dataSet"
-        v-model:projections="projections"
-      />
-    </div>
-    <div v-if="Object.keys(projections).length > 0" class="row">
-      <DiscoveryAlgorithm :dataSet="dataSet" :projections="projections" />
-    </div>
   </form>
 </template>
 
 <script>
 import axios from "axios";
-import ProcessModel from "./ProcessModel.vue";
-import ProjectionTransformation from "./ProjectionTransformation.vue";
-import DiscoveryAlgorithm from "./DiscoveryAlgorithm.vue";
 export default {
-  components: {
-    ProcessModel,
-    ProjectionTransformation,
-    DiscoveryAlgorithm,
-  },
   data() {
     return {
       info: "",

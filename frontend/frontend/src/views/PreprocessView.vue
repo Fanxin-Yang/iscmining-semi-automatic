@@ -1,6 +1,6 @@
 <template lang="">
   <form class="row g-3">
-    <h3 class="display-4">Pre-process</h3>
+    <h3 class="display-4">Pre-process: {{ this.$route.params.dataSet }}</h3>
 
     <div class="col-md-12">
       <ProcessModel />
@@ -18,18 +18,16 @@ export default {
   components: {
     ProcessModel,
     ProjectionTransformation,
-    // DiscoveryAlgorithm,
   },
-  data() {
-    return {
-      dataSet: undefined,
-      //   projections: {},
-    };
-  },
-  methods: {},
-  created() {
-    this.dataSet = this.$route.params.dataSet;
-  },
+//   data() {
+//     return {
+//       dataSet: undefined,
+//     };
+//   },
+//   methods: {},
+//   created() {
+//     this.dataSet = this.$route.params.dataSet;
+//   },
 };
 </script>
 

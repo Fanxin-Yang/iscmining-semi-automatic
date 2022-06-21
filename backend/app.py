@@ -38,10 +38,12 @@ app.add_url_rule('/discovery/<filename>/<csv>/<int:eventIndex>',
                  methods=['DELETE'],
                  view_func=discovery_algorithm.delete_event)
 app.add_url_rule('/discovery/<filename>/<csv>/<string:level>',
+                 methods=['PUT'],
                  view_func=discovery_algorithm.adapt_timestamps)
 app.add_url_rule('/discovery',
                  view_func=discovery_algorithm.get_algorithms)
-app.add_url_rule('/discovery/<filename>/<csv>/<alg>',
+app.add_url_rule('/discovery/<filename>/<csv>/<string:alg>',
+                 methods=['GET'],
                  view_func=discovery_algorithm.appy_algorithm)
 
 

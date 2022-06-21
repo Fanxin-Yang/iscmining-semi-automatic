@@ -8,7 +8,7 @@
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
-  <div class="text-center" v-if="error != ''">
+  <div v-if="error != ''" class="alert alert-danger" role="alert">
     {{ error }}
   </div>
   <div class="table-responsive" v-if="Object.keys(events).length > 0">
@@ -68,7 +68,6 @@ export default {
     },
     determine_r() {},
     timestamps() {},
-    remove_events() {},
     get_classifications() {},
     apply_classifications() {},
   },

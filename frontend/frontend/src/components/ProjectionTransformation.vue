@@ -19,7 +19,7 @@
         type="button"
         class="btn btn-outline-primary"
         @click="transformation"
-        :disabled="selectedAtt == ''"
+        :disabled="!selectedAtt"
       >
         Projection & Transformation
       </button>
@@ -58,7 +58,7 @@
         type="button"
         class="btn btn-primary"
         @click="start_discovery"
-        :disabled="selectedProjection == ''"
+        :disabled="!selectedProjection"
       >
         Start Discovery
       </button>
@@ -72,9 +72,9 @@ export default {
   data() {
     return {
       attributes: {},
-      selectedAtt: "",
+      selectedAtt: undefined,
       projections: {},
-      selectedProjection: "",
+      selectedProjection: undefined,
     };
   },
   // props: ["dataSet", "projections"],

@@ -2,16 +2,21 @@
   <form class="row g-3">
     <h3 class="display-4">ISC Discovery Algorithm</h3>
     <div class="col-md-12">
-      <DeleteEventsVue />
+      <DeleteEvents />
+    </div>
+    <div class="col-md-12">
+      <TimestampsCoarsen />
     </div>
   </form>
 </template>
 
 <script>
-import DeleteEventsVue from "../components/DeleteEvents.vue";
+import DeleteEvents from "../components/DeleteEvents.vue";
+import TimestampsCoarsen from "../components/TimestampsCoarsen.vue";
 export default {
   components: {
-    DeleteEventsVue,
+    DeleteEvents,
+    TimestampsCoarsen,
   },
 };
 </script>

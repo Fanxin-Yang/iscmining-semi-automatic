@@ -32,6 +32,11 @@ const router = createRouter({
       name: "discovery",
       component: () => import("../views/DiscoveryView.vue"),
     },
+    {
+      path: "/:dataSet/:csv/:level",
+      name: "classification",
+      component: () => import("../views/ClassificationView.vue"),
+    },
   ],
   sensitive: true,
   strict: true,

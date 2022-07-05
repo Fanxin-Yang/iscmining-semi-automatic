@@ -1,8 +1,13 @@
 <template lang="">
   <h6>Choose a Classificaton Technique.</h6>
   <div class="row">
-    <div class="col-md-8">
-      <select v-model="selectedCT" class="form-select">
+    <div class="mb-3">
+      <select
+        v-model="selectedCT"
+        class="form-select"
+        id="technique"
+        aria-label="techniqueHelp"
+      >
         <option selected disabled value="">
           Choose a Classificaton Technique
         </option>
@@ -10,24 +15,79 @@
           {{ ct }}
         </option>
       </select>
-      <div class="alert alert-light" role="alert">
+      <div id="techniqueHelp" class="form-text">
         Selected classification technique: {{ selectedCT }}
       </div>
     </div>
-    <div class="col-md-3">
+  </div>
+  <form v-if="!!selectedCT">
+    <div class="mb-3">
+      <label for="label" class="form-label"
+        >The target values (class labels)</label
+      >
+      <select
+        v-model="selectedLabel"
+        class="form-select"
+        id="label"
+        aria-label="labelHelp"
+      >
+        <option disabled selected>Choose a class label</option>
+        <option v-for="(l, index) in labels" :key="index">
+          {{ l }}
+        </option>
+      </select>
+      <div id="labelHelp" class="form-text">
+        y: array-like of shape (n_samples,) or (n_samples, n_outputs)
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="training" class="form-label"
+        >The training input samples</label
+      >
+      <select
+        v-model="selectedSamples"
+        class="form-select"
+        id="training"
+        multiple
+        aria-label="trainingHelp"
+        :disabled="!selectedLabel"
+      >
+        <option disabled selected>Choose multiple samples</option>
+        <option
+          v-for="(s, index) in labels"
+          :key="index"
+          :disabled="s == selectedLabel"
+        >
+          {{ s }}
+        </option>
+      </select>
+      <div id="trainingHelp" class="form-text">
+        X: {array-like, sparse matrix} of shape (n_samples, n_features)
+      </div>
+    </div>
+  </form>
+  <div class="row" v-if="selectedCT == 'Decision Tree'">
+    <form>
+      <div class="mb-3">
+        Decision Trees (DTs) are a non-parametric supervised learning method
+        used for classification and regression. The goal is to create a model
+        that predicts the value of a target variable by learning simple decision
+        rules inferred from the data features. A tree can be seen as a piecewise
+        constant approximation.
+      </div>
+      <!-- <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="exampleCheck1" />
+        <label class="form-check-label" for="exampleCheck1">Check me out</label>
+      </div> -->
       <button
-        type="button"
-        class="btn btn-outline-primary"
-        @click="apply_classification"
-        :disabled="!selectedCT"
+        class="btn btn-primary"
+        @click="apply"
+        :disabled="selectedSamples.length == 0"
       >
         Apply
       </button>
-    </div>
+    </form>
   </div>
-  <!-- <div class="alert alert-success" role="alert" v-if="!!status">
-    {{ status }}
-  </div> -->
 </template>
 
 <script>
@@ -37,8 +97,12 @@ export default {
     return {
       selectedCT: undefined,
       classificationTechniques: undefined,
+      labels: [],
+      selectedLabel: undefined,
+      selectedSamples: [],
     };
   },
+  props: ["events"],
   methods: {
     apply() {
       const path =
@@ -49,10 +113,10 @@ export default {
         "_" +
         this.$route.params.level +
         "/" +
-        this.selectedCT;
+        this.selectedCT.replace(/\s+/g, "").toLowerCase();
       console.log(path);
       axios
-        .put(path)
+        .get(path)
         .then((res) => {
           this.status = res.data;
         })
@@ -65,7 +129,6 @@ export default {
       axios
         .get(path)
         .then((res) => {
-          console.log(res.data);
           this.classificationTechniques = res.data;
         })
         .catch((err) => {
@@ -75,6 +138,12 @@ export default {
   },
   created() {
     this.get_classification_techniques();
+    const list = Object.keys(this.events[0]);
+    for (let i = 0; i < list.length; i++) {
+      if (list[i] != "No." && list[i] != "case:concept:name") {
+        this.labels.push(list[i]);
+      }
+    }
   },
 };
 </script>

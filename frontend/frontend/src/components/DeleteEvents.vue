@@ -26,12 +26,15 @@
       <tbody>
         <tr v-for="(event, index) in events" :key="index">
           <th scope="row">
-            <DeleteModal :eventIndex="event['No.']" />
+            <DeleteModal :eventIndex="event['No.']" @info="update_info" />
           </th>
           <td v-for="(value, key) in event" :key="key">{{ value }}</td>
         </tr>
       </tbody>
     </table>
+  </div>
+  <div v-if="!!info" class="alert alert-success" role="alert">
+    {{ this.info }}
   </div>
 </template>
 
@@ -47,6 +50,7 @@ export default {
     return {
       events: {},
       error: "",
+      info: "",
     };
   },
   methods: {
@@ -66,6 +70,9 @@ export default {
           this.error = err.response.data;
         });
     },
+    update_info(data) {
+      this.info = data;
+    },
     determine_r() {},
     timestamps() {},
     get_classifications() {},
@@ -81,6 +88,7 @@ export default {
 .table-responsive {
   max-height: 400px;
   margin-top: 20px;
+  margin-bottom: 20px;
 }
 .header {
   position: sticky;

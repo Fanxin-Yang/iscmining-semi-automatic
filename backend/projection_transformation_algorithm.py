@@ -79,9 +79,9 @@ def projection_transformation(filename, att):
                                                    attributes_filter.Parameters.ATTRIBUTE_KEY: "org:resource", attributes_filter.Parameters.POSITIVE: True})
         dataframe = log_converter.apply(
             filterLog, variant=log_converter.Variants.TO_DATA_FRAME)
+        if not os.path.exists("outputs/" + filename + "/" + str(key)):
+            os.makedirs("outputs/" + filename + "/" + str(key))
         output_path = os.path.join(
-            current_app.config['OUTPUT_FOLDER'], filename + "/" + str(key) + ".csv")
+            current_app.config['OUTPUT_FOLDER'], filename + "/" + str(key) + "/" + str(key) + ".csv")
         dataframe.to_csv(output_path, index_label="No.")
-
-    # return send_from_directory(app.config['GRAPH_FOLDER'], name, as_attachment=True)
     return attValues, 200

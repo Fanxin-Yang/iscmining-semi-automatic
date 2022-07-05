@@ -2,6 +2,10 @@
   <form class="row g-3">
     <h3 class="display-4">ISC Discovery Algorithm</h3>
     <div class="col-md-12">
+      <label class="form-label"
+        >Dataset: {{ this.$route.params.dataSet }}</label
+      >
+      <label class="form-label">Classifier: {{ this.$route.params.csv }}</label>
       <div class="table-responsive" v-if="Object.keys(events).length > 0">
         <table class="table table-striped table-hover table-sm table-bordered">
           <thead class="header">
@@ -11,6 +15,25 @@
                 <div v-if="value != 'case:concept:name'">
                   {{ value }}
                 </div>
+                <!-- <div class="dropdown">
+                  <a
+                    v-if="value != 'case:concept:name'"
+                    class="dropdown-toggle"
+                    href="#"
+                    role="button"
+                    id="dropdownMenuLink"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {{ value }}
+                  </a>
+                  <ul
+                    class="dropdown-menu"
+                    aria-labelledby="dropdownMenuButton1"
+                  >
+                    <li><a class="dropdown-item" href="#">Action</a></li>
+                  </ul>
+                </div> -->
               </th>
             </tr>
           </thead>
@@ -24,7 +47,7 @@
       </div>
     </div>
     <div class="col-md-12">
-      <ClassificationTechniques />
+      <ClassificationTechniques :events="events" />
     </div>
   </form>
 </template>
@@ -62,8 +85,6 @@ export default {
           this.error = err.response.data;
         });
     },
-    get_classifications() {},
-    apply_classifications() {},
   },
   created() {
     this.get_events();

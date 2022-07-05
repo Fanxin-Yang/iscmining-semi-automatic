@@ -51,8 +51,11 @@
 <script>
 import axios from "axios";
 export default {
-  props: ["eventIndex"],
+  props: ["eventIndex", "info"],
   methods: {
+    test() {
+      console.log(this.eventIndex);
+    },
     remove_event() {
       console.log(this.eventIndex);
       const path =
@@ -65,7 +68,7 @@ export default {
       axios
         .delete(path)
         .then((res) => {
-          console.log(res);
+          this.$emit("info", res.data);
           this.$parent.get_events();
         })
         .catch((err) => {

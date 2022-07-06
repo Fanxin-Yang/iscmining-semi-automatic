@@ -22,7 +22,12 @@
         Upload
       </button>
     </div>
-    <div v-if="status == 400" class="alert alert-danger" role="alert">
+    <div class="text-center" v-if="status == -1">
+      <div class="spinner-border m-5" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div v-else-if="status == 400" class="alert alert-danger" role="alert">
       {{ info }}
     </div>
     <div v-else-if="status == 406" class="alert alert-warning" role="alert">
@@ -70,7 +75,7 @@ import axios from "axios";
 export default {
   data() {
     return {
-      info: "",
+      info: undefined,
       status: null,
       selectedFile: undefined,
       dataSet: undefined,
@@ -117,6 +122,7 @@ export default {
         });
     },
     submit_file() {
+      this.status = -1;
       if (this.selectedFiles.length == 0) {
         this.upload_file(this.$refs.file.files[0]);
       }

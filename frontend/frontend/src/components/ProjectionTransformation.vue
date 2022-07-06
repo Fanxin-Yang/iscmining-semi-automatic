@@ -26,7 +26,15 @@
     </div>
   </div>
   <div
-    v-if="Object.keys(projections).length > 15"
+    class="text-center"
+    v-if="loading && Object.keys(projections).length == 0"
+  >
+    <div class="spinner-border m-5" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div
+    v-else-if="Object.keys(projections).length > 15"
     class="alert alert-warning"
     role="alert"
   >
@@ -75,6 +83,7 @@ export default {
       selectedAtt: undefined,
       projections: {},
       selectedProjection: undefined,
+      loading: false,
     };
   },
   // props: ["dataSet", "projections"],
@@ -98,6 +107,7 @@ export default {
         });
     },
     transformation() {
+      this.loading = true;
       const path =
         "http://localhost:5000/projection_transformation/" +
         this.$route.params.dataSet +
@@ -108,6 +118,7 @@ export default {
         .get(path)
         .then((res) => {
           // this.$emit("update:projections", res.data);
+          this.loading = false;
           this.projections = res.data;
         })
         .catch((err) => {

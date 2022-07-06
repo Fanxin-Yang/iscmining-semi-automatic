@@ -25,6 +25,11 @@
       </button>
     </div>
   </div>
+  <div class="text-center" v-if="loading">
+    <div class="spinner-border m-5" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
   <div class="alert alert-success" role="alert" v-if="!!status">
     {{ status }}
   </div>
@@ -40,10 +45,12 @@ export default {
     return {
       timestampsLevel: "Seconds",
       status: undefined,
+      loading: false,
     };
   },
   methods: {
     coarsen() {
+      this.loading = true;
       const path =
         "http://localhost:5000/discovery/" +
         this.$route.params.dataSet +
@@ -54,6 +61,7 @@ export default {
       axios
         .put(path)
         .then((res) => {
+          this.loading = false;
           this.status = res.data;
         })
         .catch((err) => {

@@ -31,7 +31,7 @@
         id="label"
         aria-label="labelHelp"
       >
-        <option disabled selected>Choose a class label</option>
+        <!-- <option disabled selected>Choose a class label</option> -->
         <option v-for="(l, index) in labels" :key="index">
           {{ l }}
         </option>
@@ -52,7 +52,9 @@
         aria-label="trainingHelp"
         :disabled="!selectedLabel"
       >
-        <option disabled selected>Choose multiple samples</option>
+        <!-- <option disabled selected>
+          Drag or use Ctrl to select multiple samples
+        </option> -->
         <option
           v-for="(s, index) in labels"
           :key="index"

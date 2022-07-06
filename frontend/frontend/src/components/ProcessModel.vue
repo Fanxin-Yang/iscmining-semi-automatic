@@ -9,7 +9,7 @@
     </div> -->
       <img
         :src="
-          'http://localhost:5000/graphs/' +
+          'http://localhost:5000/processmodels/' +
           this.$route.params.dataSet +
           '.gv.png'
         "
@@ -35,7 +35,7 @@ export default {
     //     this.alert = true;
     //   } else {
     //     const pngLink =
-    //       "http://localhost:5000/graphs/" + this.$props.processModel;
+    //       "http://localhost:5000/processmodels/" + this.$props.processModel;
     //     this.pngLink = pngLink;
     //     this.show = true;
     //     this.alert = false;

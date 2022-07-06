@@ -75,15 +75,13 @@
         rules inferred from the data features. A tree can be seen as a piecewise
         constant approximation.
       </div>
-      <!-- <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="exampleCheck1" />
-        <label class="form-check-label" for="exampleCheck1">Check me out</label>
-      </div> -->
       <button
+        type="button"
         class="btn btn-primary"
         @click="apply"
         :disabled="selectedSamples.length == 0"
       >
+        <!-- type="button" default: submit, which refreshes the page -->
         Apply
       </button>
     </form>
@@ -114,9 +112,12 @@ export default {
         this.$route.params.level +
         "/" +
         this.selectedCT.replace(/\s+/g, "").toLowerCase();
-      console.log(path);
+      const params = new URLSearchParams([
+        ["selectedLabel", this.selectedLabel],
+        ["selectedSamples", this.selectedSamples],
+      ]);
       axios
-        .get(path)
+        .get(path, { params })
         .then((res) => {
           this.status = res.data;
         })

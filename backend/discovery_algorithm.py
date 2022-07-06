@@ -2,12 +2,16 @@ import csv
 import json
 import os
 from flask import request, current_app, send_file, send_from_directory
+import matplotlib
 import pandas
 from sklearn import tree, preprocessing
 from sklearn.datasets import load_iris
 import graphviz
 import numpy
 from sklearn.impute import SimpleImputer
+from dtreeviz.trees import dtreeviz
+# from sklearn import datasets
+# from sklearn.datasets import load_iris, load_boston
 
 
 # def exist_csv(filename, csv):
@@ -49,9 +53,9 @@ def get_events(filename, csv):
     if not csv_path:
         return "No file found.", 404
     json_path = csv_path.rsplit(".", 1)[0] + '.json'
-    data = pandas.read_csv(csv_path)
+    dataset = pandas.read_csv(csv_path)
     # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
-    data.to_json(json_path, orient="records")
+    dataset.to_json(json_path, orient="records")
     return send_file(json_path, as_attachment=False), 200
 
 
@@ -59,11 +63,11 @@ def delete_event(filename, csv, eventIndex):
     csv_path = exist_csv(filename, csv, False)
     if not csv_path:
         return "No file found.", 404
-    data = pandas.read_csv(csv_path)
-    data.drop(eventIndex, axis=0, inplace=True)  # Raises error?
-    data.reset_index(drop=True, inplace=True)
-    data.drop(columns="No.", inplace=True)
-    data.to_csv(csv_path, index_label="No.")  # without add an index column
+    dataset = pandas.read_csv(csv_path)
+    dataset.drop(eventIndex, axis=0, inplace=True)  # Raises error?
+    dataset.reset_index(drop=True, inplace=True)
+    dataset.drop(columns="No.", inplace=True)
+    dataset.to_csv(csv_path, index_label="No.")  # without add an index column
     return "The chosen event from " + csv + ".csv has been successfully removed.", 200
 
 
@@ -87,13 +91,13 @@ def coarsen_timestamps(filename, csv):
     levels = ["T", "H", "D", "M", "Y"]
     for level in levels:
         i = 0
-        data = pandas.read_csv(csv_path)
-        for i in range(0, data.get("time:timestamp").size):
-            data.loc[i, "time:timestamp"] = pandas.Period(
-                data.loc[i, "time:timestamp"], freq=level)
+        dataset = pandas.read_csv(csv_path)
+        for i in range(0, dataset.get("time:timestamp").size):
+            dataset.loc[i, "time:timestamp"] = pandas.Period(
+                dataset.loc[i, "time:timestamp"], freq=level)
         csv_output_path = os.path.join(
             current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_' + convert_level(level) + '.csv')
-        data.to_csv(csv_output_path, index=False)
+        dataset.to_csv(csv_output_path, index=False)
     return None
 
 
@@ -116,41 +120,79 @@ def get_algorithms():
 
 
 def appy_algorithm(filename, csv, alg):
+    label = request.args.get("selectedLabel", "")
+    samples = request.args.get("selectedSamples", "").split(",")
     level = with_timestamps_level(csv)
     csv_path = exist_csv(filename, csv, level)
     if not csv_path:
         return "No file found.", 404
-    data = pandas.read_csv(csv_path)
-    data.dropna(inplace=True)
-    # data_convert = data.astype({"time:timestamp": "datetime64"})
-    enc = preprocessing.OrdinalEncoder(
-        handle_unknown='use_encoded_value', unknown_value=0)
-    X = data.drop(["No.", "case:concept:name",
-                   "org:resource", "concept:name", "time:timestamp"], axis=1)
-    y = data["concept:name"]
+    dataset = pandas.read_csv(csv_path)
+    # dataset_convert = dataset.astype({"time:timestamp": "datetime64"})
+    dataset_new = dataset[samples].assign(label=dataset[label])
+    dataset_new.dropna(inplace=True)
+    X = dataset_new[samples]
+    y = dataset_new["label"]
     # Imputation of missing values https://scikit-learn.org/stable/modules/impute.html
-    imp = SimpleImputer(strategy="constant", fill_value=0)
-    X_out = imp.fit_transform(X)
+    imp = SimpleImputer(strategy="constant", fill_value=-1)
+    data = imp.fit_transform(X)
+    feature_names = list(X.columns)
     for type in X.dtypes:
         if type == object:
-            enc = preprocessing.OneHotEncoder(sparse=False)
-            X_out = enc.fit_transform(X_out)
+            encoderX = preprocessing.OrdinalEncoder(
+                handle_unknown='use_encoded_value', unknown_value=-1)
+            # encoderX = preprocessing.OneHotEncoder(sparse=False)
+            data = encoderX.fit_transform(data)
+            feature_names = encoderX.get_feature_names_out(
+                input_features=X.columns)
             break
+
+    encodery = preprocessing.OrdinalEncoder(
+        handle_unknown='use_encoded_value', unknown_value=-1)
+    target = y
+    if y.dtype == object:
+        target = encodery.fit_transform(
+            y.values.reshape(-1, 1)).reshape(1, -1)[0]
+    target_names = y.unique()
+
+    # not worth the higher training time for entropy criterion
     clf = tree.DecisionTreeClassifier(
         criterion="gini", splitter="random", min_samples_leaf=3)
-    clf = clf.fit(X_out, y)
-    dot_data = tree.export_graphviz(
-        clf, out_file=None, filled=True, rounded=True,
-        special_characters=True, feature_names=enc.get_feature_names_out(input_features=X.columns), class_names=y.unique())
-    graph = graphviz.Source(dot_data)
-    graph.render(csv + "_" + alg, "results/" + filename, format="png")
+    clf = clf.fit(data, target)
+
+    # dot_data = tree.export_graphviz(
+    #     clf, out_file=None, filled=True, rounded=True,
+    #     special_characters=True, feature_names=enc.get_feature_names_out(input_features=X.columns), class_names=y.unique())
+    # graph = graphviz.Source(dot_data)
+    # graph.render(csv + "_" + alg, "results/" + filename, format="png")
+
+    matplotlib.pyplot.switch_backend('Agg')
+    viz = dtreeviz(clf, x_data=data, y_data=target,
+                   target_name="class",
+                   feature_names=feature_names,
+                   class_names=list(target_names))
+    viz.save("results/" + filename + "/" + csv + "_" + alg + ".svg")
 
     # X_tr = enc.inverse_transform(X_out)
-    # print(X)
-    # print("line")
-    # print(X_out)
-    # print("line")
-    # print(X_tr)
     return "result", 200
 
     # append ISC candidates
+
+
+def test(filename, csv, alg):
+    label = request.args.get("selectedLabel", "")
+    samples = request.args.get("selectedSamples", "").split(",")
+    level = with_timestamps_level(csv)
+    csv_path = exist_csv(filename, csv, level)
+    if not csv_path:
+        return "No file found.", 404
+    dataset = pandas.read_csv(csv_path)
+    # dataset.dropna(inplace=True)
+    # dataset_convert = dataset.astype({"time:timestamp": "datetime64"})
+    dataset_new = dataset[samples].assign(label=dataset[label])
+    dataset_new.dropna(inplace=True)
+    print(dataset_new)
+    X = dataset_new[samples]
+    # y = dataset_new["label"]
+    # print(y)
+
+    return "test", 200

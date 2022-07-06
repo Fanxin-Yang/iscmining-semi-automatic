@@ -11,7 +11,7 @@ import discovery_algorithm
 
 UPLOAD_FOLDER = "./uploads"
 OUTPUT_FOLDER = "./outputs"
-GRAPH_FOLDER = "./graphs"
+GRAPH_FOLDER = "./processmodels"
 ALLOWED_EXTENSIONS = {"xes"}
 app = Flask(__name__)
 # The secret key will change after each start, and incalidate any signed cookies.
@@ -52,8 +52,8 @@ def greetings():
     return('Main Page')
 
 
-@app.route('/graphs/<name>', methods=['GET'])
-def get_graphs(name):
+@app.route('/processmodels/<name>', methods=['GET'])
+def get_processmodels(name):
     return send_from_directory(app.config['GRAPH_FOLDER'], name, as_attachment=True)
 
 

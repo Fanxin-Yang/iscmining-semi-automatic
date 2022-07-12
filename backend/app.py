@@ -12,6 +12,7 @@ import discovery_algorithm
 UPLOAD_FOLDER = "./uploads"
 OUTPUT_FOLDER = "./outputs"
 GRAPH_FOLDER = "./processmodels"
+RESULTS_FOLDER = "./results"
 ALLOWED_EXTENSIONS = {"xes"}
 app = Flask(__name__)
 # The secret key will change after each start, and incalidate any signed cookies.
@@ -24,6 +25,7 @@ app.config.from_object(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
 app.config['GRAPH_FOLDER'] = GRAPH_FOLDER
+app.config['RESULTS_FOLDER'] = RESULTS_FOLDER
 CORS(app, resources={r"/*": {'origins': "*"}})
 
 # Centralized URL Map
@@ -45,6 +47,8 @@ app.add_url_rule('/discovery',
 app.add_url_rule('/discovery/<filename>/<csv>/<string:alg>',
                  methods=['GET'],
                  view_func=discovery_algorithm.appy_algorithm)
+app.add_url_rule('/decisiontree/<filename>/<csv>', methods=['GET'],
+                 view_func=discovery_algorithm.get_decisiontree)
 
 
 @app.route('/', methods=['GET'])
@@ -54,6 +58,7 @@ def greetings():
 
 @app.route('/processmodels/<name>', methods=['GET'])
 def get_processmodels(name):
+    return send_from_directory(app.config['GRAPH_FOLDER'], name)
     return send_from_directory(app.config['GRAPH_FOLDER'], name, as_attachment=True)
 
 

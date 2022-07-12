@@ -7,6 +7,7 @@
         class="form-select"
         id="technique"
         aria-label="techniqueHelp"
+        @change="change_technique"
       >
         <option selected disabled value="">
           Choose a Classificaton Technique
@@ -30,6 +31,7 @@
         class="form-select"
         id="label"
         aria-label="labelHelp"
+        @change="change"
       >
         <!-- <option disabled selected>Choose a class label</option> -->
         <option v-for="(l, index) in labels" :key="index">
@@ -51,6 +53,7 @@
         multiple
         aria-label="trainingHelp"
         :disabled="!selectedLabel"
+        @change="change"
       >
         <!-- <option disabled selected>
           Drag or use Ctrl to select multiple samples
@@ -69,24 +72,44 @@
     </div>
   </form>
   <div class="row" v-if="selectedCT == 'Decision Tree'">
-    <form>
-      <div class="mb-3">
-        Decision Trees (DTs) are a non-parametric supervised learning method
-        used for classification and regression. The goal is to create a model
-        that predicts the value of a target variable by learning simple decision
-        rules inferred from the data features. A tree can be seen as a piecewise
-        constant approximation.
+    <div class="col-md-9">
+      Decision Trees (DTs) are a non-parametric supervised learning method used
+      for classification and regression. The goal is to create a model that
+      predicts the value of a target variable by learning simple decision rules
+      inferred from the data features. A tree can be seen as a piecewise
+      constant approximation.
+    </div>
+    <div class="col-md-3 align-self-center">
+      <div class="spinner-border m-8" v-if="this.status == 1" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
       <button
+        v-else
         type="button"
         class="btn btn-primary"
         @click="apply"
-        :disabled="selectedSamples.length == 0"
+        :disabled="selectedSamples.length == 0 || this.status == 200"
       >
         <!-- type="button" default: submit, which refreshes the page -->
         Apply
       </button>
-    </form>
+    </div>
+  </div>
+  <div class="row" v-if="this.status == 200">
+    <div class="alert alert-success" role="alert">
+      {{ msg }}
+    </div>
+    <img
+      :src="
+        'http://localhost:5000/decisiontree/' +
+        this.$route.params.dataSet +
+        '/' +
+        this.$route.params.csv +
+        '_' +
+        this.$route.params.level
+      "
+      class="img-fluid"
+    />
   </div>
 </template>
 
@@ -100,11 +123,14 @@ export default {
       labels: [],
       selectedLabel: undefined,
       selectedSamples: [],
+      msg: undefined,
+      status: undefined,
     };
   },
   props: ["events"],
   methods: {
     apply() {
+      this.status = 1;
       const path =
         "http://localhost:5000/discovery/" +
         this.$route.params.dataSet +
@@ -121,7 +147,9 @@ export default {
       axios
         .get(path, { params })
         .then((res) => {
-          this.status = res.data;
+          console.log(res);
+          this.status = res.status;
+          this.msg = res.data;
         })
         .catch((err) => {
           console.error(err);
@@ -138,15 +166,27 @@ export default {
           console.error(err);
         });
     },
+    change_technique() {
+      this.status = 0;
+      try {
+        const list = Object.keys(this.events[0]);
+        this.labels = [];
+        this.selectedSamples = [];
+        for (let i = 0; i < list.length; i++) {
+          if (list[i] != "No." && list[i] != "case:concept:name") {
+            this.labels.push(list[i]);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    change() {
+      this.status = 0;
+    },
   },
   created() {
     this.get_classification_techniques();
-    const list = Object.keys(this.events[0]);
-    for (let i = 0; i < list.length; i++) {
-      if (list[i] != "No." && list[i] != "case:concept:name") {
-        this.labels.push(list[i]);
-      }
-    }
   },
 };
 </script>

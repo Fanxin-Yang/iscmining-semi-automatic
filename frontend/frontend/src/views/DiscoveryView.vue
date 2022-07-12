@@ -1,6 +1,6 @@
 <template lang="">
   <form class="row g-3">
-    <h3 class="display-4">ISC Discovery Algorithm</h3>
+    <h3 class="display-4">Discovery Algorithm</h3>
     <div class="col-md-12">
       <DeleteEvents />
     </div>

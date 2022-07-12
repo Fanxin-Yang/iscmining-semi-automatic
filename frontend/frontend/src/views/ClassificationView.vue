@@ -1,12 +1,11 @@
 <template lang="">
   <form class="row g-3">
-    <h3 class="display-4">ISC Discovery Algorithm</h3>
+    <h3 class="display-4">Classification Algorithm</h3>
     <div class="col-md-12">
-      <label class="form-label"
-        >Dataset: {{ this.$route.params.dataSet }}</label
-      >
-      <label class="form-label">Classifier: {{ this.$route.params.csv }}</label>
-      <div class="table-responsive" v-if="Object.keys(events).length > 0">
+      <p class="h6">Dataset: {{ this.$route.params.dataSet }}</p>
+      <p class="h6">Classifier: {{ this.$route.params.csv }}</p>
+      <div v-if="!events">Loading</div>
+      <div class="table-responsive" v-else-if="Object.keys(events).length > 0">
         <table class="table table-striped table-hover table-sm table-bordered">
           <thead class="header">
             <tr>

@@ -1,8 +1,10 @@
 import csv
 import json
 import os
+from unicodedata import category
 from flask import request, current_app, send_file, send_from_directory
 import matplotlib
+from matplotlib import transforms
 import pandas
 from sklearn import tree, preprocessing
 from sklearn.datasets import load_iris
@@ -12,22 +14,17 @@ from sklearn.impute import SimpleImputer
 from dtreeviz.trees import dtreeviz
 # from sklearn import datasets
 # from sklearn.datasets import load_iris, load_boston
+from sklearn.compose import make_column_selector, make_column_transformer
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.tree._tree import TREE_LEAF
 
 
-# def exist_csv(filename, csv):
-#     folder = os.path.join(
-#         current_app.config['OUTPUT_FOLDER'], filename)
-#     csv_folder = os.path.join(folder, csv)
-#     csv_path = os.path.join(csv_folder, csv + '.csv')
-#     if not os.path.exists(csv_path):
-#         return False
-#     else:
-#         return csv_path
-
-
-def exist_csv(filename, csv, level):
+def exist_csv(filename, csv):
     folder = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename)
+    level = with_timestamps_level(csv)
     if not level:
         csv_folder = os.path.join(folder, csv)
     else:
@@ -48,8 +45,7 @@ def with_timestamps_level(csv):
 
 
 def get_events(filename, csv):
-    level = with_timestamps_level(csv)
-    csv_path = exist_csv(filename, csv, level)
+    csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
     json_path = csv_path.rsplit(".", 1)[0] + '.json'
@@ -60,7 +56,7 @@ def get_events(filename, csv):
 
 
 def delete_event(filename, csv, eventIndex):
-    csv_path = exist_csv(filename, csv, False)
+    csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
     dataset = pandas.read_csv(csv_path)
@@ -85,7 +81,7 @@ def convert_level(level):
 
 
 def coarsen_timestamps(filename, csv):
-    csv_path = exist_csv(filename, csv, False)
+    csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
     levels = ["T", "H", "D", "M", "Y"]
@@ -119,80 +115,163 @@ def get_algorithms():
     return algorithms, 200
 
 
+def get_decisiontree(filename, csv):
+    csv_path = exist_csv(filename, csv)
+    if not csv_path:
+        return "No file found.", 404
+    folder = os.path.join(
+        current_app.config['RESULTS_FOLDER'], filename)
+    svg_path = os.path.join(folder, csv + '_decisiontree.svg')
+    if not os.path.exists(svg_path):
+        return "No decisiont tree found.", 404
+    else:
+        return send_file(svg_path)
+
+
 def appy_algorithm(filename, csv, alg):
     label = request.args.get("selectedLabel", "")
     samples = request.args.get("selectedSamples", "").split(",")
-    level = with_timestamps_level(csv)
-    csv_path = exist_csv(filename, csv, level)
+    csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
     dataset = pandas.read_csv(csv_path)
     # dataset_convert = dataset.astype({"time:timestamp": "datetime64"})
+    for tmp in dataset:
+        if dataset[tmp].dtype == object:
+            dataset[tmp] = dataset[tmp].astype("category")
     dataset_new = dataset[samples].assign(label=dataset[label])
     dataset_new.dropna(inplace=True)
     X = dataset_new[samples]
     y = dataset_new["label"]
+
     # Imputation of missing values https://scikit-learn.org/stable/modules/impute.html
-    imp = SimpleImputer(strategy="constant", fill_value=-1)
-    data = imp.fit_transform(X)
-    feature_names = list(X.columns)
-    for type in X.dtypes:
-        if type == object:
-            encoderX = preprocessing.OrdinalEncoder(
-                handle_unknown='use_encoded_value', unknown_value=-1)
-            # encoderX = preprocessing.OneHotEncoder(sparse=False)
-            data = encoderX.fit_transform(data)
-            feature_names = encoderX.get_feature_names_out(
-                input_features=X.columns)
-            break
+    # imp = SimpleImputer(strategy="constant", fill_value=-1)
+    # data = imp.fit_transform(X)
+    # feature_names = list(X.columns)
+
+    # https://scikit-learn.org/stable/auto_examples/tree/plot_cost_complexity_pruning.html#
+    # Post pruning decision trees with cost complexity pruning
+    # cost_complexity_pruning
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=.20, random_state=45)
+
+    encoderX = preprocessing.OrdinalEncoder(
+        handle_unknown='use_encoded_value', unknown_value=-1)
+    ct = make_column_transformer((encoderX, make_column_selector(
+        dtype_include='category')), remainder='passthrough', verbose_feature_names_out=False)
+    data_train = ct.fit_transform(X_train)
+    data_test = ct.fit_transform(X_test)
+    feature_names = ct.get_feature_names_out()
 
     encodery = preprocessing.OrdinalEncoder(
         handle_unknown='use_encoded_value', unknown_value=-1)
-    target = y
-    if y.dtype == object:
-        target = encodery.fit_transform(
-            y.values.reshape(-1, 1)).reshape(1, -1)[0]
+    target_train = y_train
+    target_test = y_test
+    if y.dtype == "category":
+        target_train = encodery.fit_transform(
+            y_train.values.reshape(-1, 1)).reshape(1, -1)[0]
+        target_test = encodery.fit_transform(
+            y_test.values.reshape(-1, 1)).reshape(1, -1)[0]
     target_names = y.unique()
 
-    # not worth the higher training time for entropy criterion
-    clf = tree.DecisionTreeClassifier(
-        criterion="gini", splitter="random", min_samples_leaf=3)
-    clf = clf.fit(data, target)
+    clf = decision_tree_classification(data_train, target_train)
 
-    # dot_data = tree.export_graphviz(
-    #     clf, out_file=None, filled=True, rounded=True,
-    #     special_characters=True, feature_names=enc.get_feature_names_out(input_features=X.columns), class_names=y.unique())
-    # graph = graphviz.Source(dot_data)
-    # graph.render(csv + "_" + alg, "results/" + filename, format="png")
+    results_folder = os.path.join(
+        current_app.config['RESULTS_FOLDER'], filename)
+    if not os.path.exists(results_folder):
+        os.makedirs(results_folder)
+
+    dot_data = tree.export_graphviz(
+        clf, out_file=None, filled=True, rounded=True,
+        special_characters=True, feature_names=feature_names, class_names=list(target_names))
+    graph = graphviz.Source(dot_data)
+    graph.render(csv + "_" + alg, results_folder, format="png")
 
     matplotlib.pyplot.switch_backend('Agg')
-    viz = dtreeviz(clf, x_data=data, y_data=target,
+    viz = dtreeviz(clf, x_data=data_test, y_data=target_test,
                    target_name="class",
                    feature_names=feature_names,
                    class_names=list(target_names))
-    viz.save("results/" + filename + "/" + csv + "_" + alg + ".svg")
+    svg_path = os.path.join(results_folder, csv + "_" + alg + ".svg")
+    viz.save(svg_path)
 
-    # X_tr = enc.inverse_transform(X_out)
-    return "result", 200
+    # dot_path = os.path.join(results_folder, csv + "_" + alg + ".dot")
+    # dotFile = open(dot_path, "w")
+    # dotFile.write(viz.dot)
+    # dotFile.close()
+
+    return "Result has been saved!", 200
 
     # append ISC candidates
 
 
-def test(filename, csv, alg):
-    label = request.args.get("selectedLabel", "")
-    samples = request.args.get("selectedSamples", "").split(",")
-    level = with_timestamps_level(csv)
-    csv_path = exist_csv(filename, csv, level)
-    if not csv_path:
-        return "No file found.", 404
-    dataset = pandas.read_csv(csv_path)
-    # dataset.dropna(inplace=True)
-    # dataset_convert = dataset.astype({"time:timestamp": "datetime64"})
-    dataset_new = dataset[samples].assign(label=dataset[label])
-    dataset_new.dropna(inplace=True)
-    print(dataset_new)
-    X = dataset_new[samples]
-    # y = dataset_new["label"]
-    # print(y)
+def decision_tree_classification(data, target):
+    # not worth the higher training time for entropy criterion
+    clf = tree.DecisionTreeClassifier(
+        criterion="gini", splitter="random", min_samples_leaf=3)
+    clf = clf.fit(data, target)
+    # target_train_pred = clf.predict(data_train)
+    # target_test_pred = clf.predict(data_test)
+    # print('Before pruning')
+    # print(f'Node count: {clf.tree_.node_count}')
+    # print(f'Depth: {clf.tree_.max_depth}')
+    # print(f'Train accuracy: {round(accuracy_score(target_train, target_train_pred), 2)} and Test accuracy: {round(accuracy_score(target_test, target_test_pred), 2)}')
 
+    # max_ccp_alpha = cost_complexity_pruning(data_train, data_test,
+    #                                         target_train, target_test, clf)
+    # clf = tree.DecisionTreeClassifier(
+    #     criterion="gini", splitter="random", min_samples_leaf=3, ccp_alpha=max_ccp_alpha)
+    # clf = clf.fit(data_train, target_train)
+    # target_train_pred = clf.predict(data_train)
+    # target_test_pred = clf.predict(data_test)
+    # print('After pruning')
+    # print(f'Node count: {clf.tree_.node_count}')
+    # print(f'Depth: {clf.tree_.max_depth}')
+    # print(f'Train accuracy: {round(accuracy_score(target_train, target_train_pred), 2)} and Test accuracy: {round(accuracy_score(target_test, target_test_pred), 2)}')
+    return clf
+
+
+def cost_complexity_pruning(data_train, data_test, target_train, target_test, clf):
+    path = clf.cost_complexity_pruning_path(data_train, data_train)
+    ccp_alphas, impurities = path.ccp_alphas, path.impurities
+    # print(f'ccp_alphas: {ccp_alphas}')
+
+    clfs = []
+    # Accuracy vs alpha
+    acc_train, acc_test = [], []
+    for ccp_alpha in ccp_alphas:
+        clf = tree.DecisionTreeClassifier(
+            criterion="gini", splitter="random", min_samples_leaf=3, ccp_alpha=ccp_alpha)
+        clf.fit(data_train, target_train)
+        target_train_pred = clf.predict(data_train)
+        target_test_pred = clf.predict(data_test)
+        acc_train.append(accuracy_score(target_train, target_train_pred))
+        acc_test.append(accuracy_score(target_test, target_test_pred))
+        clfs.append(clf)
+    # print(f'acc_train: {acc_train}')
+    # print(f'acc_test: {acc_test}')
+
+    acc_sum = [x + y for (x, y) in zip(acc_train, acc_test)]
+
+    # max_acc_test = max(acc_test)
+    # max_index = acc_test.index(max_acc_test)
+    # print(
+    #     f"max accuracy of test is {round(max_acc_test, 2)} and index is {max_index}")
+
+    max_acc_sum = max(acc_sum)
+    max_index = acc_sum.index(max_acc_sum)
+    print(
+        f"max accuracy of sum is {round(max_acc_sum, 2)} and index is {max_index}")
+
+    # Number of nodes vs alpha & Depth vs alpha
+    # clfs = clfs[:-1]
+    # ccp_alphas = ccp_alphas[:-1]
+    # print(f'ccp_alphas: {ccp_alphas}')
+    # node_counts = [clf.tree_.node_count for clf in clfs]
+    # depth = [clf.tree_.max_depth for clf in clfs]
+
+    return ccp_alphas[max_index]
+
+
+def test(filename, csv, alg):
     return "test", 200

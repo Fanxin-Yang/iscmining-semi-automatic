@@ -57,7 +57,6 @@ export default {
       console.log(this.eventIndex);
     },
     remove_event() {
-      console.log(this.eventIndex);
       const path =
         "http://localhost:5000/discovery/" +
         this.$route.params.dataSet +

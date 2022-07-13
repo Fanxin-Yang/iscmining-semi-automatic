@@ -191,7 +191,8 @@ def appy_algorithm(filename, csv, alg):
     viz = dtreeviz(clf, x_data=data_test, y_data=target_test,
                    target_name="class",
                    feature_names=feature_names,
-                   class_names=list(target_names))
+                   class_names=list(target_names),
+                   scale=2)
     svg_path = os.path.join(results_folder, csv + "_" + alg + ".svg")
     viz.save(svg_path)
 

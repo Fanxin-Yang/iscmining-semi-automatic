@@ -88,7 +88,12 @@
         type="button"
         class="btn btn-primary"
         @click="apply"
-        :disabled="selectedSamples.length == 0 || this.status == 200"
+        :disabled="
+          selectedSamples.length == 0 ||
+          (this.applied[0] == this.selectedCT &&
+            this.applied[1] == this.selectedLabel &&
+            this.applied[2] == this.selectedSamples)
+        "
       >
         <!-- type="button" default: submit, which refreshes the page -->
         Apply
@@ -125,11 +130,17 @@ export default {
       selectedSamples: [],
       msg: undefined,
       status: undefined,
+      applied: [],
     };
   },
   props: ["events"],
   methods: {
     apply() {
+      this.applied = [
+        this.selectedCT,
+        this.selectedLabel,
+        this.selectedSamples,
+      ];
       this.status = 1;
       const path =
         "http://localhost:5000/discovery/" +
@@ -147,7 +158,6 @@ export default {
       axios
         .get(path, { params })
         .then((res) => {
-          console.log(res);
           this.status = res.status;
           this.msg = res.data;
         })

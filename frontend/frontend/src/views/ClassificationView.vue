@@ -1,19 +1,24 @@
 <template lang="">
-  <form class="row g-3">
+  <form class="row g-5">
     <h3 class="display-4">Classification Algorithm</h3>
     <div class="col-md-12">
       <p class="h6">Dataset: {{ this.$route.params.dataSet }}</p>
       <p class="h6">Classifier: {{ this.$route.params.csv }}</p>
-      <div v-if="!events">Loading</div>
-      <div class="table-responsive" v-else-if="Object.keys(events).length > 0">
+      <div class="text-center" v-if="Object.keys(events).length == 0">
+        <div class="spinner-border m-5" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <div
+        class="table-responsive"
+        v-else-if="Object.keys(this.events).length > 0"
+      >
         <table class="table table-striped table-hover table-sm table-bordered">
           <thead class="header">
             <tr>
               <th scope="col"></th>
               <th v-for="(index, value) in events[0]" :key="index">
-                <div v-if="value != 'case:concept:name'">
-                  {{ value }}
-                </div>
+                {{ value }}
                 <!-- <div class="dropdown">
                   <a
                     v-if="value != 'case:concept:name'"
@@ -45,8 +50,11 @@
         </table>
       </div>
     </div>
-    <div class="col-md-12">
-      <ClassificationTechniques :events="events" />
+    <div class="col-md-12" v-if="Object.keys(this.events).length > 0">
+      <ValueSelection :labels="labels" />
+    </div>
+    <div class="col-md-12" v-if="Object.keys(this.events).length > 0">
+      <ClassificationTechniques :labels="labels" />
     </div>
   </form>
 </template>
@@ -54,13 +62,16 @@
 <script>
 import axios from "axios";
 import ClassificationTechniques from "../components/ClassificationTechniques.vue";
+import ValueSelection from "../components/ValueSelection.vue";
 export default {
   components: {
     ClassificationTechniques,
+    ValueSelection,
   },
   data() {
     return {
       events: {},
+      labels: [],
       error: "",
     };
   },
@@ -78,6 +89,9 @@ export default {
         .get(path)
         .then((res) => {
           this.events = res.data;
+          this.labels = Object.keys(this.events[0]).filter(
+            (value) => value != "No."
+          );
         })
         .catch((err) => {
           console.error(err);

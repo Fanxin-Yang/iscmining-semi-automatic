@@ -2,7 +2,7 @@ import csv
 import json
 import os
 from unicodedata import category
-from flask import request, current_app, send_file, send_from_directory
+from flask import jsonify, make_response, request, current_app, send_file, send_from_directory
 import matplotlib
 from matplotlib import transforms
 import pandas
@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree._tree import TREE_LEAF
+from traitlets import Undefined
 
 
 def exist_csv(filename, csv):
@@ -45,14 +46,27 @@ def with_timestamps_level(csv):
 
 
 def get_events(filename, csv):
-    csv_path = exist_csv(filename, csv)
-    if not csv_path:
-        return "No file found.", 404
-    json_path = csv_path.rsplit(".", 1)[0] + '.json'
-    dataset = pandas.read_csv(csv_path)
-    # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
-    dataset.to_json(json_path, orient="records")
-    return send_file(json_path, as_attachment=False), 200
+    label = request.args.get("label", "")
+    if label == "":
+        csv_path = exist_csv(filename, csv)
+        if not csv_path:
+            return "No file found.", 404
+        json_path = csv_path.rsplit(".", 1)[0] + '.json'
+        dataset = pandas.read_csv(csv_path)
+        # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
+        dataset.to_json(json_path, orient="records")
+        return send_file(json_path, as_attachment=False), 200
+    else:
+        csv_path = exist_csv(filename, csv)
+        if not csv_path:
+            return "No file found.", 404
+        dataset = pandas.read_csv(csv_path)
+        dict = {}
+        i = 0
+        for l in dataset[label].dropna().unique():
+            dict[i] = l
+            i += 1
+        return dict, 200
 
 
 def delete_event(filename, csv, eventIndex):

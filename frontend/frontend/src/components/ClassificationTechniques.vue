@@ -1,5 +1,5 @@
 <template lang="">
-  <h6>Choose a Classificaton Technique.</h6>
+  <h3>Choose a Classificaton Technique.</h3>
   <div class="row">
     <div class="mb-3">
       <select
@@ -125,7 +125,7 @@ export default {
     return {
       selectedCT: undefined,
       classificationTechniques: undefined,
-      labels: [],
+      // labels: [],
       selectedLabel: undefined,
       selectedSamples: [],
       msg: undefined,
@@ -133,7 +133,7 @@ export default {
       applied: [],
     };
   },
-  props: ["events"],
+  props: ["labels"],
   methods: {
     apply() {
       this.applied = [
@@ -178,18 +178,6 @@ export default {
     },
     change_technique() {
       this.status = 0;
-      try {
-        const list = Object.keys(this.events[0]);
-        this.labels = [];
-        this.selectedSamples = [];
-        for (let i = 0; i < list.length; i++) {
-          if (list[i] != "No." && list[i] != "case:concept:name") {
-            this.labels.push(list[i]);
-          }
-        }
-      } catch (error) {
-        console.log(error);
-      }
     },
     change() {
       this.status = 0;

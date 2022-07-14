@@ -51,10 +51,57 @@
       </div>
     </div>
     <div class="col-md-12" v-if="Object.keys(this.events).length > 0">
-      <ValueSelection :labels="labels" />
+      <ValueSelection :labels="labels" @filter="update_filter" />
     </div>
     <div class="col-md-12" v-if="Object.keys(this.events).length > 0">
-      <ClassificationTechniques :labels="labels" />
+      <ClassificationTechniques
+        :labels="labels"
+        @technique="update_technique"
+      />
+    </div>
+    <div class="d-grid col-4 mx-auto">
+      <div class="text-center" v-if="this.status == 1">
+        <div class="spinner-border m-8" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <button
+        v-else
+        type="button"
+        class="btn btn-primary btn-lg"
+        @click="apply"
+        :disabled="
+          !inputSamples ||
+          inputSamples.length == 0 ||
+          (applied[0] == technique &&
+            applied[1] == classLabel &&
+            applied[2] == inputSamples &&
+            applied[3] == filter)
+        "
+      >
+        Apply {{ technique }} Algorithm
+      </button>
+    </div>
+    <div class="col-md-12" v-if="this.status == 405">
+      <div class="alert alert-danger" role="alert">
+        {{ msg }}
+      </div>
+    </div>
+    <div class="col-md-12" v-else-if="this.status == 200">
+      <div class="alert alert-success" role="alert">
+        {{ msg }}
+      </div>
+      <img
+        :src="
+          'http://localhost:5000/decisiontree/' +
+          this.$route.params.dataSet +
+          '/' +
+          this.$route.params.csv +
+          '_' +
+          this.$route.params.level
+        "
+        class="img-fluid"
+      />
     </div>
   </form>
 </template>
@@ -72,7 +119,13 @@ export default {
     return {
       events: {},
       labels: [],
-      error: "",
+      filter: {},
+      technique: undefined,
+      classLabel: undefined,
+      inputSamples: undefined,
+      applied: [],
+      status: undefined,
+      msg: undefined,
     };
   },
   methods: {
@@ -94,8 +147,54 @@ export default {
           );
         })
         .catch((err) => {
+          this.status = err.response.status;
+          this.msg = err.response.data;
+        });
+    },
+    update_filter(selectedLabels) {
+      this.filter = selectedLabels;
+    },
+    update_technique(selectedCT, selectedLabel, selectedSamples) {
+      this.technique = selectedCT;
+      this.classLabel = selectedLabel;
+      this.inputSamples = selectedSamples;
+    },
+    apply() {
+      this.applied = [
+        this.technique,
+        this.classLabel,
+        this.inputSamples,
+        this.filter,
+      ];
+      this.status = 1;
+      const path =
+        "http://localhost:5000/discovery/" +
+        this.$route.params.dataSet +
+        "/" +
+        this.$route.params.csv +
+        "_" +
+        this.$route.params.level +
+        "/" +
+        this.technique.replace(/\s+/g, "").toLowerCase();
+      const params = new URLSearchParams([
+        ["classLabel", this.classLabel],
+        ["inputSamples", this.inputSamples],
+      ]);
+      for (let i = 0; i < Object.keys(this.filter).length; i++) {
+        const label = Object.keys(this.filter)[i];
+        params.append(label, this.filter[label]);
+      }
+      axios
+        .get(path, { params })
+        .then((res) => {
+          this.status = res.status;
+          this.msg = res.data;
+          console.log(res.data);
+        })
+        .catch((err) => {
+          this.status = err.response.status;
+          this.msg = err.response.data;
           console.error(err);
-          this.error = err.response.data;
         });
     },
   },

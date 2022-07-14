@@ -52,6 +52,7 @@
 import axios from "axios";
 export default {
   props: ["eventIndex", "info"],
+  emits: ["info"],
   methods: {
     test() {
       console.log(this.eventIndex);

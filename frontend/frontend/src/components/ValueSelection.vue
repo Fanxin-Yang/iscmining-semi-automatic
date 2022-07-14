@@ -9,6 +9,7 @@
         class="form-select"
         multiple
         id="select"
+        @change="filter"
       >
         <option v-for="(v, j) in l" :key="j">
           {{ v }}
@@ -16,8 +17,6 @@
       </select>
     </div>
   </div>
-  <!-- <p>{{ selectedLabels }}</p>
-  <p>{{ labelsUnique }}</p> -->
 </template>
 
 <script>
@@ -28,10 +27,10 @@ export default {
       labelsUnique: {},
       selectedLabels: {},
       tmp: [],
-      //   labels: ["Requested_Amount"],
     };
   },
   props: ["labels"],
+  emits: ["filter"],
   methods: {
     get_unique() {
       let path =
@@ -49,7 +48,9 @@ export default {
           .get(path, { params })
           .then((res) => {
             this.labelsUnique[this.labels[i]] = Object.values(res.data);
-            this.selectedLabels = Object.assign({}, this.labelsUnique);
+            // Object.assign(this.selectedLabels, this.labelsUnique);
+            this.selectedLabels[this.labels[i]] = [];
+            this.filter();
           })
           .catch((err) => {
             console.error(err);
@@ -57,8 +58,8 @@ export default {
           });
       }
     },
-    test() {
-      console.log(this.labelsUnique[this.labels[0]][0]);
+    filter() {
+      this.$emit("filter", this.selectedLabels);
     },
   },
   created() {

@@ -142,19 +142,46 @@ def get_decisiontree(filename, csv):
         return send_file(svg_path)
 
 
+def filter(args, dataset):
+    for key in args.keys():
+        if args.get(key).__len__() != 0:
+            arr = args.get(key).split(",")
+            if dataset[key].dtype == numpy.float_:
+                print("float")
+                arr = list(map(float, arr))
+            elif dataset[key].dtype == numpy.int_:
+                print("int")
+                arr = list(map(int, arr))
+            elif dataset[key].dtype == numpy.bool_:
+                print("bool")
+                arr = list(map(bool, arr))
+            print(arr)
+            dataset = dataset[dataset[key].isin(arr)]
+    print(dataset.head)
+    return dataset
+
+
 def appy_algorithm(filename, csv, alg):
-    label = request.args.get("selectedLabel", "")
-    samples = request.args.get("selectedSamples", "").split(",")
+    args = request.args.copy()
+    label = args.pop("classLabel", "")
+    samples = args.pop("inputSamples", "").split(",")
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
-    dataset = pandas.read_csv(csv_path)
+    dataset = pandas.read_csv(csv_path, index_col="No.")
+    dataset = filter(args, dataset)
+
     # dataset_convert = dataset.astype({"time:timestamp": "datetime64"})
     for tmp in dataset:
         if dataset[tmp].dtype == object:
             dataset[tmp] = dataset[tmp].astype("category")
     dataset_new = dataset[samples].assign(label=dataset[label])
+    if dataset_new.empty:
+        return "No event exist after filtering.", 405
     dataset_new.dropna(inplace=True)
+    if dataset_new.empty:
+        return "Selected target values input samples includes missing value.", 405
+    print(dataset_new.head)
     X = dataset_new[samples]
     y = dataset_new["label"]
 
@@ -210,10 +237,10 @@ def appy_algorithm(filename, csv, alg):
     svg_path = os.path.join(results_folder, csv + "_" + alg + ".svg")
     viz.save(svg_path)
 
-    # dot_path = os.path.join(results_folder, csv + "_" + alg + ".dot")
-    # dotFile = open(dot_path, "w")
-    # dotFile.write(viz.dot)
-    # dotFile.close()
+    dot_path = os.path.join(results_folder, csv + "_" + alg + ".dot")
+    dotFile = open(dot_path, "w")
+    dotFile.write(viz.dot)
+    dotFile.close()
 
     return "Result has been saved!", 200
 

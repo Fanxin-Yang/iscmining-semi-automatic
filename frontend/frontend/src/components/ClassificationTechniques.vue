@@ -7,7 +7,7 @@
         class="form-select"
         id="technique"
         aria-label="techniqueHelp"
-        @change="change_technique"
+        @change="change"
       >
         <option selected disabled value="">
           Choose a Classificaton Technique
@@ -79,28 +79,8 @@
       inferred from the data features. A tree can be seen as a piecewise
       constant approximation.
     </div>
-    <div class="col-md-3 align-self-center">
-      <div class="spinner-border m-8" v-if="this.status == 1" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <button
-        v-else
-        type="button"
-        class="btn btn-primary"
-        @click="apply"
-        :disabled="
-          selectedSamples.length == 0 ||
-          (this.applied[0] == this.selectedCT &&
-            this.applied[1] == this.selectedLabel &&
-            this.applied[2] == this.selectedSamples)
-        "
-      >
-        <!-- type="button" default: submit, which refreshes the page -->
-        Apply
-      </button>
-    </div>
   </div>
-  <div class="row" v-if="this.status == 200">
+  <!-- <div class="row" v-if="this.status == 200">
     <div class="alert alert-success" role="alert">
       {{ msg }}
     </div>
@@ -115,7 +95,7 @@
       "
       class="img-fluid"
     />
-  </div>
+  </div> -->
 </template>
 
 <script>
@@ -125,46 +105,16 @@ export default {
     return {
       selectedCT: undefined,
       classificationTechniques: undefined,
-      // labels: [],
       selectedLabel: undefined,
       selectedSamples: [],
       msg: undefined,
       status: undefined,
-      applied: [],
+      // applied: [],
     };
   },
   props: ["labels"],
+  emits: ["technique"],
   methods: {
-    apply() {
-      this.applied = [
-        this.selectedCT,
-        this.selectedLabel,
-        this.selectedSamples,
-      ];
-      this.status = 1;
-      const path =
-        "http://localhost:5000/discovery/" +
-        this.$route.params.dataSet +
-        "/" +
-        this.$route.params.csv +
-        "_" +
-        this.$route.params.level +
-        "/" +
-        this.selectedCT.replace(/\s+/g, "").toLowerCase();
-      const params = new URLSearchParams([
-        ["selectedLabel", this.selectedLabel],
-        ["selectedSamples", this.selectedSamples],
-      ]);
-      axios
-        .get(path, { params })
-        .then((res) => {
-          this.status = res.status;
-          this.msg = res.data;
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    },
     get_classification_techniques() {
       const path = "http://localhost:5000/discovery";
       axios
@@ -176,11 +126,14 @@ export default {
           console.error(err);
         });
     },
-    change_technique() {
-      this.status = 0;
-    },
     change() {
       this.status = 0;
+      this.$emit(
+        "technique",
+        this.selectedCT,
+        this.selectedLabel,
+        this.selectedSamples
+      );
     },
   },
   created() {

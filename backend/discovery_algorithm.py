@@ -38,6 +38,8 @@ def exist_csv(filename, csv):
 
 
 def with_timestamps_level(csv):
+    if len(csv.rsplit("_", 1)) == 1:
+        return False
     levels = ["Minutes", "Hours", "Days", "Months", "Years"]
     for l in levels:
         if csv.rsplit("_", 1)[1] == l:

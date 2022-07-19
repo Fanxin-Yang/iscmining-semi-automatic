@@ -114,7 +114,12 @@ def upload_file():
             print("not allowed type")
             return "This file type is not allowed. Please select a XES file.", 406
     else:
+        if not os.path.exists(app.config['UPLOAD_FOLDER']):
+            os.makedirs(app.config['UPLOAD_FOLDER'])
+            return "no file uploaded yet", 404
         dataSets = os.listdir(app.config['UPLOAD_FOLDER'])
+        if len(dataSets) == 0:
+            return "no file uploaded yet", 404
         dataSets_dict = {}
         i = 0
         for dataSet in dataSets:

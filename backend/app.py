@@ -1,5 +1,4 @@
-from crypt import methods
-from flask import Flask, abort, jsonify, flash, make_response, render_template, request, redirect, send_file, send_from_directory, url_for
+from flask import Flask, flash, request, send_from_directory
 from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename

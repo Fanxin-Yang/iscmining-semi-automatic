@@ -1,25 +1,14 @@
-import csv
-import json
 import os
-from unicodedata import category
-from flask import jsonify, make_response, request, current_app, send_file, send_from_directory
+from flask import request, current_app, send_file
 import matplotlib
-from matplotlib import transforms
 import pandas
 from sklearn import tree, preprocessing
-from sklearn.datasets import load_iris
 import graphviz
 import numpy
-from sklearn.impute import SimpleImputer
 from dtreeviz.trees import dtreeviz
-# from sklearn import datasets
-# from sklearn.datasets import load_iris, load_boston
 from sklearn.compose import make_column_selector, make_column_transformer
-import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from sklearn.tree._tree import TREE_LEAF
-from traitlets import Undefined
 
 
 def exist_csv(filename, csv):

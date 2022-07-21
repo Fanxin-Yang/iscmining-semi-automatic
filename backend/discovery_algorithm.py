@@ -138,15 +138,11 @@ def filter(args, dataset):
         if args.get(key).__len__() != 0:
             arr = args.get(key).split(",")
             if dataset[key].dtype == numpy.float_:
-                print("float")
                 arr = list(map(float, arr))
             elif dataset[key].dtype == numpy.int_:
-                print("int")
                 arr = list(map(int, arr))
             elif dataset[key].dtype == numpy.bool_:
-                print("bool")
                 arr = list(map(bool, arr))
-            print(arr)
             dataset = dataset[dataset[key].isin(arr)]
     print(dataset.head)
     return dataset

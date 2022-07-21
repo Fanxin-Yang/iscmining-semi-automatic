@@ -71,10 +71,6 @@ def allowed_file(filename):
 
 def mining_process_model(file_path):
     log = xes_importer.apply(file_path)
-    # print("the first trace of the log")
-    # print(log[0])
-    # print("the first event of the first trace")
-    # print(log[0][0])
     bpmn_model = pm4py.discover_bpmn_inductive(log)
     gviz_model = pm4py.visualization.bpmn.visualizer.apply(
         bpmn_model)
@@ -84,13 +80,10 @@ def mining_process_model(file_path):
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        print(request)
         # check if the post request has the file part
         if 'file' not in request.files:
-            print('No file part')
             return "No file uploaded. Please select a file.", 400
         file = request.files['file']
-        print(file)
         # If the user does not select a file, the browser submits an empty file without a filename.
         if file.filename == '':
             flash('No selected file')
@@ -98,7 +91,6 @@ def upload_file():
             # return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            print(filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
             processModel = mining_process_model(file_path)
@@ -110,7 +102,6 @@ def upload_file():
             graph_path + '.png'
             return filename.rsplit('.', 1)[0].lower(), "The file has been successfully uploaded."
         else:
-            print("not allowed type")
             return "This file type is not allowed. Please select a XES file.", 406
     else:
         if not os.path.exists(app.config['UPLOAD_FOLDER']):

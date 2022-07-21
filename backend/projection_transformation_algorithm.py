@@ -18,7 +18,6 @@ def exist_file(filename):
 
 
 def get_attributes(filename):
-    print(request)
     attributes = {"org:resource", "concept:name"}
     input_path = exist_file(filename)
     if input_path == False:
@@ -41,7 +40,6 @@ def get_attributes(filename):
 
 
 def projection_transformation(filename, att):
-    print(request)
     input_path = exist_file(filename)
     if not input_path:
         return "No file found.", 404
@@ -53,7 +51,6 @@ def projection_transformation(filename, att):
     if not os.path.exists("outputs/" + filename):
         os.makedirs("outputs/" + filename)
     for key in attValues.keys():
-        print(key)
         filterLog = pm4py.filter_event_attribute_values(log, att, [key], level="case", retain=True)
         dataframe = pm4py.convert_to_dataframe(filterLog)
         if not os.path.exists("outputs/" + filename + "/" + str(key)):

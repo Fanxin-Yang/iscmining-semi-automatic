@@ -11,7 +11,7 @@
       :src="
         'http://localhost:5000/processmodels/' +
         this.$route.params.dataSet +
-        '.gv.png'
+        '.dot.png'
       "
       class="img-fluid"
     />

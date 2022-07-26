@@ -144,7 +144,7 @@ def filter(args, dataset):
             elif dataset[key].dtype == numpy.bool_:
                 arr = list(map(bool, arr))
             dataset = dataset[dataset[key].isin(arr)]
-    print(dataset.head)
+    # print(dataset.head)
     return dataset
 
 
@@ -152,6 +152,8 @@ def appy_algorithm(filename, csv, alg):
     args = request.args.copy()
     label = args.pop("classLabel", "")
     samples = args.pop("inputSamples", "").split(",")
+    encoder = args.pop("encoder", "0")
+
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
@@ -168,7 +170,7 @@ def appy_algorithm(filename, csv, alg):
     dataset_new.dropna(inplace=True)
     if dataset_new.empty:
         return "Selected target values input samples includes missing value.", 405
-    print(dataset_new.head)
+    # print(dataset_new.head)
     X = dataset_new[samples]
     y = dataset_new["label"]
 
@@ -180,43 +182,47 @@ def appy_algorithm(filename, csv, alg):
     # https://scikit-learn.org/stable/auto_examples/tree/plot_cost_complexity_pruning.html#
     # Post pruning decision trees with cost complexity pruning
     # cost_complexity_pruning
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=.20, random_state=45)
 
-    encoderX = preprocessing.OrdinalEncoder(
-        handle_unknown='use_encoded_value', unknown_value=-1)
+    # X_train, X_test, y_train, y_test = train_test_split(
+    #     X, y, test_size=.20, random_state=45)
+
+    encoderX = preprocessing.OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1) if encoder == "0" else preprocessing.OneHotEncoder(handle_unknown='ignore')
+    # only encode the columns which are categorical varibales
     ct = make_column_transformer((encoderX, make_column_selector(
         dtype_include='category')), remainder='passthrough', verbose_feature_names_out=False)
-    data_train = ct.fit_transform(X_train)
-    data_test = ct.fit_transform(X_test)
+    # data_train = ct.fit_transform(X_train)
+    # data_test = ct.fit_transform(X_test)
+    data = ct.fit_transform(X) if encoder == "0" else ct.fit_transform(X).toarray()
     feature_names = ct.get_feature_names_out()
 
     encodery = preprocessing.OrdinalEncoder(
         handle_unknown='use_encoded_value', unknown_value=-1)
-    target_train = y_train
-    target_test = y_test
+    # target_train = y_train
+    # target_test = y_test
+    target = y
     if y.dtype == "category":
-        target_train = encodery.fit_transform(
-            y_train.values.reshape(-1, 1)).reshape(1, -1)[0]
-        target_test = encodery.fit_transform(
-            y_test.values.reshape(-1, 1)).reshape(1, -1)[0]
+        # target_train = encodery.fit_transform(
+        #     y_train.values.reshape(-1, 1)).reshape(1, -1)[0]
+        # target_test = encodery.fit_transform(
+        #     y_test.values.reshape(-1, 1)).reshape(1, -1)[0]
+        target = encodery.fit_transform(y.values.reshape(-1, 1)).reshape(1, -1)[0]
     target_names = y.unique()
 
-    clf = decision_tree_classification(data_train, target_train)
+    # clf = decision_tree_classification(data_train, target_train)
+    clf = decision_tree_classification(data, target)
 
     results_folder = os.path.join(
         current_app.config['RESULTS_FOLDER'], filename)
     if not os.path.exists(results_folder):
         os.makedirs(results_folder)
-
-    dot_data = tree.export_graphviz(
-        clf, out_file=None, filled=True, rounded=True,
-        special_characters=True, feature_names=feature_names, class_names=list(target_names))
-    graph = graphviz.Source(dot_data)
-    graph.render(csv + "_" + alg, results_folder, format="png")
+    # dot_data = tree.export_graphviz(
+    #     clf, out_file=None, filled=True, rounded=True,
+    #     special_characters=True, feature_names=feature_names, class_names=list(target_names))
+    # graph = graphviz.Source(dot_data)
+    # graph.render(csv + "_" + alg, results_folder, format="png")
 
     matplotlib.pyplot.switch_backend('Agg')
-    viz = dtreeviz(clf, x_data=data_test, y_data=target_test,
+    viz = dtreeviz(clf, x_data=data, y_data=target,
                    target_name="class",
                    feature_names=feature_names,
                    class_names=list(target_names),
@@ -224,10 +230,10 @@ def appy_algorithm(filename, csv, alg):
     svg_path = os.path.join(results_folder, csv + "_" + alg + ".svg")
     viz.save(svg_path)
 
-    dot_path = os.path.join(results_folder, csv + "_" + alg + ".dot")
-    dotFile = open(dot_path, "w")
-    dotFile.write(viz.dot)
-    dotFile.close()
+    # dot_path = os.path.join(results_folder, csv + "_" + alg + ".dot")
+    # dotFile = open(dot_path, "w")
+    # dotFile.write(viz.dot)
+    # dotFile.close()
 
     return "Result has been saved!", 200
 

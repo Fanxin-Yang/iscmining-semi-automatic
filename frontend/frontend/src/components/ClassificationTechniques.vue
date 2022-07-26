@@ -21,8 +21,21 @@
       </div>
     </div>
   </div>
-  <form v-if="!!selectedCT">
-    <div class="mb-3">
+  <div class="row" v-if="selectedCT == 'Decision Tree'">
+    <div class="col-md-9">
+      <a
+        target="_blank"
+        href="https://scikit-learn.org/stable/modules/tree.html"
+        >Decision Trees (DTs)</a
+      >
+      are a non-parametric supervised learning method used for classification
+      and regression. The goal is to create a model that predicts the value of a
+      target variable by learning simple decision rules inferred from the data
+      features. A tree can be seen as a piecewise constant approximation.
+    </div>
+  </div>
+  <div v-if="!!selectedCT" class="row">
+    <div class="col-5">
       <label for="label" class="form-label"
         >The target values (class labels)</label
       >
@@ -42,10 +55,11 @@
         y: array-like of shape (n_samples,) or (n_samples, n_outputs)
       </div>
     </div>
-    <div class="mb-3">
+    <div class="col-5">
       <label for="training" class="form-label"
         >The training input samples</label
       >
+
       <select
         v-model="selectedSamples"
         class="form-select"
@@ -70,14 +84,39 @@
         X: {array-like, sparse matrix} of shape (n_samples, n_features)
       </div>
     </div>
-  </form>
-  <div class="row" v-if="selectedCT == 'Decision Tree'">
-    <div class="col-md-9">
-      Decision Trees (DTs) are a non-parametric supervised learning method used
-      for classification and regression. The goal is to create a model that
-      predicts the value of a target variable by learning simple decision rules
-      inferred from the data features. A tree can be seen as a piecewise
-      constant approximation.
+    <div class="col-2">
+      <label for="encoder" class="form-label">Encoder</label>
+      <select
+        v-model="selectedEncoder"
+        class="form-select"
+        id="encoder"
+        aria-label="encoderHelp"
+        :disabled="selectedSamples.length == 0"
+        @change="change"
+      >
+        <option value="0">Ordinal Encoder</option>
+        <option value="1">One-Hot Encoder</option>
+      </select>
+      <div v-if="selectedEncoder == '0'" id="encoderHelp" class="form-text">
+        <a
+          target="_blank"
+          href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OrdinalEncoder.html#sklearn.preprocessing.OrdinalEncoder"
+          >Ordinal Encoder</a
+        >
+        is suitable for categorical variables with ordinal relationship.
+      </div>
+      <div
+        v-else-if="selectedEncoder == '1'"
+        id="encoderHelp"
+        class="form-text"
+      >
+        <a
+          target="_blank"
+          href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html?highlight=encoder#sklearn.preprocessing.OneHotEncoder"
+          >One-Hot Encoder</a
+        >
+        is suitable for categorical variables without ordinal relationship.
+      </div>
     </div>
   </div>
   <!-- <div class="row" v-if="this.status == 200">
@@ -109,6 +148,7 @@ export default {
       selectedSamples: [],
       msg: undefined,
       status: undefined,
+      selectedEncoder: "0",
       // applied: [],
     };
   },
@@ -132,7 +172,8 @@ export default {
         "technique",
         this.selectedCT,
         this.selectedLabel,
-        this.selectedSamples
+        this.selectedSamples,
+        this.selectedEncoder
       );
     },
   },

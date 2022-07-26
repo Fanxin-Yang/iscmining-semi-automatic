@@ -1,7 +1,7 @@
 <template lang="">
   <form class="row g-5">
     <h3 class="display-4">Classification Algorithm</h3>
-    <div class="col-md-12">
+    <!-- <div class="col-md-12">
       <p class="h6">Dataset: {{ this.$route.params.dataSet }}</p>
       <p class="h6">Classifier: {{ this.$route.params.csv }}</p>
       <div class="text-center" v-if="Object.keys(events).length == 0">
@@ -19,7 +19,7 @@
               <th scope="col"></th>
               <th v-for="(index, value) in events[0]" :key="index">
                 {{ value }}
-                <!-- <div class="dropdown">
+                <div class="dropdown">
                   <a
                     v-if="value != 'case:concept:name'"
                     class="dropdown-toggle"
@@ -37,7 +37,7 @@
                   >
                     <li><a class="dropdown-item" href="#">Action</a></li>
                   </ul>
-                </div> -->
+                </div>
               </th>
             </tr>
           </thead>
@@ -49,7 +49,7 @@
           </tbody>
         </table>
       </div>
-    </div>
+    </div> -->
     <div class="col-md-12" v-if="Object.keys(this.events).length > 0">
       <ValueSelection :labels="labels" @filter="update_filter" />
     </div>
@@ -98,7 +98,9 @@
           '/' +
           this.$route.params.csv +
           '_' +
-          this.$route.params.level
+          this.$route.params.level +
+          '?cache=' +
+          this.cacheKey
         "
         class="img-fluid"
       />
@@ -123,9 +125,11 @@ export default {
       technique: undefined,
       classLabel: undefined,
       inputSamples: undefined,
+      encoder: "0",
       applied: [],
       status: undefined,
       msg: undefined,
+      cacheKey: +new Date(),
     };
   },
   methods: {
@@ -154,10 +158,16 @@ export default {
     update_filter(selectedLabels) {
       this.filter = selectedLabels;
     },
-    update_technique(selectedCT, selectedLabel, selectedSamples) {
+    update_technique(
+      selectedCT,
+      selectedLabel,
+      selectedSamples,
+      selectedEncoder
+    ) {
       this.technique = selectedCT;
       this.classLabel = selectedLabel;
       this.inputSamples = selectedSamples;
+      this.encoder = selectedEncoder;
     },
     apply() {
       this.applied = [
@@ -165,7 +175,9 @@ export default {
         this.classLabel,
         this.inputSamples,
         this.filter,
+        this.encoder,
       ];
+      this.cacheKey = +new Date();
       this.status = 1;
       const path =
         "http://localhost:5000/discovery/" +
@@ -179,6 +191,7 @@ export default {
       const params = new URLSearchParams([
         ["classLabel", this.classLabel],
         ["inputSamples", this.inputSamples],
+        ["encoder", this.encoder],
       ]);
       for (let i = 0; i < Object.keys(this.filter).length; i++) {
         const label = Object.keys(this.filter)[i];

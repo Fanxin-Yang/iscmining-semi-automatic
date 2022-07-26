@@ -76,7 +76,8 @@
           (applied[0] == technique &&
             applied[1] == classLabel &&
             applied[2] == inputSamples &&
-            applied[3] == filter)
+            applied[3] == filter &&
+            applied[4] == encoder)
         "
       >
         Apply {{ technique }} Algorithm

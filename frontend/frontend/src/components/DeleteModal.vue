@@ -1,18 +1,23 @@
 <template>
+  <!-- Button trigger modal -->
   <button
     type="button"
     class="btn btn-close"
     data-bs-toggle="modal"
-    data-bs-target="#removeModal"
-    aria-label="Remove"
-    @click="remove_event"
+    :data-bs-target="'#modal' + eventIndex"
   ></button>
-
-  <!-- <div class="modal fade" id="removeModal" tabindex="-1" aria-hidden="true">
+  <!-- Modal -->
+  <div
+    class="modal fade"
+    :id="'modal' + eventIndex"
+    tabindex="-1"
+    aria-labelledby="modaleTitle"
+    aria-hidden="true"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Remove Event</h5>
+          <h5 class="modal-title" id="modaleTitle">Remove Event</h5>
           <button
             type="button"
             class="btn-close"
@@ -23,7 +28,6 @@
         <div class="modal-body">
           Are you sure that you want to remove this event from this csv file?
           This process cannot be resumed.
-          eventIndex: {{ eventIndex }}
         </div>
         <div class="modal-footer">
           <button
@@ -45,7 +49,7 @@
         </div>
       </div>
     </div>
-  </div> -->
+  </div>
 </template>
 
 <script>

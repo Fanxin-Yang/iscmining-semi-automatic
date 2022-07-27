@@ -72,11 +72,10 @@ export default {
             this.labelsUnique[this.labels[i]] = Object.values(res.data);
             // Object.assign(this.selectedLabels, this.labelsUnique);
             this.selectedLabels[this.labels[i]] = [];
-            this.filter();
+            this.update_filter();
           })
           .catch((err) => {
             console.error(err);
-            this.error = err.response.data;
           });
       }
     },

@@ -2,7 +2,7 @@
   <form class="row g-3">
     <h3 class="display-4">Discovery Algorithm</h3>
     <div class="col-md-12">
-      <DeleteEvents />
+      <EventsTable />
     </div>
     <div class="col-md-12">
       <TimestampsCoarsen />
@@ -11,11 +11,11 @@
 </template>
 
 <script>
-import DeleteEvents from "../components/DeleteEvents.vue";
+import EventsTable from "../components/EventsTable.vue";
 import TimestampsCoarsen from "../components/TimestampsCoarsen.vue";
 export default {
   components: {
-    DeleteEvents,
+    EventsTable,
     TimestampsCoarsen,
   },
 };

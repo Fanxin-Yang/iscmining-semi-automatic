@@ -1,15 +1,37 @@
 <template lang="">
   <h3>Value Selection</h3>
+  <h6>
+    Please select at least 1 value of each attributes. (Default: all selected.)
+  </h6>
   <div class="row">
     <div class="col-auto" v-for="(l, i) in labelsUnique" :key="i">
-      <label for="select" class="form-label">{{ i }}</label>
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          :id="'checkBox_' + i"
+          type="checkbox"
+          value=""
+          :checked="
+            selectedLabels[i].length == 0 ||
+            selectedLabels[i].length == labelsUnique[i].length
+          "
+          @change="selectAll(i)"
+        />
+        <label class="form-check-label" :for="'checkBox_' + i">
+          {{ i }}
+        </label>
+      </div>
+      <div>
+        selected length: {{ selectedLabels[i].length }} labelsUnique length:
+        {{ labelsUnique[i].length }}
+      </div>
       <select
         size="10"
         v-model="selectedLabels[i]"
         class="form-select"
         multiple
         id="select"
-        @change="filter"
+        @change="update_filter"
       >
         <option v-for="(v, j) in l" :key="j">
           {{ v }}
@@ -58,8 +80,11 @@ export default {
           });
       }
     },
-    filter() {
+    update_filter() {
       this.$emit("filter", this.selectedLabels);
+    },
+    selectAll(i) {
+      this.selectedLabels[i] = this.labelsUnique[i];
     },
   },
   created() {

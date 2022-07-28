@@ -49,7 +49,7 @@ export default defineConfig(({ command, mode }) => {
   } else if (command === "build") {
     return {
       // build specific config
-      base: "/iscmining-semi-automatic/",
+      base: "/iscmining-semi-automatic/frontend/frontend/",
       plugins: [vue()],
       resolve: {
         alias: {

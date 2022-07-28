@@ -111,13 +111,13 @@ def upload_file():
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            processModel = mining_process_model(file_path)
-            graph_path = os.path.join(
-                app.config['GRAPH_FOLDER'],
-                filename.rsplit('.', 1)[0].lower() + ".dot")
-            # pm4py.visualization.bpmn.visualizer.save(processModel, graph_path)
-            processModel.save(graph_path)
-            graphviz.render('dot', 'png', graph_path).replace('\\', '/')
+            # processModel = mining_process_model(file_path)
+            # graph_path = os.path.join(
+            #     app.config['GRAPH_FOLDER'],
+            #     filename.rsplit('.', 1)[0].lower() + ".dot")
+            # # pm4py.visualization.bpmn.visualizer.save(processModel, graph_path)
+            # processModel.save(graph_path)
+            # graphviz.render('dot', 'png', graph_path).replace('\\', '/')
             return filename.rsplit(
                 '.', 1)[0].lower(), "The file has been successfully uploaded."
         else:

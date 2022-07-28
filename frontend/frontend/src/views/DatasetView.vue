@@ -48,25 +48,27 @@
       "Upload" button to complete.
     </div>
 
-    <div class="col-md-6">
-      <select v-model="selectedFile" class="form-select">
-        <option selected disabled value="">Select a data set</option>
-        <option v-for="(name, index) in availableDataSets" :key="index">
-          {{ name }}
-        </option>
-      </select>
+    <div class="row g-3" v-if="status != 404">
+      <div class="col-md-6">
+        <select v-model="selectedFile" class="form-select">
+          <option selected disabled value="">Select a data set</option>
+          <option v-for="(name, index) in availableDataSets" :key="index">
+            {{ name }}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <button
+          type="button"
+          class="btn btn-primary"
+          @click="start_preprocess"
+          :disabled="!selectedFile"
+        >
+          Start Pre-process
+        </button>
+      </div>
+      <h4>Selected data set: {{ selectedFile }}</h4>
     </div>
-    <div class="col-md-4">
-      <button
-        type="button"
-        class="btn btn-primary"
-        @click="start_preprocess"
-        :disabled="!selectedFile"
-      >
-        Start Pre-process
-      </button>
-    </div>
-    <h4>Selected data set: {{ selectedFile }}</h4>
   </form>
 </template>
 
@@ -95,11 +97,13 @@ export default {
         })
         .catch((err) => {
           console.error(err);
+          this.status = err.response.status;
+          this.info = err.response.data;
         });
     },
     select_files() {
       this.selectedFiles = this.$refs.file.files;
-      this.status = null;
+      // this.status = null;
     },
     upload_file(file) {
       const path = "http://localhost:5000/upload";

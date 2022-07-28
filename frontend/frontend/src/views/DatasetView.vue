@@ -89,9 +89,8 @@ export default {
   },
   methods: {
     get_dataSets() {
-      const path = "http://localhost:5000/upload";
       axios
-        .get(path)
+        .get("upload")
         .then((res) => {
           this.availableDataSets = res.data;
         })
@@ -106,12 +105,11 @@ export default {
       // this.status = null;
     },
     upload_file(file) {
-      const path = "http://localhost:5000/upload";
       let formData = new FormData();
       formData.append("file", file);
       const headers = { "Content-Type": "multipart/form-data" };
       axios
-        .post(path, formData, { headers })
+        .post("upload", formData, { headers })
         .then((res) => {
           console.log(res);
           this.get_dataSets();

@@ -156,9 +156,8 @@ export default {
   emits: ["technique"],
   methods: {
     get_classification_techniques() {
-      const path = "http://localhost:5000/discovery";
       axios
-        .get(path)
+        .get("/discovery")
         .then((res) => {
           this.classificationTechniques = res.data;
         })

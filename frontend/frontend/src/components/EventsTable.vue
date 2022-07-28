@@ -55,13 +55,13 @@ export default {
   },
   methods: {
     get_events() {
-      const path =
-        "http://localhost:5000/discovery/" +
-        this.$route.params.dataSet +
-        "/" +
-        this.$route.params.csv;
       axios
-        .get(path)
+        .get(
+          "discovery/" +
+            this.$route.params.dataSet +
+            "/" +
+            this.$route.params.csv
+        )
         .then((res) => {
           this.events = res.data;
         })

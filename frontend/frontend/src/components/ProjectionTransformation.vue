@@ -89,14 +89,8 @@ export default {
   // props: ["dataSet", "projections"],
   methods: {
     get_attributes() {
-      // console.log(this.dataSet);
-      // const path =
-      //   "http://localhost:5000/projection_transformation/" + this.dataSet;
-      const path =
-        "http://localhost:5000/projection_transformation/" +
-        this.$route.params.dataSet;
       axios
-        .get(path)
+        .get("projection_transformation/" + this.$route.params.dataSet)
         .then((res) => {
           // console.log(res.data);
           this.attributes = res.data;
@@ -108,14 +102,13 @@ export default {
     },
     transformation() {
       this.loading = true;
-      const path =
-        "http://localhost:5000/projection_transformation/" +
-        this.$route.params.dataSet +
-        "/" +
-        this.selectedAtt;
-      // console.log(path);
       axios
-        .get(path)
+        .get(
+          "projection_transformation/" +
+            this.$route.params.dataSet +
+            "/" +
+            this.selectedAtt
+        )
         .then((res) => {
           // this.$emit("update:projections", res.data);
           this.loading = false;

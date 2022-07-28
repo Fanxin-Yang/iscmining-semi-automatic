@@ -180,15 +180,6 @@ export default {
       ];
       this.cacheKey = +new Date();
       this.status = 1;
-      const path =
-        "http://localhost:5000/discovery/" +
-        this.$route.params.dataSet +
-        "/" +
-        this.$route.params.csv +
-        "_" +
-        this.$route.params.level +
-        "/" +
-        this.technique.replace(/\s+/g, "").toLowerCase();
       const params = new URLSearchParams([
         ["classLabel", this.classLabel],
         ["inputSamples", this.inputSamples],
@@ -199,7 +190,17 @@ export default {
         params.append(label, this.filter[label]);
       }
       axios
-        .get(path, { params })
+        .get(
+          "discovery/" +
+            this.$route.params.dataSet +
+            "/" +
+            this.$route.params.csv +
+            "_" +
+            this.$route.params.level +
+            "/" +
+            this.technique.replace(/\s+/g, "").toLowerCase(),
+          { params }
+        )
         .then((res) => {
           this.status = res.status;
           this.msg = res.data;

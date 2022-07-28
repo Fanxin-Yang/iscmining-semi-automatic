@@ -62,15 +62,15 @@ export default {
       console.log(this.eventIndex);
     },
     remove_event() {
-      const path =
-        "http://localhost:5000/discovery/" +
-        this.$route.params.dataSet +
-        "/" +
-        this.$route.params.csv +
-        "/" +
-        this.eventIndex;
       axios
-        .delete(path)
+        .delete(
+          "discovery/" +
+            this.$route.params.dataSet +
+            "/" +
+            this.$route.params.csv +
+            "/" +
+            this.eventIndex
+        )
         .then((res) => {
           this.$emit("info", res.data);
           this.$parent.get_events();

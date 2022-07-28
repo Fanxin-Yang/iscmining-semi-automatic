@@ -51,15 +51,15 @@ export default {
   methods: {
     coarsen() {
       this.loading = true;
-      const path =
-        "http://localhost:5000/discovery/" +
-        this.$route.params.dataSet +
-        "/" +
-        this.$route.params.csv +
-        "/" +
-        this.timestampsLevel;
       axios
-        .put(path)
+        .put(
+          "discovery/" +
+            this.$route.params.dataSet +
+            "/" +
+            this.$route.params.csv +
+            "/" +
+            this.timestampsLevel
+        )
         .then((res) => {
           this.loading = false;
           this.status = res.data;

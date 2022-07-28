@@ -1,1 +1,0 @@
-# iscmining-semi-automatic

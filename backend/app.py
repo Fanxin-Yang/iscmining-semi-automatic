@@ -31,8 +31,9 @@ CORS(app, resources={r"/*": {'origins': "*"}})
 # https://flask.palletsprojects.com/en/1.1.x/patterns/lazyloading/converting-to-centralized-url-map
 app.add_url_rule('/projection_transformation/<filename>',
                  view_func=projection_transformation_algorithm.get_attributes)
-app.add_url_rule('/projection_transformation/<filename>/<att>',
-                 view_func=projection_transformation_algorithm.projection_transformation)
+app.add_url_rule(
+    '/projection_transformation/<filename>/<att>',
+    view_func=projection_transformation_algorithm.projection_transformation)
 app.add_url_rule('/discovery/<filename>/<csv>',
                  view_func=discovery_algorithm.get_events)
 app.add_url_rule('/discovery/<filename>/<csv>/<int:eventIndex>',
@@ -41,24 +42,26 @@ app.add_url_rule('/discovery/<filename>/<csv>/<int:eventIndex>',
 app.add_url_rule('/discovery/<filename>/<csv>/<string:level>',
                  methods=['PUT'],
                  view_func=discovery_algorithm.adapt_timestamps)
-app.add_url_rule('/discovery',
-                 view_func=discovery_algorithm.get_algorithms)
+app.add_url_rule('/discovery', view_func=discovery_algorithm.get_algorithms)
 app.add_url_rule('/discovery/<filename>/<csv>/<string:alg>',
                  methods=['GET'],
                  view_func=discovery_algorithm.appy_algorithm)
-app.add_url_rule('/decisiontree/<filename>/<csv>', methods=['GET'],
+app.add_url_rule('/decisiontree/<filename>/<csv>',
+                 methods=['GET'],
                  view_func=discovery_algorithm.get_decisiontree)
 
 
 @app.route('/', methods=['GET'])
 def greetings():
-    return('Main Page')
+    return ('Main Page')
 
 
 @app.route('/processmodels/<name>', methods=['GET'])
 def get_processmodels(name):
     return send_from_directory(app.config['GRAPH_FOLDER'], name)
-    return send_from_directory(app.config['GRAPH_FOLDER'], name, as_attachment=True)
+    return send_from_directory(app.config['GRAPH_FOLDER'],
+                               name,
+                               as_attachment=True)
 
 
 # check if the filname inculde "." and the suffix of it is allowed
@@ -71,10 +74,25 @@ def allowed_file(filename):
 
 def mining_process_model(file_path):
     log = xes_importer.apply(file_path)
-    bpmn_model = pm4py.discover_bpmn_inductive(log)
-    gviz_model = pm4py.visualization.bpmn.visualizer.apply(
-        bpmn_model)
-    return gviz_model
+    net, initial_marking, final_marking = pm4py.discover_petri_net_inductive(
+        log)
+    return net, initial_marking, final_marking
+
+
+@app.route('/pm4pytest', methods=['GET'])
+def pm4pytest():
+    filename = 'loan_process.xes'
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    pnml_path = os.path.join(app.config['GRAPH_FOLDER'],
+                             filename.rsplit('.', 1)[0].lower() + ".pnml")
+    vis_path = os.path.join(app.config['GRAPH_FOLDER'],
+                            filename.rsplit('.', 1)[0].lower() + ".png")
+    net, initial_marking, final_marking = mining_process_model(file_path)
+    pm4py.write_petri_net(net, initial_marking, final_marking, pnml_path)
+    # (must be one of ['bmp', 'canon', 'cgimage', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dot_json', 'eps', 'exr', 'fig', 'gd', 'gd2', 'gif', 'gtk', 'gv', 'ico', 'imap', 'imap_np', 'ismap', 'jp2', 'jpe', 'jpeg', 'jpg', 'json', 'json0', 'pct', 'pdf', 'pic', 'pict', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'psd', 'sgi', 'svg', 'svgz', 'tga', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'x11', 'xdot', 'xdot1.2', 'xdot1.4', 'xdot_json', 'xlib'])
+    pm4py.save_vis_petri_net(net, initial_marking, final_marking, vis_path)
+    # graphviz.render('dot', 'png', vis_path).replace('\\', '/')
+    return send_from_directory(app.config['GRAPH_FOLDER'], 'loan_process.png')
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -87,19 +105,21 @@ def upload_file():
         # If the user does not select a file, the browser submits an empty file without a filename.
         if file.filename == '':
             flash('No selected file')
-            return"No file is selected.", 400
+            return "No file is selected.", 400
             # return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
             processModel = mining_process_model(file_path)
-            graph_path = os.path.join(app.config['GRAPH_FOLDER'], filename.rsplit('.', 1)[
-                                      0].lower()+".dot")
+            graph_path = os.path.join(
+                app.config['GRAPH_FOLDER'],
+                filename.rsplit('.', 1)[0].lower() + ".dot")
             # pm4py.visualization.bpmn.visualizer.save(processModel, graph_path)
             processModel.save(graph_path)
             graphviz.render('dot', 'png', graph_path).replace('\\', '/')
-            return filename.rsplit('.', 1)[0].lower(), "The file has been successfully uploaded."
+            return filename.rsplit(
+                '.', 1)[0].lower(), "The file has been successfully uploaded."
         else:
             return "This file type is not allowed. Please select a XES file.", 406
     else:

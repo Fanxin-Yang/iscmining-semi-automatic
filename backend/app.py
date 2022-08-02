@@ -74,6 +74,8 @@ def allowed_file(filename):
 
 def mining_process_model(file_path):
     log = xes_importer.apply(file_path)
+    # dataframe = pm4py.convert_to_dataframe(log)
+    # dataframe.to_csv('loan_process.csv')
     net, initial_marking, final_marking = pm4py.discover_petri_net_inductive(
         log)
     return net, initial_marking, final_marking
@@ -83,13 +85,15 @@ def mining_process_model(file_path):
 def pm4pytest():
     filename = 'loan_process.xes'
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if not os.path.exists(app.config['GRAPH_FOLDER']):
+                os.makedirs(app.config['GRAPH_FOLDER'])
     pnml_path = os.path.join(app.config['GRAPH_FOLDER'],
                              filename.rsplit('.', 1)[0].lower() + ".pnml")
+    # (must be one of ['bmp', 'canon', 'cgimage', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dot_json', 'eps', 'exr', 'fig', 'gd', 'gd2', 'gif', 'gtk', 'gv', 'ico', 'imap', 'imap_np', 'ismap', 'jp2', 'jpe', 'jpeg', 'jpg', 'json', 'json0', 'pct', 'pdf', 'pic', 'pict', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'psd', 'sgi', 'svg', 'svgz', 'tga', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'x11', 'xdot', 'xdot1.2', 'xdot1.4', 'xdot_json', 'xlib'])
     vis_path = os.path.join(app.config['GRAPH_FOLDER'],
                             filename.rsplit('.', 1)[0].lower() + ".png")
     net, initial_marking, final_marking = mining_process_model(file_path)
     pm4py.write_petri_net(net, initial_marking, final_marking, pnml_path)
-    # (must be one of ['bmp', 'canon', 'cgimage', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dot_json', 'eps', 'exr', 'fig', 'gd', 'gd2', 'gif', 'gtk', 'gv', 'ico', 'imap', 'imap_np', 'ismap', 'jp2', 'jpe', 'jpeg', 'jpg', 'json', 'json0', 'pct', 'pdf', 'pic', 'pict', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'psd', 'sgi', 'svg', 'svgz', 'tga', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'x11', 'xdot', 'xdot1.2', 'xdot1.4', 'xdot_json', 'xlib'])
     pm4py.save_vis_petri_net(net, initial_marking, final_marking, vis_path)
     # graphviz.render('dot', 'png', vis_path).replace('\\', '/')
     return send_from_directory(app.config['GRAPH_FOLDER'], 'loan_process.png')
@@ -111,12 +115,16 @@ def upload_file():
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            # processModel = mining_process_model(file_path)
-            # graph_path = os.path.join(
-            #     app.config['GRAPH_FOLDER'],
-            #     filename.rsplit('.', 1)[0].lower() + ".dot")
-            # # pm4py.visualization.bpmn.visualizer.save(processModel, graph_path)
-            # processModel.save(graph_path)
+            if not os.path.exists(app.config['GRAPH_FOLDER']):
+                os.makedirs(app.config['GRAPH_FOLDER'])
+            pnml_path = os.path.join(app.config['GRAPH_FOLDER'],
+                             filename.rsplit('.', 1)[0].lower() + ".pnml")
+             # (must be one of ['bmp', 'canon', 'cgimage', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dot_json', 'eps', 'exr', 'fig', 'gd', 'gd2', 'gif', 'gtk', 'gv', 'ico', 'imap', 'imap_np', 'ismap', 'jp2', 'jpe', 'jpeg', 'jpg', 'json', 'json0', 'pct', 'pdf', 'pic', 'pict', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'psd', 'sgi', 'svg', 'svgz', 'tga', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'x11', 'xdot', 'xdot1.2', 'xdot1.4', 'xdot_json', 'xlib'])
+            vis_path = os.path.join(app.config['GRAPH_FOLDER'],
+                                    filename.rsplit('.', 1)[0].lower() + ".png")
+            net, initial_marking, final_marking = mining_process_model(file_path)
+            pm4py.write_petri_net(net, initial_marking, final_marking, pnml_path)
+            pm4py.save_vis_petri_net(net, initial_marking, final_marking, vis_path)
             # graphviz.render('dot', 'png', graph_path).replace('\\', '/')
             return filename.rsplit(
                 '.', 1)[0].lower(), "The file has been successfully uploaded."

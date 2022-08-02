@@ -1,5 +1,5 @@
 <template lang="">
-  <h3>Process Model</h3>
+  <h3>Process Model (Petri Net)</h3>
   <div>
     <!-- <button type="button" class="btn btn-primary" @click="showPNG">Show</button>
     <button type="button" class="btn btn-link" @click="hidePNG">Hide</button>
@@ -11,7 +11,7 @@
       :src="
         'http://localhost:5000/processmodels/' +
         this.$route.params.dataSet +
-        '.dot.png'
+        '.png'
       "
       class="img-fluid"
     />
@@ -19,16 +19,29 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
-  //   data() {
-  //     return {
-  //       pngLink: "",
-  //       show: false,
-  //       alert: false,
-  //     };
-  //   },
+  data() {
+    return {
+      json: undefined,
+    };
+  },
   // props: ["processModel"],
   methods: {
+    getJSON() {
+      axios
+        // .get("processmodels/" + this.$route.params.dataSet + ".json")
+        .get("/pm4pytest")
+        .then((res) => {
+          console.log(res.status);
+          this.json = res.data;
+        })
+        .catch((err) => {
+          this.status = err.response.status;
+          this.msg = err.response.data;
+        });
+    },
     // showPNG() {
     //   if (!this.processModel) {
     //     this.show = false;
@@ -45,6 +58,9 @@ export default {
     //   this.show = false;
     //   this.alert = false;
     // },
+  },
+  created() {
+    this.getJSON();
   },
 };
 </script>

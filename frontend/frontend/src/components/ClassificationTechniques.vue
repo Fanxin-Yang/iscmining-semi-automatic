@@ -16,22 +16,21 @@
           {{ ct }}
         </option>
       </select>
-      <div id="techniqueHelp" class="form-text">
-        Selected classification technique: {{ selectedCT }}
-      </div>
-    </div>
-  </div>
-  <div class="row" v-if="selectedCT == 'Decision Tree'">
-    <div class="col-md-9">
-      <a
-        target="_blank"
-        href="https://scikit-learn.org/stable/modules/tree.html"
-        >Decision Trees (DTs)</a
+      <div
+        id="techniqueHelp"
+        class="form-text"
+        v-if="selectedCT == 'Decision Tree'"
       >
-      are a non-parametric supervised learning method used for classification
-      and regression. The goal is to create a model that predicts the value of a
-      target variable by learning simple decision rules inferred from the data
-      features. A tree can be seen as a piecewise constant approximation.
+        <a
+          target="_blank"
+          href="https://scikit-learn.org/stable/modules/tree.html"
+          >Decision Trees (DTs)</a
+        >
+        are a non-parametric supervised learning method used for classification
+        and regression. The goal is to create a model that predicts the value of
+        a target variable by learning simple decision rules inferred from the
+        data features. A tree can be seen as a piecewise constant approximation.
+      </div>
     </div>
   </div>
   <div v-if="!!selectedCT" class="row">
@@ -119,22 +118,6 @@
       </div>
     </div>
   </div>
-  <!-- <div class="row" v-if="this.status == 200">
-    <div class="alert alert-success" role="alert">
-      {{ msg }}
-    </div>
-    <img
-      :src="
-        'http://localhost:5000/decisiontree/' +
-        this.$route.params.dataSet +
-        '/' +
-        this.$route.params.csv +
-        '_' +
-        this.$route.params.level
-      "
-      class="img-fluid"
-    />
-  </div> -->
 </template>
 
 <script>

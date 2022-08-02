@@ -33,7 +33,12 @@
   <div class="alert alert-success" role="alert" v-if="!!status">
     {{ status }}
   </div>
-  <button type="button" class="btn btn-primary" @click="next_step">
+  <button
+    v-if="!!status"
+    type="button"
+    class="btn btn-primary"
+    @click="next_step"
+  >
     Next Step
   </button>
 </template>

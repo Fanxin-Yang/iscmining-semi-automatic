@@ -147,12 +147,56 @@ def filter(args, dataset):
     # print(dataset.head)
     return dataset
 
+def encoder_X_y(encoder, X, y):
+    encoderX = preprocessing.OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1) if encoder == "0" else preprocessing.OneHotEncoder(handle_unknown='ignore')
+    # only encode the columns which are categorical varibales
+    ct = make_column_transformer((encoderX, make_column_selector(
+        dtype_include='category')), remainder='passthrough', verbose_feature_names_out=False)
+    # data_train = ct.fit_transform(X_train)
+    # data_test = ct.fit_transform(X_test)
+    data = ct.fit_transform(X) if encoder == "0" else ct.fit_transform(X).toarray()
+    feature_names = ct.get_feature_names_out()
+
+    encodery = preprocessing.OrdinalEncoder(
+        handle_unknown='use_encoded_value', unknown_value=-1)
+    # target_train = y_train
+    # target_test = y_test
+    target = y
+    if y.dtype == "category":
+        # target_train = encodery.fit_transform(
+        #     y_train.values.reshape(-1, 1)).reshape(1, -1)[0]
+        # target_test = encodery.fit_transform(
+        #     y_test.values.reshape(-1, 1)).reshape(1, -1)[0]
+        target = encodery.fit_transform(y.values.reshape(-1, 1)).reshape(1, -1)[0]
+    target_names = y.unique()
+    return data, target, feature_names, target_names
+
+def visualize(clf, data, target, feature_names, target_names, svg_path):
+    # dot_data = tree.export_graphviz(
+    #     clf, out_file=None, filled=True, rounded=True,
+    #     special_characters=True, feature_names=feature_names, class_names=list(target_names))
+    # graph = graphviz.Source(dot_data)
+    # graph.render(csv + "_" + alg, results_folder, format="png")
+    matplotlib.pyplot.switch_backend('Agg')
+    viz = dtreeviz(clf, x_data=data, y_data=target,
+                   target_name="class",
+                   feature_names=feature_names,
+                   class_names=list(target_names),
+                   scale=2)
+    viz.save(svg_path)
+    # dot_path = os.path.join(results_folder, csv + "_" + alg + ".dot")
+    # dotFile = open(dot_path, "w")
+    # dotFile.write(viz.dot)
+    # dotFile.close()
 
 def appy_algorithm(filename, csv, alg):
     args = request.args.copy()
     label = args.pop("classLabel", "")
     samples = args.pop("inputSamples", "").split(",")
     encoder = args.pop("encoder", "0")
+    ccp_alpha = -1
+    if "ccp_alpha" in args:
+        ccp_alpha = args.pop("ccp_alpha")
 
     csv_path = exist_csv(filename, csv)
     if not csv_path:
@@ -179,124 +223,82 @@ def appy_algorithm(filename, csv, alg):
     # data = imp.fit_transform(X)
     # feature_names = list(X.columns)
 
-    # https://scikit-learn.org/stable/auto_examples/tree/plot_cost_complexity_pruning.html#
-    # Post pruning decision trees with cost complexity pruning
-    # cost_complexity_pruning
-
     # X_train, X_test, y_train, y_test = train_test_split(
     #     X, y, test_size=.20, random_state=45)
 
-    encoderX = preprocessing.OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1) if encoder == "0" else preprocessing.OneHotEncoder(handle_unknown='ignore')
-    # only encode the columns which are categorical varibales
-    ct = make_column_transformer((encoderX, make_column_selector(
-        dtype_include='category')), remainder='passthrough', verbose_feature_names_out=False)
-    # data_train = ct.fit_transform(X_train)
-    # data_test = ct.fit_transform(X_test)
-    data = ct.fit_transform(X) if encoder == "0" else ct.fit_transform(X).toarray()
-    feature_names = ct.get_feature_names_out()
+    data, target, feature_names, target_names = encoder_X_y(encoder, X, y)
 
-    encodery = preprocessing.OrdinalEncoder(
-        handle_unknown='use_encoded_value', unknown_value=-1)
-    # target_train = y_train
-    # target_test = y_test
-    target = y
-    if y.dtype == "category":
-        # target_train = encodery.fit_transform(
-        #     y_train.values.reshape(-1, 1)).reshape(1, -1)[0]
-        # target_test = encodery.fit_transform(
-        #     y_test.values.reshape(-1, 1)).reshape(1, -1)[0]
-        target = encodery.fit_transform(y.values.reshape(-1, 1)).reshape(1, -1)[0]
-    target_names = y.unique()
-
-    # clf = decision_tree_classification(data_train, target_train)
-    clf = decision_tree_classification(data, target)
+    if ccp_alpha == -1:
+        clf = tree.DecisionTreeClassifier(criterion="gini", splitter="random")
+        options = cost_complexity_pruning(data, target, clf)
+    else:
+        ccp_alpha = float(ccp_alpha)
+        clf = tree.DecisionTreeClassifier(criterion="gini", splitter="random", ccp_alpha=ccp_alpha)
+    
+    clf = clf.fit(data, target)
 
     results_folder = os.path.join(
         current_app.config['RESULTS_FOLDER'], filename)
     if not os.path.exists(results_folder):
         os.makedirs(results_folder)
-    # dot_data = tree.export_graphviz(
-    #     clf, out_file=None, filled=True, rounded=True,
-    #     special_characters=True, feature_names=feature_names, class_names=list(target_names))
-    # graph = graphviz.Source(dot_data)
-    # graph.render(csv + "_" + alg, results_folder, format="png")
-
-    matplotlib.pyplot.switch_backend('Agg')
-    viz = dtreeviz(clf, x_data=data, y_data=target,
-                   target_name="class",
-                   feature_names=feature_names,
-                   class_names=list(target_names),
-                   scale=2)
     svg_path = os.path.join(results_folder, csv + "_" + alg + ".svg")
-    viz.save(svg_path)
+    
+    visualize(clf, data, target, feature_names, target_names, svg_path)
 
-    # dot_path = os.path.join(results_folder, csv + "_" + alg + ".dot")
-    # dotFile = open(dot_path, "w")
-    # dotFile.write(viz.dot)
-    # dotFile.close()
-
-    return "Result has been saved!", 200
+    if ccp_alpha == -1:
+        return options, 201
+    else:
+        return f"With selected ccp_alpha value {ccp_alpha} decision tree has {clf.tree_.node_count} nodes and max depth {lf.tree_.max_depth}.", 200
 
     # append ISC candidates
 
 
-def decision_tree_classification(data, target):
-    # not worth the higher training time for entropy criterion
-    clf = tree.DecisionTreeClassifier(
-        criterion="gini", splitter="random", min_samples_leaf=3)
-    clf = clf.fit(data, target)
-    # target_train_pred = clf.predict(data_train)
-    # target_test_pred = clf.predict(data_test)
-    # print('Before pruning')
-    # print(f'Node count: {clf.tree_.node_count}')
-    # print(f'Depth: {clf.tree_.max_depth}')
-    # print(f'Train accuracy: {round(accuracy_score(target_train, target_train_pred), 2)} and Test accuracy: {round(accuracy_score(target_test, target_test_pred), 2)}')
-
-    # max_ccp_alpha = cost_complexity_pruning(data_train, data_test,
-    #                                         target_train, target_test, clf)
-    # clf = tree.DecisionTreeClassifier(
-    #     criterion="gini", splitter="random", min_samples_leaf=3, ccp_alpha=max_ccp_alpha)
-    # clf = clf.fit(data_train, target_train)
-    # target_train_pred = clf.predict(data_train)
-    # target_test_pred = clf.predict(data_test)
-    # print('After pruning')
-    # print(f'Node count: {clf.tree_.node_count}')
-    # print(f'Depth: {clf.tree_.max_depth}')
-    # print(f'Train accuracy: {round(accuracy_score(target_train, target_train_pred), 2)} and Test accuracy: {round(accuracy_score(target_test, target_test_pred), 2)}')
-    return clf
-
-
-def cost_complexity_pruning(data_train, data_test, target_train, target_test, clf):
-    path = clf.cost_complexity_pruning_path(data_train, data_train)
+def cost_complexity_pruning(data, target, clf):
+    path = clf.cost_complexity_pruning_path(data, target)
     ccp_alphas, impurities = path.ccp_alphas, path.impurities
     # print(f'ccp_alphas: {ccp_alphas}')
 
     clfs = []
-    # Accuracy vs alpha
-    acc_train, acc_test = [], []
+    # Total impurity of leaves
     for ccp_alpha in ccp_alphas:
-        clf = tree.DecisionTreeClassifier(
-            criterion="gini", splitter="random", min_samples_leaf=3, ccp_alpha=ccp_alpha)
-        clf.fit(data_train, target_train)
-        target_train_pred = clf.predict(data_train)
-        target_test_pred = clf.predict(data_test)
-        acc_train.append(accuracy_score(target_train, target_train_pred))
-        acc_test.append(accuracy_score(target_test, target_test_pred))
+        clf = tree.DecisionTreeClassifier(random_state=0, ccp_alpha=ccp_alpha)
+        clf.fit(data, target)
         clfs.append(clf)
+        print(
+            "Number of nodes in the last tree is: {} with ccp_alpha: {}".format(
+                clf.tree_.node_count, ccp_alpha
+            )
+        )
+    print([clf.tree_.node_count for clf in clfs])
+    print([clf.tree_.max_depth for clf in clfs])
+
+    node_counts = [clf.tree_.node_count for clf in clfs]
+    depths = [clf.tree_.max_depth for clf in clfs]
+    # Accuracy vs alpha
+    # acc_train, acc_test = [], []
+    # for ccp_alpha in ccp_alphas:
+    #     clf = tree.DecisionTreeClassifier(
+    #         criterion="gini", splitter="random", min_samples_leaf=3, ccp_alpha=ccp_alpha)
+    #     clf.fit(data_train, target_train)
+    #     target_train_pred = clf.predict(data_train)
+    #     target_test_pred = clf.predict(data_test)
+    #     acc_train.append(accuracy_score(target_train, target_train_pred))
+    #     acc_test.append(accuracy_score(target_test, target_test_pred))
+    #     clfs.append(clf)
     # print(f'acc_train: {acc_train}')
     # print(f'acc_test: {acc_test}')
 
-    acc_sum = [x + y for (x, y) in zip(acc_train, acc_test)]
+    # acc_sum = [x + y for (x, y) in zip(acc_train, acc_test)]
 
     # max_acc_test = max(acc_test)
     # max_index = acc_test.index(max_acc_test)
     # print(
     #     f"max accuracy of test is {round(max_acc_test, 2)} and index is {max_index}")
 
-    max_acc_sum = max(acc_sum)
-    max_index = acc_sum.index(max_acc_sum)
-    print(
-        f"max accuracy of sum is {round(max_acc_sum, 2)} and index is {max_index}")
+    # max_acc_sum = max(acc_sum)
+    # max_index = acc_sum.index(max_acc_sum)
+    # print(
+    #     f"max accuracy of sum is {round(max_acc_sum, 2)} and index is {max_index}")
 
     # Number of nodes vs alpha & Depth vs alpha
     # clfs = clfs[:-1]
@@ -305,7 +307,15 @@ def cost_complexity_pruning(data_train, data_test, target_train, target_test, cl
     # node_counts = [clf.tree_.node_count for clf in clfs]
     # depth = [clf.tree_.max_depth for clf in clfs]
 
-    return ccp_alphas[max_index]
+    unique_ccp_alphas = []
+    options = {}
+    index = 0
+    for i in range(len(ccp_alphas)):
+        if not ccp_alphas[i] in unique_ccp_alphas:
+            unique_ccp_alphas.append(ccp_alphas[i])
+            options[index] = ccp_alphas[i]
+            index += 1
+    return options
 
 
 def test(filename, csv, alg):

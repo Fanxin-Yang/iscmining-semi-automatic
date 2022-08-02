@@ -88,9 +88,49 @@
         {{ msg }}
       </div>
     </div>
-    <div class="col-md-12" v-else-if="this.status == 200">
+    <div class="col-md-12" v-else-if="this.status == 201 || this.status == 200">
+      <div class="row" v-if="this.ccp_alphas">
+        <div class="col-8">
+          <label for="ccp_alphas" class="form-label">ccp_alphas</label>
+          <select
+            v-model="ccp_alpha"
+            class="form-select"
+            id="ccp_alphas"
+            aria-label="ccp_alphasHelp"
+            @change="change"
+          >
+            <option v-for="(c, index) in ccp_alphas" :key="index">
+              {{ c }}
+            </option>
+          </select>
+          <div id="ccp_alphasHelp" class="form-text">
+            Greater values of ccp_alpha increase the number of nodes pruned.
+            <br />
+            More details:
+            <a
+              target="_blank"
+              href="https://scikit-learn.org/stable/auto_examples/tree/plot_cost_complexity_pruning.html"
+              >Post pruning decision trees with cost complexity pruning.</a
+            >
+          </div>
+        </div>
+        <div class="col-3">
+          <button
+            type="button"
+            class="btn btn-primary btn-lg"
+            @click="apply"
+            :disabled="!ccp_alpha"
+          >
+            Pruning
+          </button>
+        </div>
+      </div>
       <div class="alert alert-success" role="alert">
-        {{ msg }}
+        <div v-if="this.status == 200">{{ msg }}</div>
+        <div v-else-if="this.status == 201">
+          Decision tree with default parameters. You can choose other ccp_alpha
+          value to prune the decision tree.
+        </div>
       </div>
       <img
         :src="
@@ -130,6 +170,8 @@ export default {
       applied: [],
       status: undefined,
       msg: undefined,
+      ccp_alphas: undefined,
+      ccp_alpha: undefined,
       cacheKey: +new Date(),
     };
   },
@@ -169,6 +211,8 @@ export default {
       this.classLabel = selectedLabel;
       this.inputSamples = selectedSamples;
       this.encoder = selectedEncoder;
+      this.ccp_alphas = undefined;
+      this.ccp_alpha = undefined;
     },
     apply() {
       this.applied = [
@@ -185,6 +229,10 @@ export default {
         ["inputSamples", this.inputSamples],
         ["encoder", this.encoder],
       ]);
+      if (this.ccp_alpha) {
+        let ccp_alpha_float = parseFloat(this.ccp_alpha);
+        params.append("ccp_alpha", ccp_alpha_float);
+      }
       for (let i = 0; i < Object.keys(this.filter).length; i++) {
         const label = Object.keys(this.filter)[i];
         params.append(label, this.filter[label]);
@@ -203,8 +251,11 @@ export default {
         )
         .then((res) => {
           this.status = res.status;
-          this.msg = res.data;
-          console.log(res.data);
+          if (this.status == 201) {
+            this.ccp_alphas = res.data;
+          } else {
+            this.msg = res.data;
+          }
         })
         .catch((err) => {
           this.status = err.response.status;

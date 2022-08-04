@@ -43,7 +43,7 @@ export default defineConfig(({ command, mode }) => {
         strictPort: true,
         open: true,
         // proxy: {},
-        origin: "http://127.0.0.1:3080",
+        // origin: "http://127.0.0.1:3000",
       },
       build: {},
     };

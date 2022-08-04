@@ -89,9 +89,10 @@
       </div>
     </div>
     <div class="col-md-12" v-else-if="this.status == 201 || this.status == 200">
+      <h6 v-if="this.ccp_alphas">Choose a ccp_alpha value</h6>
       <div class="row" v-if="this.ccp_alphas">
         <div class="col-8">
-          <label for="ccp_alphas" class="form-label">ccp_alphas</label>
+          <!-- <label for="ccp_alphas" class="form-label">ccp_alphas</label> -->
           <select
             v-model="ccp_alpha"
             class="form-select"
@@ -117,7 +118,7 @@
         <div class="col-3">
           <button
             type="button"
-            class="btn btn-primary btn-lg"
+            class="btn btn-outline-primary btn-lg"
             @click="apply"
             :disabled="!ccp_alpha"
           >
@@ -178,7 +179,7 @@ export default {
   methods: {
     get_events() {
       let path =
-        "http://localhost:5000/discovery/" +
+        "/discovery/" +
         this.$route.params.dataSet +
         "/" +
         this.$route.params.csv;

@@ -15,19 +15,19 @@ import { RouterView } from "vue-router";
 
       <nav class="navbar navbar-expand-sm navbar-light bg-light">
         <div class="container-fluid">
-          <a class="navbar-brand" href="/">Home</a>
+          <a class="navbar-brand" href="">Home</a>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link" href="/dataset">Dataset</a>
+                <a class="nav-link" href="dataset">Dataset</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link disabled" href="/" aria-disabled="true"
+                <a class="nav-link disabled" href="" aria-disabled="true"
                   >Pre-Process</a
                 >
               </li>
               <li class="nav-item">
-                <a class="nav-link disabled" href="/" aria-disabled="true"
+                <a class="nav-link disabled" href="" aria-disabled="true"
                   >Discovery</a
                 >
               </li>

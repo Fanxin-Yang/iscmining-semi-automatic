@@ -248,7 +248,7 @@ def appy_algorithm(filename, csv, alg):
     if ccp_alpha == -1:
         return options, 201
     else:
-        return f"With selected ccp_alpha value {ccp_alpha} decision tree has {clf.tree_.node_count} nodes and max depth {lf.tree_.max_depth}.", 200
+        return f"With selected ccp_alpha value {ccp_alpha} decision tree has {clf.tree_.node_count} nodes and max depth {clf.tree_.max_depth}.", 200
 
     # append ISC candidates
 

@@ -56,7 +56,7 @@ export default {
   methods: {
     get_unique() {
       let path =
-        "http://localhost:5000/discovery/" +
+        "discovery/" +
         this.$route.params.dataSet +
         "/" +
         this.$route.params.csv;

@@ -24,7 +24,7 @@ const router = createRouter({
     },
     {
       path: "/:dataSet",
-      name: "one",
+      name: "preprocess",
       component: () => import("../views/PreprocessView.vue"),
     },
     {

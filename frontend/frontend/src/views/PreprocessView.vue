@@ -3,7 +3,13 @@
     <h3 class="display-4">Pre-process: {{ this.$route.params.dataSet }}</h3>
 
     <div class="col-md-12">
-      <ProcessModel />
+      <ProcessModel
+        :url="
+          'http://localhost:5000/processmodel/' +
+          this.$route.params.dataSet +
+          '.bpmn'
+        "
+      />
     </div>
     <div class="col-md-12">
       <ProjectionTransformation />
@@ -19,15 +25,6 @@ export default {
     ProcessModel,
     ProjectionTransformation,
   },
-//   data() {
-//     return {
-//       dataSet: undefined,
-//     };
-//   },
-//   methods: {},
-//   created() {
-//     this.dataSet = this.$route.params.dataSet;
-//   },
 };
 </script>
 

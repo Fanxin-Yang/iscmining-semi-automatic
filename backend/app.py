@@ -4,7 +4,6 @@ import os
 from werkzeug.utils import secure_filename
 from pm4py.objects.log.importer.xes import importer as xes_importer
 import pm4py
-import graphviz
 import projection_transformation_algorithm
 import discovery_algorithm
 
@@ -56,8 +55,8 @@ def greetings():
     return ('Main Page')
 
 
-@app.route('/processmodels/<name>', methods=['GET'])
-def get_processmodels(name):
+@app.route('/processmodel/<name>', methods=['GET'])
+def get_processmodel(name):
     return send_from_directory(app.config['GRAPH_FOLDER'], name)
     return send_from_directory(app.config['GRAPH_FOLDER'],
                                name,
@@ -65,20 +64,20 @@ def get_processmodels(name):
 
 
 # check if the filname inculde "." and the suffix of it is allowed
-
-
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def mining_process_model(file_path):
+def mining_process_model(file_path, bpmn_path):
     log = xes_importer.apply(file_path)
     # dataframe = pm4py.convert_to_dataframe(log)
     # dataframe.to_csv('loan_process.csv')
-    net, initial_marking, final_marking = pm4py.discover_petri_net_inductive(
-        log)
-    return net, initial_marking, final_marking
+    # net, initial_marking, final_marking = pm4py.discover_petri_net_inductive(
+    #     log, noise_threshold=0.7)
+    tree = pm4py.discover_bpmn_inductive(log)
+    pm4py.write_bpmn(tree, bpmn_path)
+    return
 
 
 @app.route('/pm4pytest', methods=['GET'])
@@ -87,16 +86,19 @@ def pm4pytest():
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     if not os.path.exists(app.config['GRAPH_FOLDER']):
                 os.makedirs(app.config['GRAPH_FOLDER'])
-    pnml_path = os.path.join(app.config['GRAPH_FOLDER'],
-                             filename.rsplit('.', 1)[0].lower() + ".pnml")
+    bpmn_path = os.path.join(app.config['GRAPH_FOLDER'],
+                             filename.rsplit('.', 1)[0].lower() + ".bpmn")
     # (must be one of ['bmp', 'canon', 'cgimage', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dot_json', 'eps', 'exr', 'fig', 'gd', 'gd2', 'gif', 'gtk', 'gv', 'ico', 'imap', 'imap_np', 'ismap', 'jp2', 'jpe', 'jpeg', 'jpg', 'json', 'json0', 'pct', 'pdf', 'pic', 'pict', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'psd', 'sgi', 'svg', 'svgz', 'tga', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'x11', 'xdot', 'xdot1.2', 'xdot1.4', 'xdot_json', 'xlib'])
     vis_path = os.path.join(app.config['GRAPH_FOLDER'],
                             filename.rsplit('.', 1)[0].lower() + ".png")
-    net, initial_marking, final_marking = mining_process_model(file_path)
-    pm4py.write_petri_net(net, initial_marking, final_marking, pnml_path)
-    pm4py.save_vis_petri_net(net, initial_marking, final_marking, vis_path)
+    # net, initial_marking, final_marking = mining_process_model(file_path)
+    # pm4py.write_petri_net(net, initial_marking, final_marking, pnml_path)
+    # pm4py.save_vis_petri_net(net, initial_marking, final_marking, vis_path)
+    log = xes_importer.apply(file_path)
+    tree = pm4py.discover_bpmn_inductive(log)
+    pm4py.write_bpmn(tree, bpmn_path)
     # graphviz.render('dot', 'png', vis_path).replace('\\', '/')
-    return send_from_directory(app.config['GRAPH_FOLDER'], 'loan_process.png')
+    return send_from_directory(app.config['GRAPH_FOLDER'], 'loan_process.bpmn')
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -117,14 +119,15 @@ def upload_file():
             file.save(file_path)
             if not os.path.exists(app.config['GRAPH_FOLDER']):
                 os.makedirs(app.config['GRAPH_FOLDER'])
-            pnml_path = os.path.join(app.config['GRAPH_FOLDER'],
-                             filename.rsplit('.', 1)[0].lower() + ".pnml")
+            bpmn_path = os.path.join(app.config['GRAPH_FOLDER'],
+                             filename.rsplit('.', 1)[0].lower() + ".bpmn")
              # (must be one of ['bmp', 'canon', 'cgimage', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dot_json', 'eps', 'exr', 'fig', 'gd', 'gd2', 'gif', 'gtk', 'gv', 'ico', 'imap', 'imap_np', 'ismap', 'jp2', 'jpe', 'jpeg', 'jpg', 'json', 'json0', 'pct', 'pdf', 'pic', 'pict', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'psd', 'sgi', 'svg', 'svgz', 'tga', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'x11', 'xdot', 'xdot1.2', 'xdot1.4', 'xdot_json', 'xlib'])
-            vis_path = os.path.join(app.config['GRAPH_FOLDER'],
-                                    filename.rsplit('.', 1)[0].lower() + ".png")
-            net, initial_marking, final_marking = mining_process_model(file_path)
-            pm4py.write_petri_net(net, initial_marking, final_marking, pnml_path)
-            pm4py.save_vis_petri_net(net, initial_marking, final_marking, vis_path)
+            # vis_path = os.path.join(app.config['GRAPH_FOLDER'],
+            #                         filename.rsplit('.', 1)[0].lower() + ".png")
+            # net, initial_marking, final_marking = mining_process_model(file_path)
+            # pm4py.write_petri_net(net, initial_marking, final_marking, bpmn_path)
+            # pm4py.save_vis_petri_net(net, initial_marking, final_marking, vis_path)
+            mining_process_model(file_path, bpmn_path)
             # graphviz.render('dot', 'png', graph_path).replace('\\', '/')
             return filename.rsplit(
                 '.', 1)[0].lower(), "The file has been successfully uploaded."

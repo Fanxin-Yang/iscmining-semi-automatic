@@ -1,68 +1,116 @@
 <template lang="">
   <h3>Process Model (Petri Net)</h3>
-  <div>
-    <!-- <button type="button" class="btn btn-primary" @click="showPNG">Show</button>
-    <button type="button" class="btn btn-link" @click="hidePNG">Hide</button>
-    <img v-if="show" :src="pngLink" />
-    <div v-else-if="alert" class="alert alert-warning" role="alert">
-      No process model available
-    </div> -->
-    <img
+  <div ref="container" class="vue-bpmn-diagram-container"></div>
+  <!-- <img
       :src="
         'http://localhost:5000/processmodels/' +
         this.$route.params.dataSet +
         '.png'
       "
       class="img-fluid"
-    />
-  </div>
+    /> -->
 </template>
 
 <script>
-import axios from "axios";
+// import axios from "axios";
+import BpmnJS from "bpmn-js/dist/bpmn-navigated-viewer.production.min.js";
 
 export default {
+  name: "vue-bpmn",
+  props: {
+    url: {
+      type: String,
+      required: true,
+    },
+    options: {
+      type: Object,
+    },
+  },
   data() {
     return {
-      json: undefined,
+      // bpmn: undefined,
+      diagramXML: null,
     };
   },
-  // props: ["processModel"],
+  mounted: function () {
+    var container = this.$refs.container;
+
+    var self = this;
+    var _options = Object.assign(
+      {
+        container: container,
+      },
+      this.options
+    );
+    this.bpmnViewer = new BpmnJS(_options);
+
+    this.bpmnViewer.on("import.done", function (event) {
+      var error = event.error;
+      var warnings = event.warnings;
+
+      if (error) {
+        self.$emit("error", error);
+      } else {
+        self.$emit("shown", warnings);
+      }
+
+      self.bpmnViewer.get("canvas").zoom("fit-viewport");
+    });
+
+    if (this.url) {
+      this.fetchDiagram(this.url);
+    }
+  },
+  beforeUnmount: function () {
+    this.bpmnViewer.destroy();
+  },
+  watch: {
+    url: function (val) {
+      this.$emit("loading");
+      this.fetchDiagram(val);
+    },
+    diagramXML: function (val) {
+      this.bpmnViewer.importXML(val);
+    },
+  },
   methods: {
-    getJSON() {
-      axios
-        // .get("processmodels/" + this.$route.params.dataSet + ".json")
-        .get("/pm4pytest")
-        .then((res) => {
-          console.log(res.status);
-          this.json = res.data;
+    // getBPMN() {
+    //   axios
+    //     // .get("processmodels/" + this.$route.params.dataSet + ".bpmn")
+    //     .get("/pm4pytest")
+    //     .then((res) => {
+    //       this.bpmn = res.data;
+    //       console.log(this.bpmn);
+    //     })
+    //     .catch((err) => {
+    //       this.status = err.response.status;
+    //       this.msg = err.response.data;
+    //     });
+    // },
+    fetchDiagram: function (url) {
+      var self = this;
+
+      fetch(url)
+        .then(function (response) {
+          return response.text();
         })
-        .catch((err) => {
-          this.status = err.response.status;
-          this.msg = err.response.data;
+        .then(function (text) {
+          self.diagramXML = text;
+        })
+        .catch(function (err) {
+          self.$emit("error", err);
         });
     },
-    // showPNG() {
-    //   if (!this.processModel) {
-    //     this.show = false;
-    //     this.alert = true;
-    //   } else {
-    //     const pngLink =
-    //       "http://localhost:5000/processmodels/" + this.$props.processModel;
-    //     this.pngLink = pngLink;
-    //     this.show = true;
-    //     this.alert = false;
-    //   }
-    // },
-    // hidePNG() {
-    //   this.show = false;
-    //   this.alert = false;
-    // },
   },
-  created() {
-    this.getJSON();
-  },
+  // created() {
+  //   this.getBPMN();
+  // },
 };
 </script>
 
-<style lang=""></style>
+<style>
+.vue-bpmn-diagram-container {
+  height: 500px;
+  width: 100%;
+}
+</style>

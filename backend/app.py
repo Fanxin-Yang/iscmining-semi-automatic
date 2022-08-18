@@ -6,6 +6,7 @@ from pm4py.objects.log.importer.xes import importer as xes_importer
 import pm4py
 import projection_transformation_algorithm
 import discovery_algorithm
+from pm4py.algo.filtering.dfg import dfg_filtering
 
 UPLOAD_FOLDER = "./uploads"
 OUTPUT_FOLDER = "./outputs"
@@ -55,12 +56,19 @@ def greetings():
     return ('Main Page')
 
 
-@app.route('/processmodel/<name>', methods=['GET'])
-def get_processmodel(name):
-    return send_from_directory(app.config['GRAPH_FOLDER'], name)
-    return send_from_directory(app.config['GRAPH_FOLDER'],
-                               name,
-                               as_attachment=True)
+@app.route('/processmodel/<filename>', methods=['GET'])
+def get_processmodel(filename):
+    if not os.path.exists(app.config['GRAPH_FOLDER']):
+                os.makedirs(app.config['GRAPH_FOLDER'])
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename + ".xes")
+    bpmn_path = os.path.join(app.config['GRAPH_FOLDER'], filename + ".bpmn")
+             # (must be one of ['bmp', 'canon', 'cgimage', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dot_json', 'eps', 'exr', 'fig', 'gd', 'gd2', 'gif', 'gtk', 'gv', 'ico', 'imap', 'imap_np', 'ismap', 'jp2', 'jpe', 'jpeg', 'jpg', 'json', 'json0', 'pct', 'pdf', 'pic', 'pict', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'psd', 'sgi', 'svg', 'svgz', 'tga', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'x11', 'xdot', 'xdot1.2', 'xdot1.4', 'xdot_json', 'xlib'])
+            # vis_path = os.path.join(app.config['GRAPH_FOLDER'],
+            #                         filename.rsplit('.', 1)[0].lower() + ".png")
+    args = request.args.copy()
+    perc = float(args.pop("perc", 1))
+    mining_process_model(file_path, bpmn_path, perc)
+    return send_from_directory(app.config['GRAPH_FOLDER'], filename + ".bpmn")
 
 
 # check if the filname inculde "." and the suffix of it is allowed
@@ -69,13 +77,14 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def mining_process_model(file_path, bpmn_path):
+def mining_process_model(file_path, bpmn_path, perc):
     log = xes_importer.apply(file_path)
-    # dataframe = pm4py.convert_to_dataframe(log)
-    # dataframe.to_csv('loan_process.csv')
-    # net, initial_marking, final_marking = pm4py.discover_petri_net_inductive(
-    #     log, noise_threshold=0.7)
-    tree = pm4py.discover_bpmn_inductive(log)
+    # Filtering activities/paths
+    dfg, sa, ea = pm4py.discover_directly_follows_graph(log)
+    activities_count = pm4py.get_event_attribute_values(log, "concept:name")
+    dfg, sa, ea, activities_count = dfg_filtering.filter_dfg_on_paths_percentage(dfg, sa, ea, activities_count, perc)
+    filtered_log = pm4py.play_out(dfg, sa, ea)
+    tree = pm4py.discover_bpmn_inductive(filtered_log)
     pm4py.write_bpmn(tree, bpmn_path)
     return
 
@@ -95,10 +104,24 @@ def pm4pytest():
     # pm4py.write_petri_net(net, initial_marking, final_marking, pnml_path)
     # pm4py.save_vis_petri_net(net, initial_marking, final_marking, vis_path)
     log = xes_importer.apply(file_path)
-    tree = pm4py.discover_bpmn_inductive(log)
+
+    # Filtering activities/paths
+    dfg, sa, ea = pm4py.discover_directly_follows_graph(log)
+    activities_count = pm4py.get_event_attribute_values(log, "concept:name")
+    args = request.args.copy()
+    perc = float(args.pop("perc", 1))
+    dfg, sa, ea, activities_count = dfg_filtering.filter_dfg_on_paths_percentage(dfg, sa, ea, activities_count, perc)
+    # dfg, sa, ea, activities_count = dfg_filtering.filter_dfg_on_activities_percentage(dfg, sa, ea, activities_count, perc)
+    filtered_log = pm4py.play_out(dfg, sa, ea)
+    print(sa)
+    print(ea)
+    print(activities_count)
+
+    tree = pm4py.discover_bpmn_inductive(filtered_log)
     pm4py.write_bpmn(tree, bpmn_path)
+    pm4py.save_vis_bpmn(tree, vis_path)
     # graphviz.render('dot', 'png', vis_path).replace('\\', '/')
-    return send_from_directory(app.config['GRAPH_FOLDER'], 'loan_process.bpmn')
+    return send_from_directory(app.config['GRAPH_FOLDER'], 'loan_process.png')
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -117,18 +140,6 @@ def upload_file():
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            if not os.path.exists(app.config['GRAPH_FOLDER']):
-                os.makedirs(app.config['GRAPH_FOLDER'])
-            bpmn_path = os.path.join(app.config['GRAPH_FOLDER'],
-                             filename.rsplit('.', 1)[0].lower() + ".bpmn")
-             # (must be one of ['bmp', 'canon', 'cgimage', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dot_json', 'eps', 'exr', 'fig', 'gd', 'gd2', 'gif', 'gtk', 'gv', 'ico', 'imap', 'imap_np', 'ismap', 'jp2', 'jpe', 'jpeg', 'jpg', 'json', 'json0', 'pct', 'pdf', 'pic', 'pict', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'psd', 'sgi', 'svg', 'svgz', 'tga', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'x11', 'xdot', 'xdot1.2', 'xdot1.4', 'xdot_json', 'xlib'])
-            # vis_path = os.path.join(app.config['GRAPH_FOLDER'],
-            #                         filename.rsplit('.', 1)[0].lower() + ".png")
-            # net, initial_marking, final_marking = mining_process_model(file_path)
-            # pm4py.write_petri_net(net, initial_marking, final_marking, bpmn_path)
-            # pm4py.save_vis_petri_net(net, initial_marking, final_marking, vis_path)
-            mining_process_model(file_path, bpmn_path)
-            # graphviz.render('dot', 'png', graph_path).replace('\\', '/')
             return filename.rsplit(
                 '.', 1)[0].lower(), "The file has been successfully uploaded."
         else:

@@ -1,5 +1,5 @@
 <template lang="">
-  <h3>Process Model (Petri Net)</h3>
+  <h3>Process Model</h3>
   <div ref="container" class="vue-bpmn-diagram-container"></div>
   <!-- <img
       :src="
@@ -12,23 +12,30 @@
 </template>
 
 <script>
-// import axios from "axios";
-import BpmnJS from "bpmn-js/dist/bpmn-navigated-viewer.production.min.js";
+import axios from "axios";
+import BpmnViewer from "bpmn-js/dist/bpmn-navigated-viewer.production.min.js";
+// import BpmnViewer from "bpmn-js/dist/bpmn-modeler.production.min.js";
+// import BpmnViewer from "bpmn-js";
+import MoveModule from "diagram-js";
+import MovingModule from "diagram-js";
 
 export default {
   name: "vue-bpmn",
   props: {
-    url: {
+    dataSet: {
       type: String,
       required: true,
     },
-    options: {
-      type: Object,
+    // options: {
+    //   type: Object,
+    // },
+    perc: {
+      type: Number,
+      required: true,
     },
   },
   data() {
     return {
-      // bpmn: undefined,
       diagramXML: null,
     };
   },
@@ -39,10 +46,11 @@ export default {
     var _options = Object.assign(
       {
         container: container,
-      },
-      this.options
+        additionalModules: [MoveModule, MovingModule],
+      }
+      // this.options
     );
-    this.bpmnViewer = new BpmnJS(_options);
+    this.bpmnViewer = new BpmnViewer(_options);
 
     this.bpmnViewer.on("import.done", function (event) {
       var error = event.error;
@@ -57,54 +65,41 @@ export default {
       self.bpmnViewer.get("canvas").zoom("fit-viewport");
     });
 
-    if (this.url) {
-      this.fetchDiagram(this.url);
+    if (this.dataSet && this.perc) {
+      this.fetchDiagram();
     }
   },
   beforeUnmount: function () {
     this.bpmnViewer.destroy();
   },
   watch: {
-    url: function (val) {
+    dataSet: function (val) {
+      console.log(val);
       this.$emit("loading");
-      this.fetchDiagram(val);
+      this.fetchDiagram();
     },
     diagramXML: function (val) {
       this.bpmnViewer.importXML(val);
     },
+    perc: function (val) {
+      console.log(val);
+      this.$emit("loading");
+      this.fetchDiagram();
+    },
   },
   methods: {
-    // getBPMN() {
-    //   axios
-    //     // .get("processmodels/" + this.$route.params.dataSet + ".bpmn")
-    //     .get("/pm4pytest")
-    //     .then((res) => {
-    //       this.bpmn = res.data;
-    //       console.log(this.bpmn);
-    //     })
-    //     .catch((err) => {
-    //       this.status = err.response.status;
-    //       this.msg = err.response.data;
-    //     });
-    // },
-    fetchDiagram: function (url) {
-      var self = this;
-
-      fetch(url)
-        .then(function (response) {
-          return response.text();
+    fetchDiagram() {
+      const params = new URLSearchParams([["perc", this.perc]]);
+      axios
+        .get("processmodel/" + this.dataSet, { params })
+        .then((res) => {
+          this.diagramXML = res.data;
         })
-        .then(function (text) {
-          self.diagramXML = text;
-        })
-        .catch(function (err) {
-          self.$emit("error", err);
+        .catch((err) => {
+          console.error(err);
         });
     },
   },
-  // created() {
-  //   this.getBPMN();
-  // },
 };
 </script>
 

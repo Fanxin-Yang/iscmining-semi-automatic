@@ -41,7 +41,7 @@ export default defineConfig(({ command, mode }) => {
         host: "localhost",
         // port: 3000,
         strictPort: true,
-        open: true,
+        // open: true,
         // proxy: {},
         // origin: "http://127.0.0.1:3000",
       },

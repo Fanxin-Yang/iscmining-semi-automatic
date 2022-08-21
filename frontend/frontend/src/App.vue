@@ -33,8 +33,7 @@ import { RouterView } from "vue-router";
             Dataset
           </li>
           <li v-else-if="this.$route.name != 'home'" class="breadcrumb-item">
-            <!-- <a href="/iscmining-semi-automatic/dataset">Dataset</a> -->
-            <a href="/dataset">Dataset</a>
+            <a href="/iscmining-semi-automatic/dataset">Dataset</a>
           </li>
           <li
             v-if="this.$route.name == 'preprocess'"
@@ -49,10 +48,9 @@ import { RouterView } from "vue-router";
             "
             class="breadcrumb-item"
           >
-            <!-- <a :href="'/iscmining-semi-automatic/' + this.$route.params.dataSet"
+            <a :href="'/iscmining-semi-automatic/' + this.$route.params.dataSet"
               >Preprocess</a
-            > -->
-            <a :href="'/' + this.$route.params.dataSet">Preprocess</a>
+            >
           </li>
           <li
             v-if="this.$route.name == 'discovery'"
@@ -69,18 +67,12 @@ import { RouterView } from "vue-router";
             "
             class="breadcrumb-item"
           >
-            <!-- <a
+            <a
               :href="
                 '/iscmining-semi-automatic/' +
                 this.$route.params.dataSet +
                 '/' +
                 this.$route.params.csv
-              "
-              >Discovery</a
-            > -->
-            <a
-              :href="
-                '/' + this.$route.params.dataSet + '/' + this.$route.params.csv
               "
               >Discovery</a
             >
@@ -101,20 +93,9 @@ import { RouterView } from "vue-router";
             "
             class="breadcrumb-item"
           >
-            <!-- <a
-              :href="
-                '/iscmining-semi-automatic/' +
-                this.$route.params.dataSet +
-                '/' +
-                this.$route.params.csv +
-                '/' +
-                this.$route.params.level
-              "
-              >Classification</a
-            > -->
             <a
               :href="
-                '/' +
+                '/iscmining-semi-automatic/' +
                 this.$route.params.dataSet +
                 '/' +
                 this.$route.params.csv +

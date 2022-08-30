@@ -1,4 +1,4 @@
-// import { fileURLToPath, URL } from "url";
+import { fileURLToPath, URL } from "url";
 
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
@@ -29,14 +29,14 @@ export default defineConfig(({ command, mode }) => {
   console.log(mode);
   if (command === "serve") {
     return {
-      base: "./",
+      base: "/iscmining-semi-automatic/",
       // dev specific config
       plugins: [vue()],
-      // resolve: {
-      //   alias: {
-      //     "@": fileURLToPath(new URL("./src", import.meta.url)),
-      //   },
-      // },
+      resolve: {
+        alias: {
+          "@": fileURLToPath(new URL("./src", import.meta.url)),
+        },
+      },
       server: {
         host: "localhost",
         // port: 3000,

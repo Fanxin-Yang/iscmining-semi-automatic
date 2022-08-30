@@ -29,7 +29,7 @@ export default defineConfig(({ command, mode }) => {
   console.log(mode);
   if (command === "serve") {
     return {
-      base: "/iscmining-semi-automatic/",
+      base: "/ports/8051/iscmining-semi-automatic/",
       // dev specific config
       plugins: [vue()],
       // resolve: {

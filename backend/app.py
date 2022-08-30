@@ -111,16 +111,11 @@ def pm4pytest():
     args = request.args.copy()
     perc = float(args.pop("perc", 1))
     dfg, sa, ea, activities_count = dfg_filtering.filter_dfg_on_paths_percentage(dfg, sa, ea, activities_count, perc)
-    # dfg, sa, ea, activities_count = dfg_filtering.filter_dfg_on_activities_percentage(dfg, sa, ea, activities_count, perc)
     filtered_log = pm4py.play_out(dfg, sa, ea)
-    print(sa)
-    print(ea)
-    print(activities_count)
 
     tree = pm4py.discover_bpmn_inductive(filtered_log)
     pm4py.write_bpmn(tree, bpmn_path)
     pm4py.save_vis_bpmn(tree, vis_path)
-    # graphviz.render('dot', 'png', vis_path).replace('\\', '/')
     return send_from_directory(app.config['GRAPH_FOLDER'], 'loan_process.png')
 
 

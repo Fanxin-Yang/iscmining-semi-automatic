@@ -13,11 +13,10 @@
 
 <script>
 import axios from "axios";
-import BpmnViewer from "bpmn-js/dist/bpmn-navigated-viewer.production.min.js";
+// import BpmnViewer from "bpmn-js/dist/bpmn-modeler.development.js";
 // import BpmnViewer from "bpmn-js/dist/bpmn-modeler.production.min.js";
-// import BpmnViewer from "bpmn-js";
-import MoveModule from "diagram-js";
-import MovingModule from "diagram-js";
+// import BpmnViewer from "bpmn-js/lib/NavigatedViewer";
+import BpmnViewer from "bpmn-js/lib/Modeler";
 
 export default {
   name: "vue-bpmn",
@@ -46,7 +45,6 @@ export default {
     var _options = Object.assign(
       {
         container: container,
-        additionalModules: [MoveModule, MovingModule],
       }
       // this.options
     );

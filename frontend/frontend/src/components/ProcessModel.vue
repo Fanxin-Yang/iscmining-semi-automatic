@@ -16,7 +16,7 @@ import axios from "axios";
 // import BpmnViewer from "bpmn-js/dist/bpmn-modeler.development.js";
 // import BpmnViewer from "bpmn-js/dist/bpmn-modeler.production.min.js";
 // import BpmnViewer from "bpmn-js/lib/NavigatedViewer";
-import BpmnViewer from "bpmn-js/lib/Modeler";
+import BpmnModeler from "bpmn-js/lib/Modeler";
 
 export default {
   name: "vue-bpmn",
@@ -45,10 +45,21 @@ export default {
     var _options = Object.assign(
       {
         container: container,
+        keyboard: {
+          bindTo: window,
+        },
+        // textRenderer: {
+        //   defaultStyle: {
+        //     fontSize: "28px",
+        //   },
+        //   externalStyle: {
+        //     fontSize: "32px",
+        //   },
+        // },
       }
       // this.options
     );
-    this.bpmnViewer = new BpmnViewer(_options);
+    this.bpmnViewer = new BpmnModeler(_options);
 
     this.bpmnViewer.on("import.done", function (event) {
       var error = event.error;

@@ -1,70 +1,56 @@
 <template lang="">
-  <h6>Choose a Timestamps Level.</h6>
-  <div class="row">
-    <div class="col-md-6">
-      <select v-model="timestampsLevel" class="form-select">
-        <option selected>Seconds</option>
-        <option>Minutes</option>
-        <option>Hours</option>
-        <option>Days</option>
-        <option>Months</option>
-        <option>Years</option>
-      </select>
-      <div class="alert alert-light" role="alert">
-        Selected timestamps level: {{ timestampsLevel }}
-      </div>
-    </div>
-    <div class="col-md-4">
-      <button
-        type="button"
-        class="btn btn-outline-primary"
-        @click="coarsen"
-        :disabled="!timestampsLevel"
-      >
-        Timestamps Coarsen
-      </button>
-    </div>
+  <label for="select-timestamps-level">Choose a Timestamps Level.</label>
+  <div class="col-md-8">
+    <select
+      v-model="timestampsLevel"
+      class="form-select"
+      id="select-timestamps-level"
+    >
+      <option selected>Seconds</option>
+      <option>Minutes</option>
+      <option>Hours</option>
+      <option>Days</option>
+      <option>Months</option>
+      <option>Years</option>
+    </select>
   </div>
-  <div class="text-center" v-if="loading">
+  <div class="col-md-12 text-center" v-if="loading">
     <div class="spinner-border m-5" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
-  <div class="alert alert-success" role="alert" v-if="!!status">
-    {{ status }}
+  <div class="col-md-12">
+    <div class="alert alert-success" role="alert" v-if="!!status">
+      {{ status }}
+    </div>
   </div>
-  <button
-    v-if="!!status"
-    type="button"
-    class="btn btn-primary"
-    @click="next_step"
-  >
-    Next Step
-  </button>
 </template>
 
 <script>
 import axios from "axios";
 export default {
+  props: {
+    dataSet: {
+      type: String,
+      required: true,
+    },
+    csv: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
-      timestampsLevel: "Seconds",
+      timestampsLevel: undefined,
       status: undefined,
       loading: false,
     };
   },
   methods: {
-    coarsen() {
+    coarsen(dataSet, csv, timestampsLevel) {
       this.loading = true;
       axios
-        .put(
-          "discovery/" +
-            this.$route.params.dataSet +
-            "/" +
-            this.$route.params.csv +
-            "/" +
-            this.timestampsLevel
-        )
+        .put("discovery/" + dataSet + "/" + csv + "/" + timestampsLevel)
         .then((res) => {
           this.loading = false;
           this.status = res.data;
@@ -73,9 +59,20 @@ export default {
           console.error(err);
         });
     },
-    next_step() {
+  },
+  watch: {
+    csv: function (val) {
+      this.coarsen(this.dataSet, val, this.timestampsLevel);
+    },
+    timestampsLevel: function (val) {
+      this.coarsen(this.dataSet, this.csv, val);
       let tmp =
-        this.$router.currentRoute.value.fullPath + "/" + this.timestampsLevel;
+        "/iscmining-semi-automatic/" +
+        this.dataSet +
+        "/" +
+        this.csv +
+        "/" +
+        val;
       this.$router.push(tmp);
     },
   },

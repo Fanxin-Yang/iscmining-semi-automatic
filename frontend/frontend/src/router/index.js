@@ -18,28 +18,33 @@ const router = createRouter({
       component: () => import("../views/AboutView.vue"),
     },
     {
-      path: "/dataset",
-      name: "dataset",
-      component: () => import("../views/DatasetView.vue"),
+      path: "/iscmining-semi-automatic/:dataSet?/:csv?/:level?",
+      name: "iscmining-semi-automatic",
+      component: () => import("../views/MainView.vue"),
     },
-    {
-      path: "/:dataSet",
-      name: "preprocess",
-      component: () => import("../views/PreprocessView.vue"),
-    },
-    {
-      path: "/:dataSet/:csv",
-      name: "discovery",
-      component: () => import("../views/DiscoveryView.vue"),
-    },
-    {
-      path: "/:dataSet/:csv/:level",
-      name: "classification",
-      component: () => import("../views/ClassificationView.vue"),
-    },
+    // {
+    //   path: "/dataset",
+    //   name: "dataset",
+    //   component: () => import("../views/DatasetView.vue"),
+    // },
+    // {
+    //   path: "/:dataSet",
+    //   name: "preprocess",
+    //   component: () => import("../views/PreprocessView.vue"),
+    // },
+    // {
+    //   path: "/:dataSet/:csv",
+    //   name: "discovery",
+    //   component: () => import("../views/DiscoveryView.vue"),
+    // },
+    // {
+    //   path: "/:dataSet/:csv/:level",
+    //   name: "classification",
+    //   component: () => import("../views/ClassificationView.vue"),
+    // },
   ],
-  sensitive: true,
-  strict: true,
+  sensitive: false,
+  strict: false,
 });
 
 export default router;

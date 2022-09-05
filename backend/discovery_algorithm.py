@@ -3,12 +3,9 @@ from flask import request, current_app, send_file
 import matplotlib
 import pandas
 from sklearn import tree, preprocessing
-import graphviz
 import numpy
 from dtreeviz.trees import dtreeviz
 from sklearn.compose import make_column_selector, make_column_transformer
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
 
 
 def exist_csv(filename, csv):
@@ -72,38 +69,61 @@ def delete_event(filename, csv, eventIndex):
     return "The chosen event from " + csv + ".csv has been successfully removed.", 200
 
 
+# def convert_lev(level):
+#     if level == "T":
+#         return "Minutes"
+#     if level == "H":
+#         return "Hours"
+#     if level == "D":
+#         return "Days"
+#     if level == "M":
+#         return "Months"
+#     if level == "Y":
+#         return "Years"
+
 def convert_level(level):
-    if level == "T":
-        return "Minutes"
-    if level == "H":
-        return "Hours"
-    if level == "D":
-        return "Days"
-    if level == "M":
-        return "Months"
-    if level == "Y":
-        return "Years"
+    if level == "Minutes":
+        return "T"
+    if level == "Hours":
+        return "H"
+    if level == "Days":
+        return "D"
+    if level == "Months":
+        return "M"
+    if level == "Years":
+        return "Y"
 
 
-def coarsen_timestamps(filename, csv):
+def coarsen_timestamps(filename, csv, level):
     csv_path = exist_csv(filename, csv)
-    if not csv_path:
-        return "No file found.", 404
-    levels = ["T", "H", "D", "M", "Y"]
-    for level in levels:
-        i = 0
-        dataset = pandas.read_csv(csv_path)
-        for i in range(0, dataset.get("time:timestamp").size):
-            dataset.loc[i, "time:timestamp"] = pandas.Period(
-                dataset.loc[i, "time:timestamp"], freq=level)
-        csv_output_path = os.path.join(
-            current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_' + convert_level(level) + '.csv')
-        dataset.to_csv(csv_output_path, index=False)
+    lev = convert_level(level)
+    dataset = pandas.read_csv(csv_path)
+    for i in range(0, dataset.get("time:timestamp").size):
+        dataset.loc[i, "time:timestamp"] = pandas.Period(dataset.loc[i, "time:timestamp"], freq=lev)
+    csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_' + level + '.csv')
+    dataset.to_csv(csv_output_path, index=False)
+    # levels = ["T", "H", "D", "M", "Y"]
+    # for lev in levels:
+    #     i = 0
+    #     dataset = pandas.read_csv(csv_path)
+    #     for i in range(0, dataset.get("time:timestamp").size):
+    #         dataset.loc[i, "time:timestamp"] = pandas.Period(
+    #             dataset.loc[i, "time:timestamp"], freq=level)
+    #     csv_output_path = os.path.join(
+    #         current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_' + convert_lev(lev) + '.csv')
+    #     dataset.to_csv(csv_output_path, index=False)
     return None
 
 
 def adapt_timestamps(filename, csv, level):
-    coarsen_timestamps(filename, csv)
+    csv_path = exist_csv(filename, csv)
+    if not csv_path:
+        return "No file found.", 404
+    if level == "Seconds":
+        return "No need to coarsen the timestamps.", 200
+    csv_level_path = exist_csv(filename, csv + "_" + level)
+    if not csv_level_path:
+        coarsen_timestamps(filename, csv, level)
     return "Timestamps of events in " + csv + ".csv has been coarsened to " + level, 200
 
 

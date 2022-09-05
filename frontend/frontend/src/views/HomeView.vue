@@ -112,7 +112,7 @@
 export default {
   methods: {
     start() {
-      this.$router.push("/dataset");
+      this.$router.push("/iscmining-semi-automatic");
     },
   },
 };

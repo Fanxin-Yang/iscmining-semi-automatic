@@ -51,27 +51,39 @@ export default {
       tmp: [],
     };
   },
-  props: ["labels"],
+  props: {
+    labels: {
+      type: Array,
+      required: true,
+    },
+    dataSet: {
+      type: String,
+      required: true,
+    },
+    csv: {
+      type: String,
+      required: true,
+    },
+    level: {
+      type: String,
+      required: true,
+    },
+  },
   emits: ["filter"],
   methods: {
-    get_unique() {
-      let path =
-        "discovery/" +
-        this.$route.params.dataSet +
-        "/" +
-        this.$route.params.csv;
-      if (this.$route.params.level != "Seconds") {
-        path = path + "_" + this.$route.params.level;
+    get_unique(dataSet, csv, level, labels) {
+      let path = "discovery/" + dataSet + "/" + csv;
+      if (level != "Seconds") {
+        path = path + "_" + level;
       }
 
-      for (let i = 0; i < this.labels.length; i++) {
-        const params = new URLSearchParams([["label", this.labels[i]]]);
+      for (let i = 0; i < labels.length; i++) {
+        const params = new URLSearchParams([["label", labels[i]]]);
         axios
           .get(path, { params })
           .then((res) => {
-            this.labelsUnique[this.labels[i]] = Object.values(res.data);
-            // Object.assign(this.selectedLabels, this.labelsUnique);
-            this.selectedLabels[this.labels[i]] = [];
+            this.labelsUnique[labels[i]] = Object.values(res.data);
+            this.selectedLabels[labels[i]] = [];
             this.update_filter();
           })
           .catch((err) => {
@@ -86,8 +98,13 @@ export default {
       this.selectedLabels[i] = this.labelsUnique[i];
     },
   },
+  watch: {
+    labels: function (val) {
+      this.get_unique(this.dataSet, this.csv, this.level, val);
+    },
+  },
   created() {
-    this.get_unique();
+    this.get_unique(this.dataSet, this.csv, this.level, this.labels);
   },
 };
 </script>

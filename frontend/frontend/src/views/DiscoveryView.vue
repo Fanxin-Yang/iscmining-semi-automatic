@@ -1,12 +1,13 @@
 <template lang="">
-  <form class="row g-3">
-    <h3 class="display-4">Discovery Algorithm</h3>
-    <div class="col-md-12">
-      <EventsTable />
-    </div>
-    <div class="col-md-12">
-      <TimestampsCoarsen />
-    </div>
+  <form class="row g-3 border bg-light">
+    <EventsTable
+      :dataSet="this.$route.params.dataSet"
+      :csv="this.$route.params.csv"
+    />
+    <TimestampsCoarsen
+      :dataSet="this.$route.params.dataSet"
+      :csv="this.$route.params.csv"
+    />
   </form>
 </template>
 

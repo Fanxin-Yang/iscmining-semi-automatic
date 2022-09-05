@@ -1,6 +1,10 @@
 <template lang="">
-  <h3>Process Model</h3>
-  <div ref="container" class="vue-bpmn-diagram-container"></div>
+  <label for="process-model-container" class="form-label">Process Model</label>
+  <div
+    id="process-model-container"
+    ref="container"
+    class="vue-bpmn-diagram-container"
+  ></div>
   <!-- <img
       :src="
         'http://localhost:5000/processmodels/' +
@@ -75,7 +79,7 @@ export default {
     });
 
     if (this.dataSet && this.perc) {
-      this.fetchDiagram();
+      this.fetchDiagram(this.dataSet, this.perc);
     }
   },
   beforeUnmount: function () {
@@ -83,24 +87,22 @@ export default {
   },
   watch: {
     dataSet: function (val) {
-      console.log(val);
       this.$emit("loading");
-      this.fetchDiagram();
+      this.fetchDiagram(val, this.perc);
     },
     diagramXML: function (val) {
       this.bpmnViewer.importXML(val);
     },
     perc: function (val) {
-      console.log(val);
       this.$emit("loading");
-      this.fetchDiagram();
+      this.fetchDiagram(this.dataSet, val);
     },
   },
   methods: {
-    fetchDiagram() {
-      const params = new URLSearchParams([["perc", this.perc]]);
+    fetchDiagram(dataSet, perc) {
+      const params = new URLSearchParams([["perc", perc]]);
       axios
-        .get("processmodel/" + this.dataSet, { params })
+        .get("processmodel/" + dataSet, { params })
         .then((res) => {
           this.diagramXML = res.data;
         })

@@ -54,6 +54,14 @@ export default {
         .then((res) => {
           this.loading = false;
           this.status = res.data;
+          let tmp =
+            "/iscmining-semi-automatic/" +
+            this.dataSet +
+            "/" +
+            this.csv +
+            "/" +
+            timestampsLevel;
+          this.$router.push(tmp);
         })
         .catch((err) => {
           console.error(err);
@@ -66,14 +74,6 @@ export default {
     },
     timestampsLevel: function (val) {
       this.coarsen(this.dataSet, this.csv, val);
-      let tmp =
-        "/iscmining-semi-automatic/" +
-        this.dataSet +
-        "/" +
-        this.csv +
-        "/" +
-        val;
-      this.$router.push(tmp);
     },
   },
 };

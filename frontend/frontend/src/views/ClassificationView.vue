@@ -1,13 +1,14 @@
 <template lang="">
   <form class="row g-3 border bg-light">
     <div class="col-md-12" v-if="Object.keys(this.events).length > 0">
-      <ValueSelection
+      <!-- <ValueSelection
         :labels="labels"
         @filter="update_filter"
         :dataSet="this.dataSet"
         :csv="this.csv"
         :level="this.level"
-      />
+      /> -->
+      <!-- <VariantFilter :dataSet="this.dataSet" :csv="this.csv" /> -->
     </div>
     <div v-if="Object.keys(this.events).length > 0">
       <ClassificationTechniques
@@ -60,13 +61,15 @@
 <script>
 import axios from "axios";
 import ClassificationTechniques from "../components/ClassificationTechniques.vue";
-import ValueSelection from "../components/ValueSelection.vue";
+// import ValueSelection from "../components/ValueSelection.vue";
+// import VariantFilter from "../components/VariantFilter.vue";
 import DecisionTree from "../components/DecisionTree.vue";
 export default {
   components: {
     ClassificationTechniques,
-    ValueSelection,
+    // ValueSelection,
     DecisionTree,
+    // VariantFilter,
   },
   props: {
     dataSet: {

@@ -40,18 +40,18 @@ def get_events(filename, csv):
         if not csv_path:
             return "No file found.", 404
         json_path = csv_path.rsplit(".", 1)[0] + '.json'
-        dataset = pandas.read_csv(csv_path)
+        partial_log = pandas.read_csv(csv_path)
         # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
-        dataset.to_json(json_path, orient="records")
+        partial_log.to_json(json_path, orient="records")
         return send_file(json_path, as_attachment=False), 200
     else:
         csv_path = exist_csv(filename, csv)
         if not csv_path:
             return "No file found.", 404
-        dataset = pandas.read_csv(csv_path)
+        partial_log = pandas.read_csv(csv_path)
         dict = {}
         i = 0
-        for l in dataset[label].dropna().unique():
+        for l in partial_log[label].dropna().unique():
             dict[i] = l
             i += 1
         return dict, 200
@@ -61,11 +61,11 @@ def delete_event(filename, csv, eventIndex):
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
-    dataset = pandas.read_csv(csv_path)
-    dataset.drop(eventIndex, axis=0, inplace=True)  # Raises error?
-    dataset.reset_index(drop=True, inplace=True)
-    dataset.drop(columns="No.", inplace=True)
-    dataset.to_csv(csv_path, index_label="No.")  # without add an index column
+    partial_log = pandas.read_csv(csv_path)
+    partial_log.drop(eventIndex, axis=0, inplace=True)  # Raises error?
+    partial_log.reset_index(drop=True, inplace=True)
+    partial_log.drop(columns="No.", inplace=True)
+    partial_log.to_csv(csv_path, index_label="No.")  # without add an index column
     return "The chosen event from " + csv + ".csv has been successfully removed.", 200
 
 
@@ -97,21 +97,21 @@ def convert_level(level):
 def coarsen_timestamps(filename, csv, level):
     csv_path = exist_csv(filename, csv)
     lev = convert_level(level)
-    dataset = pandas.read_csv(csv_path)
-    for i in range(0, dataset.get("time:timestamp").size):
-        dataset.loc[i, "time:timestamp"] = pandas.Period(dataset.loc[i, "time:timestamp"], freq=lev)
+    partial_log = pandas.read_csv(csv_path)
+    for i in range(0, partial_log.get("time:timestamp").size):
+        partial_log.loc[i, "time:timestamp"] = pandas.Period(partial_log.loc[i, "time:timestamp"], freq=lev)
     csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_' + level + '.csv')
-    dataset.to_csv(csv_output_path, index=False)
+    partial_log.to_csv(csv_output_path, index=False)
     # levels = ["T", "H", "D", "M", "Y"]
     # for lev in levels:
     #     i = 0
-    #     dataset = pandas.read_csv(csv_path)
-    #     for i in range(0, dataset.get("time:timestamp").size):
-    #         dataset.loc[i, "time:timestamp"] = pandas.Period(
-    #             dataset.loc[i, "time:timestamp"], freq=level)
+    #     partial_log = pandas.read_csv(csv_path)
+    #     for i in range(0, partial_log.get("time:timestamp").size):
+    #         partial_log.loc[i, "time:timestamp"] = pandas.Period(
+    #             partial_log.loc[i, "time:timestamp"], freq=level)
     #     csv_output_path = os.path.join(
     #         current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_' + convert_lev(lev) + '.csv')
-    #     dataset.to_csv(csv_output_path, index=False)
+    #     partial_log.to_csv(csv_output_path, index=False)
     return None
 
 
@@ -153,19 +153,19 @@ def get_decisiontree(filename, csv):
         return send_file(svg_path)
 
 
-def filter(args, dataset):
+def filter(args, partial_log):
     for key in args.keys():
         if args.get(key).__len__() != 0:
             arr = args.get(key).split(",")
-            if dataset[key].dtype == numpy.float_:
+            if partial_log[key].dtype == numpy.float_:
                 arr = list(map(float, arr))
-            elif dataset[key].dtype == numpy.int_:
+            elif partial_log[key].dtype == numpy.int_:
                 arr = list(map(int, arr))
-            elif dataset[key].dtype == numpy.bool_:
+            elif partial_log[key].dtype == numpy.bool_:
                 arr = list(map(bool, arr))
-            dataset = dataset[dataset[key].isin(arr)]
-    # print(dataset.head)
-    return dataset
+            partial_log = partial_log[partial_log[key].isin(arr)]
+    # print(partial_log.head)
+    return partial_log
 
 def encoder_X_y(encoder, X, y):
     encoderX = preprocessing.OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1) if encoder == "0" else preprocessing.OneHotEncoder(handle_unknown='ignore')
@@ -221,22 +221,22 @@ def appy_algorithm(filename, csv, alg):
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
-    dataset = pandas.read_csv(csv_path, index_col="No.")
-    dataset = filter(args, dataset)
+    partial_log = pandas.read_csv(csv_path, index_col="No.")
+    partial_log = filter(args, partial_log)
 
-    # dataset_convert = dataset.astype({"time:timestamp": "datetime64"})
-    for tmp in dataset:
-        if dataset[tmp].dtype == object:
-            dataset[tmp] = dataset[tmp].astype("category")
-    dataset_new = dataset[samples].assign(label=dataset[label])
-    if dataset_new.empty:
+    # partial_log_convert = partial_log.astype({"time:timestamp": "datetime64"})
+    for tmp in partial_log:
+        if partial_log[tmp].dtype == object:
+            partial_log[tmp] = partial_log[tmp].astype("category")
+    partial_log_new = partial_log[samples].assign(label=partial_log[label])
+    if partial_log_new.empty:
         return "No event exist after filtering.", 405
-    dataset_new.dropna(inplace=True)
-    if dataset_new.empty:
+    partial_log_new.dropna(inplace=True)
+    if partial_log_new.empty:
         return "Selected target values input samples includes missing value.", 405
-    # print(dataset_new.head)
-    X = dataset_new[samples]
-    y = dataset_new["label"]
+    # print(partial_log_new.head)
+    X = partial_log_new[samples]
+    y = partial_log_new["label"]
 
     # Imputation of missing values https://scikit-learn.org/stable/modules/impute.html
     # imp = SimpleImputer(strategy="constant", fill_value=-1)

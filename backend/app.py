@@ -4,8 +4,7 @@ import os
 from werkzeug.utils import secure_filename
 from pm4py.objects.log.importer.xes import importer as xes_importer
 import pm4py
-import projection_transformation_algorithm
-import discovery_algorithm
+import projection_transformation_algorithm, discovery_algorithm, filter
 from pm4py.algo.filtering.dfg import dfg_filtering
 
 UPLOAD_FOLDER = "./uploads"
@@ -49,7 +48,10 @@ app.add_url_rule('/discovery/<filename>/<csv>/<string:alg>',
 app.add_url_rule('/decisiontree/<filename>/<csv>',
                  methods=['GET'],
                  view_func=discovery_algorithm.get_decisiontree)
-
+app.add_url_rule('/filter/<filename>/<csv>',
+                 view_func=filter.get_variants)
+app.add_url_rule('/filter/<filename>/<csv>/<string:level>',
+                 view_func=filter.apply_variants_filter)
 
 @app.route('/', methods=['GET'])
 def greetings():
@@ -152,6 +154,29 @@ def upload_file():
             dataSets_dict[i] = dataSet
             i += 1
         return dataSets_dict, 200
+
+@app.route('/test', methods=['GET'])
+def test():
+    log = xes_importer.apply("uploads/loan_process.xes")
+    print("---------------------------------------------------------------------")
+    variants = pm4py.statistics.variants.log.get.get_variants(log)
+    variants = pm4py.get_variants_as_tuples(log)
+    j = 0
+    for v in variants:
+        if j==0: 
+            tmp = v
+            print(v)
+        j += 1
+    var_counts = pm4py.statistics.variants.log.get.get_variants_sorted_by_count(variants)
+    filtered_log = pm4py.filter_variants(log, [tmp])
+    print(filtered_log.head())
+    var_counts_dict = {}
+    i = 0
+    for var in var_counts:
+        var_counts_dict[i] = var
+        i += 1
+    print(var_counts_dict[0][1])
+    return var_counts_dict
 
 # python3 app.py
 if __name__ == "__main__":

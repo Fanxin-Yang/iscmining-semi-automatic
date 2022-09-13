@@ -36,14 +36,14 @@
           <div v-else>Please select or upload a dataset first.</div>
 
           <div class="row my-3">
-            <h3 class="display-6" id="discovery"><u>Discovery Algorithm</u></h3>
+            <h3 class="display-6" id="discovery"><u>Discovery</u></h3>
           </div>
           <div v-if="this.$route.params.csv"><DiscoveryView /></div>
           <div v-else>Please select a csv file first.</div>
 
           <div class="row my-3">
             <h3 class="display-6" id="classification">
-              <u>Classification Algorithm</u>
+              <u>Classification</u>
             </h3>
           </div>
           <div v-if="this.$route.params.level">

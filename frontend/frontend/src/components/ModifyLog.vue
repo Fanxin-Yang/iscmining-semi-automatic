@@ -1,4 +1,30 @@
 <template lang="">
+  <label for="select-timestamps-level">Choose a Timestamps Level.</label>
+  <div class="col-md-8">
+    <select
+      v-model="timestampsLevel"
+      class="form-select"
+      id="select-timestamps-level"
+    >
+      <option selected>Seconds</option>
+      <option>Minutes</option>
+      <option>Hours</option>
+      <option>Days</option>
+      <option>Months</option>
+      <option>Years</option>
+    </select>
+  </div>
+  <div class="col-md-12 text-center" v-if="loading">
+    <div class="spinner-border m-5" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="alert alert-success" role="alert" v-if="!!info">
+      {{ info }}
+    </div>
+  </div>
+
   <label for="variant-list">Variants Filter</label>
   <ul class="list-group col-md-8" id="variant-list">
     <li
@@ -45,30 +71,17 @@
           <option value="1">Negative: Remove selected variant</option>
         </select>
       </div>
-      <button
-        type="button"
-        class="btn btn-outline-primary"
-        @click="apply_filter"
-      >
+      <button type="button" class="btn btn-outline-primary" @click="modify">
         Apply Fitler
       </button>
     </div>
   </div>
   <div class="col-md-3"></div>
-
-  <div class="col-md-12">
-    <div v-if="!!info" class="alert alert-success" role="alert">
-      {{ this.info }}
-    </div>
-  </div>
 </template>
 
 <script>
 import axios from "axios";
-
 export default {
-  // components: {
-  // },
   props: {
     dataSet: {
       type: String,
@@ -78,18 +91,49 @@ export default {
       type: String,
       required: true,
     },
+    info: {
+      required: true,
+    },
   },
   data() {
     return {
+      timestampsLevel: "Seconds",
+      loading: false,
       variants: undefined,
       selectedVariantsIndex: [],
       filtering: "0",
-      info: undefined,
       error: "",
     };
   },
   emits: ["modify"],
   methods: {
+    // coarsen() {
+    //   this.loading = true;
+    //   axios
+    //     .put(
+    //       "discovery/" +
+    //         this.dataSet +
+    //         "/" +
+    //         this.csv +
+    //         "/" +
+    //         this.timestampsLevel
+    //     )
+    //     .then((res) => {
+    //       this.loading = false;
+    //       this.status = res.data;
+    //       let tmp =
+    //         "/iscmining-semi-automatic/" +
+    //         this.dataSet +
+    //         "/" +
+    //         this.csv +
+    //         "/" +
+    //         this.timestampsLevel;
+    //       this.$router.push(tmp);
+    //     })
+    //     .catch((err) => {
+    //       console.error(err);
+    //     });
+    // },
     get_variants(dataSet, csv) {
       axios
         .get("filter/" + dataSet + "/" + csv)
@@ -108,13 +152,13 @@ export default {
         });
     },
     apply_filter() {
-      let url =
-        "filter/" +
-        this.dataSet +
-        "/" +
-        this.csv +
-        "/" +
-        this.$route.params.level;
+      //   let url =
+      //     "filter/" +
+      //     this.dataSet +
+      //     "/" +
+      //     this.csv +
+      //     "/" +
+      //     this.$route.params.level;
 
       if (this.filtering == 1) {
         for (var i = 0; i < this.selectedVariantsIndex.length; ++i) {
@@ -122,35 +166,46 @@ export default {
         }
         this.filtering = 0;
       }
-      const params = new URLSearchParams([
-        ["variants", this.selectedVariantsIndex],
-      ]);
-      axios
-        .get(url, { params })
-        .then((res) => {
-          this.info = res.data;
-        })
-        .catch((err) => {
-          console.error(err);
-          this.error = err.response.data;
-        });
+      //   const params = new URLSearchParams([
+      //     ["variants", this.selectedVariantsIndex],
+      //   ]);
+      //   axios
+      //     .get(url, { params })
+      //     .then((res) => {
+      //       this.info = res.data;
+      //     })
+      //     .catch((err) => {
+      //       console.error(err);
+      //       this.error = err.response.data;
+      //     });
       // this.$root.$emit("call_coarsen");
+    },
+    modify() {
+      this.apply_filter();
+      this.$emit("modify", this.timestampsLevel, this.selectedVariantsIndex);
     },
   },
   watch: {
     csv: function (val) {
       this.get_variants(this.dataSet, val);
     },
+    timestampsLevel: function (val) {
+      console.log(val);
+      this.modify();
+    },
   },
   created() {
+    let tmp =
+      "/iscmining-semi-automatic/" + this.dataSet + "/" + this.csv + "/Seconds";
+    this.$router.push(tmp);
     this.get_variants(this.dataSet, this.csv);
   },
   // mounted() {
-  //   this.$root.$on("call_apply_filter", () => {
-  //     this.apply_filter();
+  //   this.$root.$on("call_coarsen", () => {
+  //     this.coarsen();
   //   });
   // },
 };
 </script>
 
-<style></style>
+<style lang=""></style>

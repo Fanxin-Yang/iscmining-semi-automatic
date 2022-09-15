@@ -104,9 +104,10 @@ export default {
   },
   methods: {
     get_events(dataSet, csv, level) {
+      console.log(level);
       let path = "/discovery/" + dataSet + "/" + csv;
-      if (level != "Seconds") {
-        path = path + "_" + level;
+      if (this.$route.params.modified) {
+        path += "_modified";
       }
       axios
         .get(path)
@@ -166,9 +167,7 @@ export default {
             this.dataSet +
             "/" +
             this.csv +
-            "_" +
-            this.level +
-            "/" +
+            "_modified/" +
             this.technique.replace(/\s+/g, "").toLowerCase(),
           { params }
         )

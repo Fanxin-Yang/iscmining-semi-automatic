@@ -3,8 +3,8 @@ from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename
 from pm4py.objects.log.importer.xes import importer as xes_importer
-import pm4py
-import projection_transformation_algorithm, discovery_algorithm, filter
+import pm4py, pandas
+import projection_transformation_algorithm, discovery_algorithm, classification
 from pm4py.algo.filtering.dfg import dfg_filtering
 
 UPLOAD_FOLDER = "./uploads"
@@ -38,20 +38,17 @@ app.add_url_rule('/discovery/<filename>/<csv>',
 app.add_url_rule('/discovery/<filename>/<csv>/<int:eventIndex>',
                  methods=['DELETE'],
                  view_func=discovery_algorithm.delete_event)
-app.add_url_rule('/discovery/<filename>/<csv>/<string:level>',
-                 methods=['PUT'],
-                 view_func=discovery_algorithm.adapt_timestamps)
-app.add_url_rule('/discovery', view_func=discovery_algorithm.get_algorithms)
+app.add_url_rule('/filter/<filename>/<csv>',
+                 view_func=discovery_algorithm.get_variants)
+app.add_url_rule('/modify/<filename>/<csv>/<string:level>',
+                 view_func=discovery_algorithm.modify)
+app.add_url_rule('/discovery', view_func=classification.get_algorithms)
 app.add_url_rule('/discovery/<filename>/<csv>/<string:alg>',
                  methods=['GET'],
-                 view_func=discovery_algorithm.appy_algorithm)
+                 view_func=classification.appy_algorithm)
 app.add_url_rule('/decisiontree/<filename>/<csv>',
                  methods=['GET'],
-                 view_func=discovery_algorithm.get_decisiontree)
-app.add_url_rule('/filter/<filename>/<csv>',
-                 view_func=filter.get_variants)
-app.add_url_rule('/filter/<filename>/<csv>/<string:level>',
-                 view_func=filter.apply_variants_filter)
+                 view_func=classification.get_decisiontree)
 
 @app.route('/', methods=['GET'])
 def greetings():
@@ -155,28 +152,31 @@ def upload_file():
             i += 1
         return dataSets_dict, 200
 
-@app.route('/test', methods=['GET'])
-def test():
-    log = xes_importer.apply("uploads/loan_process.xes")
-    print("---------------------------------------------------------------------")
-    variants = pm4py.statistics.variants.log.get.get_variants(log)
-    variants = pm4py.get_variants_as_tuples(log)
-    j = 0
-    for v in variants:
-        if j==0: 
-            tmp = v
-            print(v)
-        j += 1
-    var_counts = pm4py.statistics.variants.log.get.get_variants_sorted_by_count(variants)
-    filtered_log = pm4py.filter_variants(log, [tmp])
-    print(filtered_log.head())
-    var_counts_dict = {}
-    i = 0
-    for var in var_counts:
-        var_counts_dict[i] = var
-        i += 1
-    print(var_counts_dict[0][1])
-    return var_counts_dict
+@app.route('/summary/<filename>/<csv>', methods=['GET'])
+def summary(filename, csv):
+    csv_path = discovery_algorithm.exist_csv(filename, csv)
+    if not csv_path:
+        return "No file found.", 404
+    csv_modified_path = discovery_algorithm.exist_csv(filename, csv + "_modified")
+    partial_log = pandas.read_csv(csv_path)
+    events_sum = partial_log.shape[0]
+    variants_sum = len(pm4py.get_variants_as_tuples(partial_log))
+    cases_sum = len(partial_log["case:concept:name"].unique())
+    if not csv_modified_path:
+        summary = {}
+        summary["variants"] = [variants_sum, variants_sum]
+        summary["cases"] = [cases_sum, cases_sum]
+        summary["events"] = [events_sum, events_sum]
+    else:
+        partial_log_modified = pandas.read_csv(csv_modified_path)
+        events = partial_log_modified.shape[0]
+        variants = len(pm4py.get_variants_as_tuples(partial_log_modified))
+        cases = len(partial_log_modified["case:concept:name"].unique())
+        summary = {}
+        summary["variants"] = [variants, variants_sum]
+        summary["cases"] = [cases, cases_sum]
+        summary["events"] = [events, events_sum]
+    return summary, 200
 
 # python3 app.py
 if __name__ == "__main__":

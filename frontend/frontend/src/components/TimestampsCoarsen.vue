@@ -41,16 +41,24 @@ export default {
   },
   data() {
     return {
-      timestampsLevel: undefined,
+      timestampsLevel: "Seconds",
       status: undefined,
       loading: false,
     };
   },
+  emits: ["modify"],
   methods: {
-    coarsen(dataSet, csv, timestampsLevel) {
+    coarsen() {
       this.loading = true;
       axios
-        .put("discovery/" + dataSet + "/" + csv + "/" + timestampsLevel)
+        .put(
+          "discovery/" +
+            this.dataSet +
+            "/" +
+            this.csv +
+            "/" +
+            this.timestampsLevel
+        )
         .then((res) => {
           this.loading = false;
           this.status = res.data;
@@ -60,22 +68,31 @@ export default {
             "/" +
             this.csv +
             "/" +
-            timestampsLevel;
+            this.timestampsLevel;
           this.$router.push(tmp);
         })
         .catch((err) => {
           console.error(err);
         });
+      this.$emit("modify");
     },
   },
   watch: {
-    csv: function (val) {
-      this.coarsen(this.dataSet, val, this.timestampsLevel);
-    },
     timestampsLevel: function (val) {
-      this.coarsen(this.dataSet, this.csv, val);
+      console.log(val);
+      this.coarsen();
     },
   },
+  created() {
+    let tmp =
+      "/iscmining-semi-automatic/" + this.dataSet + "/" + this.csv + "/Seconds";
+    this.$router.push(tmp);
+  },
+  // mounted() {
+  //   this.$root.$on("call_coarsen", () => {
+  //     this.coarsen();
+  //   });
+  // },
 };
 </script>
 

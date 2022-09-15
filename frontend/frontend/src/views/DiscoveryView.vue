@@ -1,7 +1,15 @@
 <template lang="">
   <form class="row g-3 border bg-light">
-    <LogSummary :dataSet="this.dataSet" :csv="this.csv" />
-    <EventsTable :dataSet="this.dataSet" :csv="this.csv" />
+    <LogSummary
+      :dataSet="this.dataSet"
+      :csv="this.csv"
+      :refresh="this.cacheKey"
+    />
+    <EventsTable
+      :dataSet="this.dataSet"
+      :csv="this.csv"
+      :refresh="this.cacheKey"
+    />
     <!-- <TimestampsCoarsen
       :dataSet="this.dataSet"
       :csv="this.csv"
@@ -36,9 +44,9 @@ export default {
     return {
       dataSet: this.$route.params.dataSet,
       csv: this.$route.params.csv,
-      partial_log: {},
       error: "",
       info: undefined,
+      cacheKey: +new Date(),
     };
   },
   methods: {
@@ -56,8 +64,10 @@ export default {
             "/" +
             this.csv +
             "/" +
-            level;
+            level +
+            "/modified";
           this.$router.push(tmp);
+          this.cacheKey = +new Date();
         })
         .catch((err) => {
           console.error(err);
@@ -79,12 +89,6 @@ export default {
       },
       deep: true,
       immediate: true,
-    },
-    partial_log: function (val) {
-      console.log(val);
-    },
-    timestampsLevel: function (val) {
-      console.log(val);
     },
   },
 };

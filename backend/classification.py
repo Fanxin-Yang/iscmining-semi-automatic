@@ -33,6 +33,20 @@ def get_decisiontree(filename, csv):
         return send_file(svg_path)
 
 
+def filter(args, partial_log):
+    for key in args.keys():
+        if args.get(key).__len__() != 0:
+            arr = args.get(key).split(",")
+            if partial_log[key].dtype == numpy.float_:
+                arr = list(map(float, arr))
+            elif partial_log[key].dtype == numpy.int_:
+                arr = list(map(int, arr))
+            elif partial_log[key].dtype == numpy.bool_:
+                arr = list(map(bool, arr))
+            partial_log = partial_log[partial_log[key].isin(arr)]
+    # print(partial_log.head)
+    return partial_log
+
 def encoder_X_y(encoder, X, y):
     encoderX = preprocessing.OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1) if encoder == "0" else preprocessing.OneHotEncoder(handle_unknown='ignore')
     # only encode the columns which are categorical varibales
@@ -143,6 +157,7 @@ def cost_complexity_pruning(data, target, clf):
     path = clf.cost_complexity_pruning_path(data, target)
     ccp_alphas, impurities = path.ccp_alphas, path.impurities
     # print(f'ccp_alphas: {ccp_alphas}')
+    ccp_alphas = [ccp for ccp in ccp_alphas if ccp >= 0]
 
     clfs = []
     # Total impurity of leaves

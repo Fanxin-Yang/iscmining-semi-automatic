@@ -1,15 +1,6 @@
 <template lang="">
   <form class="row g-3 border bg-light">
-    <div class="col-md-12" v-if="Object.keys(this.events).length > 0">
-      <!-- <ValueSelection
-        :labels="labels"
-        @filter="update_filter"
-        :dataSet="this.dataSet"
-        :csv="this.csv"
-        :level="this.level"
-      /> -->
-      <!-- <VariantFilter :dataSet="this.dataSet" :csv="this.csv" /> -->
-    </div>
+    <div class="col-md-12" v-if="Object.keys(this.events).length > 0"></div>
     <div v-if="Object.keys(this.events).length > 0">
       <ClassificationTechniques
         :labels="labels"
@@ -84,6 +75,10 @@ export default {
       type: String,
       required: true,
     },
+    modified: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -103,8 +98,7 @@ export default {
     };
   },
   methods: {
-    get_events(dataSet, csv, level) {
-      console.log(level);
+    get_events(dataSet, csv) {
       let path = "/discovery/" + dataSet + "/" + csv;
       if (this.$route.params.modified) {
         path += "_modified";
@@ -163,7 +157,7 @@ export default {
       }
       axios
         .get(
-          "discovery/" +
+          "classification/" +
             this.dataSet +
             "/" +
             this.csv +
@@ -188,22 +182,22 @@ export default {
   },
   watch: {
     dataSet: function (val) {
-      // let tmp =
-      //   "/iscmining-semi-automatic/" +
-      //   val.substring(0, this.selectedFile.lastIndexOf("."));
-      // this.$router.push(tmp);
-      console.log(val);
+      this.get_events(val, this.csv);
     },
     csv: function (val) {
-      console.log(val);
+      this.get_events(this.dataSet, val);
     },
     level: function (val) {
-      this.get_events(this.dataSet, this.csv, val);
+      this.get_events(this.dataSet, this.csv);
+      console.log(val);
+    },
+    modified: function (val) {
+      this.get_events(this.dataSet, this.csv);
       console.log(val);
     },
   },
   created() {
-    this.get_events(this.dataSet, this.csv, this.level);
+    this.get_events(this.dataSet, this.csv);
   },
 };
 </script>

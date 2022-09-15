@@ -48,8 +48,7 @@
       dataSet +
       '/' +
       csv +
-      '_' +
-      level +
+      '_modified' +
       '?cache=' +
       this.cacheKey
     "
@@ -68,7 +67,7 @@ export default {
   },
   props: {
     ccp_alphas: {
-      type: Array,
+      type: Object,
       required: true,
     },
     dataSet: {

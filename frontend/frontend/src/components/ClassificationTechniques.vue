@@ -135,7 +135,7 @@ export default {
   methods: {
     get_classification_techniques() {
       axios
-        .get("/discovery")
+        .get("/classification")
         .then((res) => {
           this.classificationTechniques = res.data;
         })

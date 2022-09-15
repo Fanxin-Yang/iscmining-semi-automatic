@@ -46,14 +46,15 @@
               <u>Classification</u>
             </h3>
           </div>
-          <div v-if="this.$route.params.level">
+          <div v-if="this.$route.params.modified">
             <ClassificationView
               :dataSet="this.$route.params.dataSet"
               :csv="this.$route.params.csv"
               :level="this.$route.params.level"
+              :modified="this.$route.params.modified"
             />
           </div>
-          <div v-else>Please select a timestamp level.</div>
+          <div v-else>Please apply filter or click Skip button.</div>
         </div>
       </div>
     </div>

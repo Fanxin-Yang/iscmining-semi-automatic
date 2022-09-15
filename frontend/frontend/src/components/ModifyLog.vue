@@ -32,12 +32,6 @@
       v-for="(variant, index) in variants"
       :key="index"
     >
-      <!-- <input
-        class="form-check-input me-1"
-        type="checkbox"
-        v-model="selected"
-        :id="'variant' + index"
-      /> -->
       <label class="form-check-label" :for="'variant' + index">
         <div class="d-flex w-100 justify-content-between">
           <input
@@ -50,7 +44,6 @@
           <h5 class="mb-1 flex-grow-1">Vatiant {{ index }}</h5>
           <small class="text-muted">Count: {{ variant[1] }}</small>
         </div>
-        <!-- <p class="mb-1">Some placeholder content in a paragraph.</p> -->
         <small class="d-flex">{{ variant[0] }}</small>
       </label>
     </li>
@@ -72,7 +65,14 @@
         </select>
       </div>
       <button type="button" class="btn btn-outline-primary" @click="modify">
-        Apply Fitler
+        Apply Filter
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        @click="skip_modify"
+      >
+        Skip
       </button>
     </div>
   </div>
@@ -107,33 +107,6 @@ export default {
   },
   emits: ["modify"],
   methods: {
-    // coarsen() {
-    //   this.loading = true;
-    //   axios
-    //     .put(
-    //       "discovery/" +
-    //         this.dataSet +
-    //         "/" +
-    //         this.csv +
-    //         "/" +
-    //         this.timestampsLevel
-    //     )
-    //     .then((res) => {
-    //       this.loading = false;
-    //       this.status = res.data;
-    //       let tmp =
-    //         "/iscmining-semi-automatic/" +
-    //         this.dataSet +
-    //         "/" +
-    //         this.csv +
-    //         "/" +
-    //         this.timestampsLevel;
-    //       this.$router.push(tmp);
-    //     })
-    //     .catch((err) => {
-    //       console.error(err);
-    //     });
-    // },
     get_variants(dataSet, csv) {
       axios
         .get("filter/" + dataSet + "/" + csv)
@@ -152,36 +125,18 @@ export default {
         });
     },
     apply_filter() {
-      //   let url =
-      //     "filter/" +
-      //     this.dataSet +
-      //     "/" +
-      //     this.csv +
-      //     "/" +
-      //     this.$route.params.level;
-
       if (this.filtering == 1) {
         for (var i = 0; i < this.selectedVariantsIndex.length; ++i) {
           this.selectedVariantsIndex[i] = !this.selectedVariantsIndex[i];
         }
         this.filtering = 0;
       }
-      //   const params = new URLSearchParams([
-      //     ["variants", this.selectedVariantsIndex],
-      //   ]);
-      //   axios
-      //     .get(url, { params })
-      //     .then((res) => {
-      //       this.info = res.data;
-      //     })
-      //     .catch((err) => {
-      //       console.error(err);
-      //       this.error = err.response.data;
-      //     });
-      // this.$root.$emit("call_coarsen");
     },
     modify() {
       this.apply_filter();
+      this.$emit("modify", this.timestampsLevel, this.selectedVariantsIndex);
+    },
+    skip_modify() {
       this.$emit("modify", this.timestampsLevel, this.selectedVariantsIndex);
     },
   },
@@ -200,11 +155,6 @@ export default {
     this.$router.push(tmp);
     this.get_variants(this.dataSet, this.csv);
   },
-  // mounted() {
-  //   this.$root.$on("call_coarsen", () => {
-  //     this.coarsen();
-  //   });
-  // },
 };
 </script>
 

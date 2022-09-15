@@ -68,6 +68,10 @@ export default {
       type: String,
       required: true,
     },
+    refresh: {
+      type: Number,
+      required: true,
+    },
   },
   data() {
     return {

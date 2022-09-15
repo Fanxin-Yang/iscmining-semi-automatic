@@ -11,7 +11,6 @@ def exist_csv(filename, csv):
         csv_folder = os.path.join(folder, csv.rsplit("_", 1)[0])
     else:
         csv_folder = os.path.join(folder, csv)
-    print(csv_folder)
     csv_path = os.path.join(csv_folder, csv + '.csv')
     if not os.path.exists(csv_path):
         return False
@@ -75,9 +74,9 @@ def modify(filename, csv, level):
     selectedVariants = args.pop("variants", "").split(",")
     filtered_log = apply_variants_filter(csv_path, selectedVariants)
     coarsen_timestamps(filtered_log, level)
-    csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_modified' + '.csv')
+    csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_modified.csv')
     filtered_log.to_csv(csv_output_path, index=False)
-    return "both timestamps and filter"
+    return f"File {csv}_modified.csv is saved."
 
 def coarsen_timestamps(filtered_log, level):
     lev = convert_level(level)

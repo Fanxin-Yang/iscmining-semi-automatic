@@ -50,7 +50,7 @@
         class="btn btn-outline-primary"
         @click="apply_filter"
       >
-        Apply Fitler
+        Apply Filter
       </button>
     </div>
   </div>

@@ -7,7 +7,9 @@ import pm4py
 def exist_csv(filename, csv):
     folder = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename)
-    if csv.rsplit("_", 1)[1] == "modified":
+    if len(csv.rsplit("_", 1)) == 1:
+        csv_folder = os.path.join(folder, csv)
+    elif csv.rsplit("_", 1)[1] == "modified":
         csv_folder = os.path.join(folder, csv.rsplit("_", 1)[0])
     else:
         csv_folder = os.path.join(folder, csv)

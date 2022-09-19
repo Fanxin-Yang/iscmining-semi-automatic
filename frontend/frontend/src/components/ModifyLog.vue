@@ -41,7 +41,7 @@
             :id="'variant' + index"
             @change="onChange"
           />
-          <h5 class="mb-1 flex-grow-1">Vatiant {{ index }}</h5>
+          <h5 class="mb-1 flex-grow-1">Variant {{ index }}</h5>
           <small class="text-muted">Count: {{ variant[1] }}</small>
         </div>
         <small class="d-flex">{{ variant[0] }}</small>

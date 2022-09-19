@@ -22,26 +22,6 @@ const router = createRouter({
       name: "iscmining-semi-automatic",
       component: () => import("../views/MainView.vue"),
     },
-    // {
-    //   path: "/dataset",
-    //   name: "dataset",
-    //   component: () => import("../views/DatasetView.vue"),
-    // },
-    // {
-    //   path: "/:dataSet",
-    //   name: "preprocess",
-    //   component: () => import("../views/PreprocessView.vue"),
-    // },
-    // {
-    //   path: "/:dataSet/:csv",
-    //   name: "discovery",
-    //   component: () => import("../views/DiscoveryView.vue"),
-    // },
-    // {
-    //   path: "/:dataSet/:csv/:level",
-    //   name: "classification",
-    //   component: () => import("../views/ClassificationView.vue"),
-    // },
   ],
   sensitive: false,
   strict: false,

@@ -1,39 +1,23 @@
 import os
 from flask import request, current_app, send_file
-import matplotlib
 import pandas
-from sklearn import tree, preprocessing
-import graphviz
-import numpy
-from dtreeviz.trees import dtreeviz
-from sklearn.compose import make_column_selector, make_column_transformer
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
+import pm4py
 
 
 def exist_csv(filename, csv):
     folder = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename)
-    level = with_timestamps_level(csv)
-    if not level:
+    if len(csv.rsplit("_", 1)) == 1:
         csv_folder = os.path.join(folder, csv)
-    else:
+    elif csv.rsplit("_", 1)[1] == "modified":
         csv_folder = os.path.join(folder, csv.rsplit("_", 1)[0])
+    else:
+        csv_folder = os.path.join(folder, csv)
     csv_path = os.path.join(csv_folder, csv + '.csv')
     if not os.path.exists(csv_path):
         return False
     else:
         return csv_path
-
-
-def with_timestamps_level(csv):
-    if len(csv.rsplit("_", 1)) == 1:
-        return False
-    levels = ["Minutes", "Hours", "Days", "Months", "Years"]
-    for l in levels:
-        if csv.rsplit("_", 1)[1] == l:
-            return csv.rsplit("_", 1)[1]
-    return False
 
 
 def get_events(filename, csv):
@@ -43,18 +27,18 @@ def get_events(filename, csv):
         if not csv_path:
             return "No file found.", 404
         json_path = csv_path.rsplit(".", 1)[0] + '.json'
-        dataset = pandas.read_csv(csv_path)
+        partial_log = pandas.read_csv(csv_path)
         # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
-        dataset.to_json(json_path, orient="records")
+        partial_log.to_json(json_path, orient="records")
         return send_file(json_path, as_attachment=False), 200
     else:
         csv_path = exist_csv(filename, csv)
         if not csv_path:
             return "No file found.", 404
-        dataset = pandas.read_csv(csv_path)
+        partial_log = pandas.read_csv(csv_path)
         dict = {}
         i = 0
-        for l in dataset[label].dropna().unique():
+        for l in partial_log[label].dropna().unique():
             dict[i] = l
             i += 1
         return dict, 200
@@ -64,259 +48,73 @@ def delete_event(filename, csv, eventIndex):
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
-    dataset = pandas.read_csv(csv_path)
-    dataset.drop(eventIndex, axis=0, inplace=True)  # Raises error?
-    dataset.reset_index(drop=True, inplace=True)
-    dataset.drop(columns="No.", inplace=True)
-    dataset.to_csv(csv_path, index_label="No.")  # without add an index column
+    partial_log = pandas.read_csv(csv_path)
+    partial_log.drop(eventIndex, axis=0, inplace=True)  # Raises error?
+    partial_log.reset_index(drop=True, inplace=True)
+    partial_log.drop(columns="No.", inplace=True)
+    partial_log.to_csv(csv_path, index_label="No.")  # without add an index column
     return "The chosen event from " + csv + ".csv has been successfully removed.", 200
 
 
 def convert_level(level):
-    if level == "T":
-        return "Minutes"
-    if level == "H":
-        return "Hours"
-    if level == "D":
-        return "Days"
-    if level == "M":
-        return "Months"
-    if level == "Y":
-        return "Years"
+    if level == "Minutes":
+        return "T"
+    if level == "Hours":
+        return "H"
+    if level == "Days":
+        return "D"
+    if level == "Months":
+        return "M"
+    if level == "Years":
+        return "Y"
 
-
-def coarsen_timestamps(filename, csv):
+def modify(filename, csv, level):
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
-    levels = ["T", "H", "D", "M", "Y"]
-    for level in levels:
-        i = 0
-        dataset = pandas.read_csv(csv_path)
-        for i in range(0, dataset.get("time:timestamp").size):
-            dataset.loc[i, "time:timestamp"] = pandas.Period(
-                dataset.loc[i, "time:timestamp"], freq=level)
-        csv_output_path = os.path.join(
-            current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_' + convert_level(level) + '.csv')
-        dataset.to_csv(csv_output_path, index=False)
+    args = request.args.copy()
+    selectedVariants = args.pop("variants", "").split(",")
+    filtered_log = apply_variants_filter(csv_path, selectedVariants)
+    coarsen_timestamps(filtered_log, level)
+    csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_modified.csv')
+    filtered_log.to_csv(csv_output_path, index=False)
+    return f"File {csv}_modified.csv is saved."
+
+def coarsen_timestamps(filtered_log, level):
+    lev = convert_level(level)
+    for i in filtered_log.get("No."):
+        filtered_log.loc[i, "time:timestamp"] = pandas.Period(filtered_log.loc[i, "time:timestamp"], freq=lev)
     return None
 
+def exist_file(filename):
+    input_path = os.path.join(
+        current_app.config['UPLOAD_FOLDER'], filename + '.xes')
+    if not os.path.exists(input_path):
+        return False
+    else:
+        return input_path
 
-def adapt_timestamps(filename, csv, level):
-    coarsen_timestamps(filename, csv)
-    return "Timestamps of events in " + csv + ".csv has been coarsened to " + level, 200
-
-
-def get_algorithms():
-    algorithms = {}
-    algorithms[0] = "Decision Tree"
-    algorithms[1] = "Logistic Regression"
-    algorithms[2] = "Support Vector Machine"
-    algorithms[3] = "Naive Bayes"
-    algorithms[4] = "Stochastic Gradient Descent"
-    algorithms[5] = "K-nearest Neighbor"
-    algorithms[6] = "Random Forest"
-    algorithms[7] = "Gradient Boosting Classifier"
-    return algorithms, 200
-
-
-def get_decisiontree(filename, csv):
+def get_variants(filename, csv):
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
-    folder = os.path.join(
-        current_app.config['RESULTS_FOLDER'], filename)
-    svg_path = os.path.join(folder, csv + '_decisiontree.svg')
-    if not os.path.exists(svg_path):
-        return "No decisiont tree found.", 404
-    else:
-        return send_file(svg_path)
+    partial_log = pandas.read_csv(csv_path)
+    variants = pm4py.get_variants_as_tuples(partial_log)    
+    variants_dict = {}
+    i = 0
+    for var in variants:
+        if i == 3: print(variants[var])
+        variants_dict[i] = [var, variants[var]]
+        i += 1
+    return variants_dict, 200
 
-
-def filter(args, dataset):
-    for key in args.keys():
-        if args.get(key).__len__() != 0:
-            arr = args.get(key).split(",")
-            if dataset[key].dtype == numpy.float_:
-                arr = list(map(float, arr))
-            elif dataset[key].dtype == numpy.int_:
-                arr = list(map(int, arr))
-            elif dataset[key].dtype == numpy.bool_:
-                arr = list(map(bool, arr))
-            dataset = dataset[dataset[key].isin(arr)]
-    # print(dataset.head)
-    return dataset
-
-def encoder_X_y(encoder, X, y):
-    encoderX = preprocessing.OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1) if encoder == "0" else preprocessing.OneHotEncoder(handle_unknown='ignore')
-    # only encode the columns which are categorical varibales
-    ct = make_column_transformer((encoderX, make_column_selector(
-        dtype_include='category')), remainder='passthrough', verbose_feature_names_out=False)
-    # data_train = ct.fit_transform(X_train)
-    # data_test = ct.fit_transform(X_test)
-    data = ct.fit_transform(X) if encoder == "0" else ct.fit_transform(X).toarray()
-    feature_names = ct.get_feature_names_out()
-
-    encodery = preprocessing.OrdinalEncoder(
-        handle_unknown='use_encoded_value', unknown_value=-1)
-    # target_train = y_train
-    # target_test = y_test
-    target = y
-    if y.dtype == "category":
-        # target_train = encodery.fit_transform(
-        #     y_train.values.reshape(-1, 1)).reshape(1, -1)[0]
-        # target_test = encodery.fit_transform(
-        #     y_test.values.reshape(-1, 1)).reshape(1, -1)[0]
-        target = encodery.fit_transform(y.values.reshape(-1, 1)).reshape(1, -1)[0]
-    target_names = y.unique()
-    return data, target, feature_names, target_names
-
-def visualize(clf, data, target, feature_names, target_names, svg_path):
-    # dot_data = tree.export_graphviz(
-    #     clf, out_file=None, filled=True, rounded=True,
-    #     special_characters=True, feature_names=feature_names, class_names=list(target_names))
-    # graph = graphviz.Source(dot_data)
-    # graph.render(csv + "_" + alg, results_folder, format="png")
-    matplotlib.pyplot.switch_backend('Agg')
-    viz = dtreeviz(clf, x_data=data, y_data=target,
-                   target_name="class",
-                   feature_names=feature_names,
-                   class_names=list(target_names),
-                   scale=2)
-    viz.save(svg_path)
-    # dot_path = os.path.join(results_folder, csv + "_" + alg + ".dot")
-    # dotFile = open(dot_path, "w")
-    # dotFile.write(viz.dot)
-    # dotFile.close()
-
-def appy_algorithm(filename, csv, alg):
-    args = request.args.copy()
-    label = args.pop("classLabel", "")
-    samples = args.pop("inputSamples", "").split(",")
-    encoder = args.pop("encoder", "0")
-    ccp_alpha = -1
-    if "ccp_alpha" in args:
-        ccp_alpha = args.pop("ccp_alpha")
-
-    csv_path = exist_csv(filename, csv)
-    if not csv_path:
-        return "No file found.", 404
-    dataset = pandas.read_csv(csv_path, index_col="No.")
-    dataset = filter(args, dataset)
-
-    # dataset_convert = dataset.astype({"time:timestamp": "datetime64"})
-    for tmp in dataset:
-        if dataset[tmp].dtype == object:
-            dataset[tmp] = dataset[tmp].astype("category")
-    dataset_new = dataset[samples].assign(label=dataset[label])
-    if dataset_new.empty:
-        return "No event exist after filtering.", 405
-    dataset_new.dropna(inplace=True)
-    if dataset_new.empty:
-        return "Selected target values input samples includes missing value.", 405
-    # print(dataset_new.head)
-    X = dataset_new[samples]
-    y = dataset_new["label"]
-
-    # Imputation of missing values https://scikit-learn.org/stable/modules/impute.html
-    # imp = SimpleImputer(strategy="constant", fill_value=-1)
-    # data = imp.fit_transform(X)
-    # feature_names = list(X.columns)
-
-    # X_train, X_test, y_train, y_test = train_test_split(
-    #     X, y, test_size=.20, random_state=45)
-
-    data, target, feature_names, target_names = encoder_X_y(encoder, X, y)
-
-    if ccp_alpha == -1:
-        clf = tree.DecisionTreeClassifier(criterion="gini", splitter="random")
-        options = cost_complexity_pruning(data, target, clf)
-    else:
-        ccp_alpha = float(ccp_alpha)
-        clf = tree.DecisionTreeClassifier(criterion="gini", splitter="random", ccp_alpha=ccp_alpha)
-    
-    clf = clf.fit(data, target)
-
-    results_folder = os.path.join(
-        current_app.config['RESULTS_FOLDER'], filename)
-    if not os.path.exists(results_folder):
-        os.makedirs(results_folder)
-    svg_path = os.path.join(results_folder, csv + "_" + alg + ".svg")
-    
-    visualize(clf, data, target, feature_names, target_names, svg_path)
-
-    if ccp_alpha == -1:
-        return options, 201
-    else:
-        return f"With selected ccp_alpha value {ccp_alpha} decision tree has {clf.tree_.node_count} nodes and max depth {clf.tree_.max_depth}.", 200
-
-    # append ISC candidates
-
-
-def cost_complexity_pruning(data, target, clf):
-    path = clf.cost_complexity_pruning_path(data, target)
-    ccp_alphas, impurities = path.ccp_alphas, path.impurities
-    # print(f'ccp_alphas: {ccp_alphas}')
-
-    clfs = []
-    # Total impurity of leaves
-    for ccp_alpha in ccp_alphas:
-        clf = tree.DecisionTreeClassifier(random_state=0, ccp_alpha=ccp_alpha)
-        clf.fit(data, target)
-        clfs.append(clf)
-        print(
-            "Number of nodes in the last tree is: {} with ccp_alpha: {}".format(
-                clf.tree_.node_count, ccp_alpha
-            )
-        )
-    print([clf.tree_.node_count for clf in clfs])
-    print([clf.tree_.max_depth for clf in clfs])
-
-    node_counts = [clf.tree_.node_count for clf in clfs]
-    depths = [clf.tree_.max_depth for clf in clfs]
-    # Accuracy vs alpha
-    # acc_train, acc_test = [], []
-    # for ccp_alpha in ccp_alphas:
-    #     clf = tree.DecisionTreeClassifier(
-    #         criterion="gini", splitter="random", min_samples_leaf=3, ccp_alpha=ccp_alpha)
-    #     clf.fit(data_train, target_train)
-    #     target_train_pred = clf.predict(data_train)
-    #     target_test_pred = clf.predict(data_test)
-    #     acc_train.append(accuracy_score(target_train, target_train_pred))
-    #     acc_test.append(accuracy_score(target_test, target_test_pred))
-    #     clfs.append(clf)
-    # print(f'acc_train: {acc_train}')
-    # print(f'acc_test: {acc_test}')
-
-    # acc_sum = [x + y for (x, y) in zip(acc_train, acc_test)]
-
-    # max_acc_test = max(acc_test)
-    # max_index = acc_test.index(max_acc_test)
-    # print(
-    #     f"max accuracy of test is {round(max_acc_test, 2)} and index is {max_index}")
-
-    # max_acc_sum = max(acc_sum)
-    # max_index = acc_sum.index(max_acc_sum)
-    # print(
-    #     f"max accuracy of sum is {round(max_acc_sum, 2)} and index is {max_index}")
-
-    # Number of nodes vs alpha & Depth vs alpha
-    # clfs = clfs[:-1]
-    # ccp_alphas = ccp_alphas[:-1]
-    # print(f'ccp_alphas: {ccp_alphas}')
-    # node_counts = [clf.tree_.node_count for clf in clfs]
-    # depth = [clf.tree_.max_depth for clf in clfs]
-
-    unique_ccp_alphas = []
-    options = {}
-    index = 0
-    for i in range(len(ccp_alphas)):
-        if not ccp_alphas[i] in unique_ccp_alphas:
-            unique_ccp_alphas.append(ccp_alphas[i])
-            options[index] = ccp_alphas[i]
-            index += 1
-    return options
-
-
-def test(filename, csv, alg):
-    return "test", 200
+def apply_variants_filter(csv_path, selectedVariants):
+    partial_log = pandas.read_csv(csv_path)
+    variants = pm4py.get_variants_as_tuples(partial_log)
+    filterVariants = []
+    i = 0
+    for var in variants:
+        if selectedVariants[i]=="true": filterVariants.append(var)
+        i += 1
+    fl = pm4py.filter_variants(partial_log, filterVariants)
+    return fl

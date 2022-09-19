@@ -13,7 +13,7 @@ import { RouterView } from "vue-router";
         >
       </h5>
 
-      <nav style="--bs-breadcrumb-divider: '>'" aria-label="breadcrumb">
+      <!-- <nav style="--bs-breadcrumb-divider: '>'" aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li
             v-if="this.$route.name == 'home'"
@@ -106,7 +106,7 @@ import { RouterView } from "vue-router";
             >
           </li>
         </ol>
-      </nav>
+      </nav> -->
     </div>
   </header>
 

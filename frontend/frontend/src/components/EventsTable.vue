@@ -1,7 +1,9 @@
 <template lang="">
-  <h6>Click the button to delete irrelevant events.</h6>
+  <label for="events-table"
+    >Click the button to delete irrelevant events.</label
+  >
   <div
-    class="text-center"
+    class="col-md-12 text-center"
     v-if="Object.keys(events).length == 0 && error == ''"
   >
     <div class="spinner-border m-5" role="status">
@@ -11,7 +13,11 @@
   <div v-if="error != ''" class="alert alert-danger" role="alert">
     {{ error }}
   </div>
-  <div class="table-responsive" v-if="Object.keys(events).length > 0">
+  <div
+    class="table-responsive"
+    id="events-table"
+    v-if="Object.keys(events).length > 0"
+  >
     <table class="table table-striped table-hover table-sm table-bordered">
       <thead class="header">
         <tr>
@@ -26,15 +32,22 @@
       <tbody>
         <tr v-for="(event, index) in events" :key="index">
           <th scope="row">
-            <DeleteModal :eventIndex="event['No.']" @info="update_info" />
+            <DeleteModal
+              :eventIndex="event['No.']"
+              @info="update_info"
+              :dataSet="this.dataSet"
+              :csv="this.csv"
+            />
           </th>
           <td v-for="(value, key) in event" :key="key">{{ value }}</td>
         </tr>
       </tbody>
     </table>
   </div>
-  <div v-if="!!info" class="alert alert-success" role="alert">
-    {{ this.info }}
+  <div class="col-md-12">
+    <div v-if="!!info" class="alert alert-success" role="alert">
+      {{ this.info }}
+    </div>
   </div>
 </template>
 
@@ -46,6 +59,20 @@ export default {
   components: {
     DeleteModal,
   },
+  props: {
+    dataSet: {
+      type: String,
+      required: true,
+    },
+    csv: {
+      type: String,
+      required: true,
+    },
+    refresh: {
+      type: Number,
+      required: true,
+    },
+  },
   data() {
     return {
       events: {},
@@ -54,14 +81,9 @@ export default {
     };
   },
   methods: {
-    get_events() {
+    get_events(dataSet, csv) {
       axios
-        .get(
-          "discovery/" +
-            this.$route.params.dataSet +
-            "/" +
-            this.$route.params.csv
-        )
+        .get("discovery/" + dataSet + "/" + csv)
         .then((res) => {
           this.events = res.data;
         })
@@ -73,13 +95,14 @@ export default {
     update_info(data) {
       this.info = data;
     },
-    determine_r() {},
-    timestamps() {},
-    get_classifications() {},
-    apply_classifications() {},
+  },
+  watch: {
+    csv: function (val) {
+      this.get_events(this.dataSet, val);
+    },
   },
   created() {
-    this.get_events();
+    this.get_events(this.dataSet, this.csv);
   },
 };
 </script>

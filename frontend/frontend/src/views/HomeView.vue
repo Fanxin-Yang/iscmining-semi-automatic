@@ -58,7 +58,7 @@
             Choose an instance-spanning event attribute and click the
             <strong>"Projection & Transformation"</strong> button to reduce
             dimensions which allows for discovering ISC candidates.<br />
-            <storng><code>org:resource</code></storng> is hightly recommanded,
+            <strong><code>org:resource</code></strong> is hightly recommanded,
             since instance-spanning parts usually relate to organizational
             resources. <br />
             Partial logs are transformed to <strong>CSV</strong> files. Then
@@ -89,7 +89,7 @@
         >
           <div class="accordion-body">
             Table, Delete<br />
-            <storng>"Timestamps Coarsen"</storng> <strong>"Next Step"</strong>
+            <strong>"Timestamps Coarsen"</strong> <strong>"Next Step"</strong>
             <br />
             Filter: select value of each attribute <br />
             Apply classification technique (Decision tree)
@@ -112,7 +112,7 @@
 export default {
   methods: {
     start() {
-      this.$router.push("/dataset");
+      this.$router.push("/iscmining-semi-automatic");
     },
   },
 };

@@ -55,25 +55,35 @@
 <script>
 import axios from "axios";
 export default {
-  props: ["eventIndex", "info"],
+  props: {
+    eventIndex: {
+      type: Number,
+      required: true,
+    },
+    dataSet: {
+      type: String,
+      required: true,
+    },
+    csv: {
+      type: String,
+      required: true,
+    },
+  },
   emits: ["info"],
   methods: {
     test() {
+      console.log(this.dataSet);
+      console.log(this.csv);
       console.log(this.eventIndex);
     },
     remove_event() {
       axios
         .delete(
-          "discovery/" +
-            this.$route.params.dataSet +
-            "/" +
-            this.$route.params.csv +
-            "/" +
-            this.eventIndex
+          "discovery/" + this.dataSet + "/" + this.csv + "/" + this.eventIndex
         )
         .then((res) => {
           this.$emit("info", res.data);
-          this.$parent.get_events();
+          this.$parent.get_events(this.dataSet, this.csv);
         })
         .catch((err) => {
           console.error(err);

@@ -1,40 +1,39 @@
 <template lang="">
-  <h3>Choose a Classificaton Technique.</h3>
-  <div class="row">
-    <div class="mb-3">
-      <select
-        v-model="selectedCT"
-        class="form-select"
-        id="technique"
-        aria-label="techniqueHelp"
-        @change="change"
+  <label for="classification-technique"
+    >Choose a Classificaton Technique.</label
+  >
+  <div class="col-md-12">
+    <select
+      v-model="selectedCT"
+      class="form-select"
+      id="classification-technique"
+      aria-label="techniqueHelp"
+    >
+      <option selected disabled value="">
+        Choose a Classificaton Technique
+      </option>
+      <option v-for="(ct, index) in classificationTechniques" :key="index">
+        {{ ct }}
+      </option>
+    </select>
+    <div
+      id="techniqueHelp"
+      class="form-text"
+      v-if="selectedCT == 'Decision Tree'"
+    >
+      <a
+        target="_blank"
+        href="https://scikit-learn.org/stable/modules/tree.html"
+        >Decision Trees (DTs)</a
       >
-        <option selected disabled value="">
-          Choose a Classificaton Technique
-        </option>
-        <option v-for="(ct, index) in classificationTechniques" :key="index">
-          {{ ct }}
-        </option>
-      </select>
-      <div
-        id="techniqueHelp"
-        class="form-text"
-        v-if="selectedCT == 'Decision Tree'"
-      >
-        <a
-          target="_blank"
-          href="https://scikit-learn.org/stable/modules/tree.html"
-          >Decision Trees (DTs)</a
-        >
-        are a non-parametric supervised learning method used for classification
-        and regression. The goal is to create a model that predicts the value of
-        a target variable by learning simple decision rules inferred from the
-        data features. A tree can be seen as a piecewise constant approximation.
-      </div>
+      are a non-parametric supervised learning method used for classification
+      and regression. The goal is to create a model that predicts the value of a
+      target variable by learning simple decision rules inferred from the data
+      features. A tree can be seen as a piecewise constant approximation.
     </div>
   </div>
   <div v-if="!!selectedCT" class="row">
-    <div class="col-5">
+    <div class="col-md-4">
       <label for="label" class="form-label"
         >The target values (class labels)</label
       >
@@ -43,7 +42,6 @@
         class="form-select"
         id="label"
         aria-label="labelHelp"
-        @change="change"
       >
         <!-- <option disabled selected>Choose a class label</option> -->
         <option v-for="(l, index) in labels" :key="index">
@@ -54,7 +52,7 @@
         y: array-like of shape (n_samples,) or (n_samples, n_outputs)
       </div>
     </div>
-    <div class="col-5">
+    <div class="col-md-4">
       <label for="training" class="form-label"
         >The training input samples</label
       >
@@ -66,7 +64,6 @@
         multiple
         aria-label="trainingHelp"
         :disabled="!selectedLabel"
-        @change="change"
       >
         <!-- <option disabled selected>
           Drag or use Ctrl to select multiple samples
@@ -83,7 +80,7 @@
         X: {array-like, sparse matrix} of shape (n_samples, n_features)
       </div>
     </div>
-    <div class="col-2">
+    <div class="col-md-3">
       <label for="encoder" class="form-label">Encoder</label>
       <select
         v-model="selectedEncoder"
@@ -91,7 +88,6 @@
         id="encoder"
         aria-label="encoderHelp"
         :disabled="selectedSamples.length == 0"
-        @change="change"
       >
         <option value="0">Ordinal Encoder</option>
         <option value="1">One-Hot Encoder</option>
@@ -132,7 +128,6 @@ export default {
       msg: undefined,
       status: undefined,
       selectedEncoder: "0",
-      // applied: [],
     };
   },
   props: ["labels"],
@@ -140,7 +135,7 @@ export default {
   methods: {
     get_classification_techniques() {
       axios
-        .get("/discovery")
+        .get("/classification")
         .then((res) => {
           this.classificationTechniques = res.data;
         })
@@ -148,14 +143,46 @@ export default {
           console.error(err);
         });
     },
-    change() {
+  },
+  watch: {
+    selectedCT: function (val) {
+      this.status = 0;
+      this.$emit(
+        "technique",
+        val,
+        this.selectedLabel,
+        this.selectedSamples,
+        this.selectedEncoder
+      );
+    },
+    selectedLabel: function (val) {
+      this.status = 0;
+      this.$emit(
+        "technique",
+        this.selectedCT,
+        val,
+        this.selectedSamples,
+        this.selectedEncoder
+      );
+    },
+    selectedSamples: function (val) {
+      this.status = 0;
+      this.$emit(
+        "technique",
+        this.selectedCT,
+        this.selectedLabel,
+        val,
+        this.selectedEncoder
+      );
+    },
+    selectedEncoder: function (val) {
       this.status = 0;
       this.$emit(
         "technique",
         this.selectedCT,
         this.selectedLabel,
         this.selectedSamples,
-        this.selectedEncoder
+        val
       );
     },
   },

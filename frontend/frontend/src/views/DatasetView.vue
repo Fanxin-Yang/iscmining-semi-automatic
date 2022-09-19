@@ -1,9 +1,9 @@
 <template lang="">
-  <form class="row g-3">
-    <h3 class="display-4">Dataset</h3>
-    <h6>Please select an existing data set or upload a new one.</h6>
-
-    <div class="col-md-6">
+  <form class="row g-3 border bg-light">
+    <h6 class="col-md-11">
+      Please select an existing data set or upload a new one.
+    </h6>
+    <div class="col-md-5">
       <input
         class="form-control"
         type="file"
@@ -22,52 +22,49 @@
         Upload
       </button>
     </div>
-    <div class="text-center" v-if="status == -1">
-      <div class="spinner-border m-5" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
-    <div v-else-if="status == 400" class="alert alert-danger" role="alert">
-      {{ info }}
-    </div>
-    <div v-else-if="status == 406" class="alert alert-warning" role="alert">
-      {{ info }}
-    </div>
-    <div
-      v-else-if="status == 200 || status == 0"
-      class="alert alert-success"
-      role="alert"
-    >
-      {{ info }}
-    </div>
-    <div v-else-if="!this.selectedFiles" class="alert alert-light" role="alert">
-      Please choose a .xes file and click the upload button.
-    </div>
-    <div v-else class="alert alert-light" role="alert">
-      You have choose {{ this.selectedFiles.length }} files. Please click the
-      "Upload" button to complete.
+
+    <div class="col-md-4" v-if="status != 404">
+      <select id="selected-dataset" v-model="selectedFile" class="form-select">
+        <option selected disabled value="">Select a data set</option>
+        <option v-for="(name, index) in availableDataSets" :key="index">
+          {{ name }}
+        </option>
+      </select>
+      <!-- <label for="selected-dataset"
+        >Selected data set: {{ selectedFile }}</label
+      > -->
     </div>
 
-    <div class="row g-3" v-if="status != 404">
-      <div class="col-md-6">
-        <select v-model="selectedFile" class="form-select">
-          <option selected disabled value="">Select a data set</option>
-          <option v-for="(name, index) in availableDataSets" :key="index">
-            {{ name }}
-          </option>
-        </select>
+    <div class="col-md-12">
+      <div class="text-center" v-if="status == -1">
+        <div class="spinner-border m-5" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
       </div>
-      <div class="col-md-4">
-        <button
-          type="button"
-          class="btn btn-primary"
-          @click="start_preprocess"
-          :disabled="!selectedFile"
-        >
-          Start Pre-process
-        </button>
+      <div v-else-if="status == 400" class="alert alert-danger" role="alert">
+        {{ info }}
       </div>
-      <h4>Selected data set: {{ selectedFile }}</h4>
+      <div v-else-if="status == 406" class="alert alert-warning" role="alert">
+        {{ info }}
+      </div>
+      <div
+        v-else-if="status == 200 || status == 0"
+        class="alert alert-success"
+        role="alert"
+      >
+        {{ info }}
+      </div>
+      <div
+        v-else-if="!this.selectedFiles"
+        class="alert alert-light"
+        role="alert"
+      >
+        Please choose a .xes file and click the upload button.
+      </div>
+      <div v-else class="alert alert-light" role="alert">
+        You have choose {{ this.selectedFiles.length }} files. Please click the
+        "Upload" button to complete.
+      </div>
     </div>
   </form>
 </template>
@@ -132,12 +129,13 @@ export default {
         this.upload_file(this.selectedFiles[i]);
       }
     },
-    start_preprocess() {
-      let tmp = this.selectedFile.substring(
-        0,
-        this.selectedFile.lastIndexOf(".")
-      );
-      this.$router.replace(tmp);
+  },
+  watch: {
+    selectedFile: function (val) {
+      let tmp =
+        "/iscmining-semi-automatic/" +
+        val.substring(0, this.selectedFile.lastIndexOf("."));
+      this.$router.push(tmp);
     },
   },
   created() {

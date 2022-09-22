@@ -6,9 +6,8 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig(({ command, mode }) => {
   console.log(mode);
   if (command === "serve") {
-    // console.log("serve");
     return {
-      // base: "https://lehre.bpm.in.tum.de/ports/8051/",
+      base: "https://lehre.bpm.in.tum.de/ports/8051/",
       // dev specific config
       plugins: [vue()],
       // resolve: {
@@ -17,7 +16,7 @@ export default defineConfig(({ command, mode }) => {
       //   },
       // },
       server: {
-        host: "localhost",
+        host: "::1",
         // port: 3000,
         // strictPort: true,
         // open: true,
@@ -27,7 +26,6 @@ export default defineConfig(({ command, mode }) => {
       build: {},
     };
   } else if (command === "build") {
-    console.log("build");
     return {
       // build specific config
       base: "/iscmining-semi-automatic/",

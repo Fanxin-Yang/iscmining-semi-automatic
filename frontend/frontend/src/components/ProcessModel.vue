@@ -1,25 +1,24 @@
 <template lang="">
-  <label for="process-model-container" class="form-label">Process Model</label>
+  <div class="col-md-12 text-center" v-if="loading">
+    <div class="spinner-border m-1" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <label
+    v-else
+    :for="'process-model-container' + this.dataSet"
+    class="form-label"
+    >Process model for {{ this.dataSet }}:</label
+  >
   <div
-    id="process-model-container"
+    :id="'process-model-container' + this.dataSet"
     ref="container"
     class="vue-bpmn-diagram-container"
   ></div>
-  <!-- <img
-      :src="
-        'http://localhost:5000/processmodels/' +
-        this.$route.params.dataSet +
-        '.png'
-      "
-      class="img-fluid"
-    /> -->
 </template>
 
 <script>
 import axios from "axios";
-// import BpmnViewer from "bpmn-js/dist/bpmn-modeler.development.js";
-// import BpmnViewer from "bpmn-js/dist/bpmn-modeler.production.min.js";
-// import BpmnViewer from "bpmn-js/lib/NavigatedViewer";
 import BpmnModeler from "bpmn-js/lib/Modeler";
 
 export default {
@@ -40,6 +39,7 @@ export default {
   data() {
     return {
       diagramXML: null,
+      loading: true,
     };
   },
   mounted: function () {
@@ -86,15 +86,18 @@ export default {
     this.bpmnViewer.destroy();
   },
   watch: {
-    dataSet: function (val) {
-      this.$emit("loading");
-      this.fetchDiagram(val, this.perc);
+    dataSet: {
+      handler: function (val) {
+        this.loading = true;
+        this.fetchDiagram(val, this.perc);
+      },
+      deep: true,
+      immediate: true,
     },
     diagramXML: function (val) {
       this.bpmnViewer.importXML(val);
     },
     perc: function (val) {
-      this.$emit("loading");
       this.fetchDiagram(this.dataSet, val);
     },
   },
@@ -105,6 +108,7 @@ export default {
         .get("processmodel/" + dataSet, { params })
         .then((res) => {
           this.diagramXML = res.data;
+          this.loading = false;
         })
         .catch((err) => {
           console.error(err);

@@ -6,8 +6,9 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig(({ command, mode }) => {
   console.log(mode);
   if (command === "serve") {
+    console.log("serve");
     return {
-      // base: "/iscmining-semi-automatic/",
+      base: "/ports/8051/iscmining-semi-automatic/",
       // dev specific config
       plugins: [vue()],
       // resolve: {
@@ -26,6 +27,7 @@ export default defineConfig(({ command, mode }) => {
       build: {},
     };
   } else if (command === "build") {
+    console.log("build");
     return {
       // build specific config
       base: "/iscmining-semi-automatic/",

@@ -6,7 +6,7 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig(({ command, mode }) => {
   console.log(mode);
   if (command === "serve") {
-    console.log("serve");
+    // console.log("serve");
     return {
       // base: "https://lehre.bpm.in.tum.de/ports/8051/",
       // dev specific config
@@ -17,17 +17,11 @@ export default defineConfig(({ command, mode }) => {
       //   },
       // },
       server: {
-        host: "0.0.0.0",
+        host: "localhost",
         // port: 3000,
-        strictPort: true,
+        // strictPort: true,
         // open: true,
-        proxy: {
-          "/test": {
-            target: "https://lehre.bpm.in.tum.de/ports/8051/",
-            changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/test/, ""),
-          },
-        },
+        // proxy: {},
         // origin: "http://127.0.0.1:3000",
       },
       build: {},

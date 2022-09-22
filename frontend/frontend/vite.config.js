@@ -17,11 +17,17 @@ export default defineConfig(({ command, mode }) => {
       //   },
       // },
       server: {
-        host: "localhost",
+        host: "0.0.0.0",
         // port: 3000,
         strictPort: true,
         // open: true,
-        // proxy: {},
+        proxy: {
+          "/test": {
+            target: "https://lehre.bpm.in.tum.de/ports/8051/",
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/test/, ""),
+          },
+        },
         // origin: "http://127.0.0.1:3000",
       },
       build: {},

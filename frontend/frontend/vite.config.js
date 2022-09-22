@@ -8,7 +8,7 @@ export default defineConfig(({ command, mode }) => {
   if (command === "serve") {
     console.log("serve");
     return {
-      base: "/ports/8051/iscmining-semi-automatic/",
+      base: "https://lehre.bpm.in.tum.de/ports/8051/",
       // dev specific config
       plugins: [vue()],
       // resolve: {

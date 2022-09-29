@@ -13,7 +13,7 @@
       </thead>
       <tbody>
         <tr>
-          <th scope="row">{{ this.dataSet }}.xes</th>
+          <th scope="row">{{ this.dataSet.split("&").join(", ") }}</th>
           <td>{{ this.csv }}.csv</td>
           <td v-if="this.shape">
             <b>{{ this.shape["cases"][0] }}</b

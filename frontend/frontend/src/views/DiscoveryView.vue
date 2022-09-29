@@ -63,8 +63,6 @@ export default {
             this.dataSet +
             "/" +
             this.csv +
-            "/" +
-            level +
             "/modified";
           this.$router.push(tmp);
           this.cacheKey = +new Date();

@@ -18,7 +18,7 @@ const router = createRouter({
       component: () => import("../views/AboutView.vue"),
     },
     {
-      path: "/iscmining-semi-automatic/:dataSet?/:csv?/:level?/:modified?",
+      path: "/iscmining-semi-automatic/:dataSet?/:csv?/:modified?",
       name: "iscmining-semi-automatic",
       component: () => import("../views/MainView.vue"),
     },

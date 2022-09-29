@@ -48,17 +48,17 @@
       </div>
     </nav>
     <ProcessModel :dataSet="this.selectedLog" :perc="this.perc / 100" />
-    <!-- <ProjectionTransformation :dataSet="this.$route.params.dataSet" /> -->
+    <ProjectionTransformation :processLogs="this.processLogs" />
   </form>
 </template>
 
 <script>
 import ProcessModel from "../components/ProcessModel.vue";
-// import ProjectionTransformation from "../components/ProjectionTransformation.vue";
+import ProjectionTransformation from "../components/ProjectionTransformation.vue";
 export default {
   components: {
     ProcessModel,
-    // ProjectionTransformation,
+    ProjectionTransformation,
   },
   data() {
     return {
@@ -81,6 +81,13 @@ export default {
     "$route.params.dataSet": {
       handler: function (val) {
         this.processLogs = val.split("&");
+      },
+      deep: true,
+      immediate: true,
+    },
+    processLogs: {
+      handler: function (val) {
+        this.selectedLog = val[0];
       },
       deep: true,
       immediate: true,

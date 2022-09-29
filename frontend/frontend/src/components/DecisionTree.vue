@@ -55,13 +55,41 @@
     class="img-fluid"
     v-if="this.ccp_alphas"
   />
+
+  <div class="col-md-12" v-if="Object.keys(rules).length > 0">
+    <label for="select-rules"> Decision Rules: </label>
+    <select
+      v-model="selectedRules"
+      multiple
+      class="form-select"
+      id="select-rules"
+    >
+      <!-- <option selected disabled value="">Choose a file</option> -->
+      <option v-for="(rule, index) in rules" :key="index">
+        {{ rule }}
+      </option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <button
+      type="button"
+      class="btn btn-outline-primary btn-lg"
+      @click="download"
+      :disabled="!this.ccp_alpha"
+    >
+      Download Result as PDF
+    </button>
+  </div>
 </template>
 
 <script>
+import axios from "axios";
 export default {
   data() {
     return {
       ccp_alpha: undefined,
+      rules: {},
+      selectedRules: new Array(),
       cacheKey: +new Date(),
     };
   },
@@ -78,17 +106,28 @@ export default {
       type: String,
       required: true,
     },
-    level: {
-      type: String,
-      required: true,
-    },
   },
   emits: ["apply"],
   methods: {
+    get_decisiionrules(dataSet, csv) {
+      console.log(csv);
+      axios
+        .get("decisionrule/" + dataSet + "/" + csv + "_modified")
+        .then((res) => {
+          this.rules = res.data;
+        })
+        .catch((err) => {
+          console.error(err);
+          this.error = err.response.data;
+        });
+    },
     apply_ccp() {
       this.cacheKey = +new Date();
       this.$emit("apply", this.ccp_alpha);
     },
+  },
+  created() {
+    this.get_decisiionrules(this.dataSet, this.csv);
   },
 };
 </script>

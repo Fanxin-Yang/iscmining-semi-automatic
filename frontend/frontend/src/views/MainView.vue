@@ -43,14 +43,13 @@
 
           <div class="row my-3">
             <h3 class="display-6" id="classification">
-              <u>Classification</u>
+              <u>Classification{{ !!this.$route.params.modified }}</u>
             </h3>
           </div>
           <div v-if="this.$route.params.modified">
             <ClassificationView
               :dataSet="this.$route.params.dataSet"
               :csv="this.$route.params.csv"
-              :level="this.$route.params.level"
               :modified="this.$route.params.modified"
             />
           </div>

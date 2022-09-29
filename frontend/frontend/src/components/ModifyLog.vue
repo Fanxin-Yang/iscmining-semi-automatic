@@ -150,9 +150,6 @@ export default {
     },
   },
   created() {
-    let tmp =
-      "/iscmining-semi-automatic/" + this.dataSet + "/" + this.csv + "/Seconds";
-    this.$router.push(tmp);
     this.get_variants(this.dataSet, this.csv);
   },
 };

@@ -33,6 +33,9 @@ app.add_url_rule('/projection_transformation/<filename>',
 app.add_url_rule(
     '/projection_transformation/<filename>/<att>',
     view_func=projection_transformation_algorithm.projection_transformation)
+app.add_url_rule(
+    '/merge/<filename>/<att>',
+    view_func=projection_transformation_algorithm.merge)
 app.add_url_rule('/discovery/<filename>/<csv>',
                  view_func=discovery_algorithm.get_events)
 app.add_url_rule('/discovery/<filename>/<csv>/<int:eventIndex>',
@@ -49,6 +52,9 @@ app.add_url_rule('/classification/<filename>/<csv>/<string:alg>',
 app.add_url_rule('/decisiontree/<filename>/<csv>',
                  methods=['GET'],
                  view_func=classification.get_decisiontree)
+app.add_url_rule('/decisionrule/<filename>/<csv>',
+                 methods=['GET'],
+                 view_func=classification.get_decisionrule)
 
 @app.route('/', methods=['GET'])
 def greetings():
@@ -130,19 +136,18 @@ def summary(filename, csv):
     variants_sum = len(pm4py.get_variants_as_tuples(partial_log))
     cases_sum = len(partial_log["case:concept:name"].unique())
     if not csv_modified_path:
-        summary = {}
-        summary["variants"] = [variants_sum, variants_sum]
-        summary["cases"] = [cases_sum, cases_sum]
-        summary["events"] = [events_sum, events_sum]
+        variants = variants_sum
+        cases = cases_sum
+        events = events_sum
     else:
         partial_log_modified = pandas.read_csv(csv_modified_path)
         events = partial_log_modified.shape[0]
         variants = len(pm4py.get_variants_as_tuples(partial_log_modified))
         cases = len(partial_log_modified["case:concept:name"].unique())
-        summary = {}
-        summary["variants"] = [variants, variants_sum]
-        summary["cases"] = [cases, cases_sum]
-        summary["events"] = [events, events_sum]
+    summary = {}
+    summary["variants"] = [variants, variants_sum]
+    summary["cases"] = [cases, cases_sum]
+    summary["events"] = [events, events_sum]
     return summary, 200
 
 # python3 app.py

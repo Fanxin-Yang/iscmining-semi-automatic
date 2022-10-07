@@ -62,16 +62,14 @@ export default {
   },
   data() {
     return {
-      perc: 100,
+      perc: 0,
       processLogs: this.$route.params.dataSet.split("&"),
       selectedLog: undefined,
     };
   },
   methods: {
     click(dataSet) {
-      console.log(dataSet);
       this.selectedLog = dataSet;
-      console.log(this.selectedLog);
     },
   },
   created() {

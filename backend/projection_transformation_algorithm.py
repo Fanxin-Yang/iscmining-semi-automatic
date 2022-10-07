@@ -5,8 +5,8 @@
 
 
 import os
-from flask import request, current_app
-import pm4py
+from flask import current_app
+import pm4py, pandas
 
 def exist_file(filename):
     input_path = os.path.join(
@@ -51,11 +51,29 @@ def projection_transformation(filename, att):
     if not os.path.exists("outputs/" + filename):
         os.makedirs("outputs/" + filename)
     for key in attValues.keys():
-        filterLog = pm4py.filter_event_attribute_values(log, att, [key], level="case", retain=True)
+        filterLog = pm4py.filter_event_attribute_values(log, att, [key], level="event", retain=True)
         dataframe = pm4py.convert_to_dataframe(filterLog)
-        if not os.path.exists("outputs/" + filename + "/" + str(key)):
-            os.makedirs("outputs/" + filename + "/" + str(key))
+        key_name = str(key).replace(" ", "_")
+        if not os.path.exists("outputs/" + filename + "/" + key_name):
+            os.makedirs("outputs/" + filename + "/" + key_name)
         output_path = os.path.join(
-            current_app.config['OUTPUT_FOLDER'], filename + "/" + str(key) + "/" + str(key) + ".csv")
+            current_app.config['OUTPUT_FOLDER'], filename + "/" + key_name + "/" + key_name + ".csv")
         dataframe.to_csv(output_path, index_label="No.")
     return attValues, 200
+
+def merge(filename, att):
+    logs = filename.split("&")
+    print(logs)
+    atts = att.split("&")
+    print(atts)
+    df = pandas.DataFrame()
+    for i in logs:
+        for j in atts:
+            input_path = os.path.join(current_app.config['OUTPUT_FOLDER'], i + "/" + j + "/" + j + ".csv")
+            # print(input_path)
+            if os.path.exists(input_path): 
+                tmp = pandas.read_csv(input_path, index_col="No.")
+                df = df.append(tmp, ignore_index=True)
+    output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + "_" + att + ".csv")
+    df.to_csv(output_path, index_label="No.")
+    return "Merged csv file has been saved."

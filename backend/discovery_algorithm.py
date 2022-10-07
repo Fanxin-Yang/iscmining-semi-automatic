@@ -5,11 +5,23 @@ import pm4py
 
 
 def exist_csv(filename, csv):
+    csv_path = os.path.join(
+        current_app.config['OUTPUT_FOLDER'], filename + "_" + csv + ".csv")
+    if os.path.exists(csv_path): return csv_path
+    if len(csv.split("&")) == 1 and len(filename.split("&")) > 1:
+        for log in filename.split("&"):
+            folder = os.path.join(
+                current_app.config['OUTPUT_FOLDER'], log)
+            if csv.rsplit("_", 1)[1] == "modified":
+                csv_folder = os.path.join(folder, csv.rsplit("_", 1)[0])
+            else:
+                csv_folder = os.path.join(folder, csv)
+            csv_path = os.path.join(csv_folder, csv + '.csv')
+            if os.path.exists(csv_path): 
+                return csv_path
     folder = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename)
-    if len(csv.rsplit("_", 1)) == 1:
-        csv_folder = os.path.join(folder, csv)
-    elif csv.rsplit("_", 1)[1] == "modified":
+    if csv.rsplit("_", 1)[1] == "modified":
         csv_folder = os.path.join(folder, csv.rsplit("_", 1)[0])
     else:
         csv_folder = os.path.join(folder, csv)
@@ -76,9 +88,18 @@ def modify(filename, csv, level):
     selectedVariants = args.pop("variants", "").split(",")
     filtered_log = apply_variants_filter(csv_path, selectedVariants)
     coarsen_timestamps(filtered_log, level)
-    csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_modified.csv')
+    csv_output_path = define_output_path(filename, csv)
     filtered_log.to_csv(csv_output_path, index=False)
     return f"File {csv}_modified.csv is saved."
+
+def define_output_path(filename, csv):
+    csv_path = os.path.join(
+        current_app.config['OUTPUT_FOLDER'], filename + "_" + csv + ".csv")
+    if os.path.exists(csv_path):
+        csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '_' + csv + '_modified.csv')
+    else: 
+        csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_modified.csv')
+    return csv_output_path
 
 def coarsen_timestamps(filtered_log, level):
     lev = convert_level(level)
@@ -99,7 +120,7 @@ def get_variants(filename, csv):
     if not csv_path:
         return "No file found.", 404
     partial_log = pandas.read_csv(csv_path)
-    variants = pm4py.get_variants_as_tuples(partial_log)    
+    variants = pm4py.get_variants_as_tuples(partial_log)
     variants_dict = {}
     i = 0
     for var in variants:

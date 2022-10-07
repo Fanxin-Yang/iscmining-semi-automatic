@@ -1,7 +1,7 @@
 import os
 from flask import request, current_app, send_file
 import matplotlib
-import pandas
+import pandas, numpy
 from sklearn import tree, preprocessing
 from dtreeviz.trees import dtreeviz
 from sklearn.compose import make_column_selector, make_column_transformer
@@ -31,6 +31,26 @@ def get_decisiontree(filename, csv):
         return "No decisiont tree found.", 404
     else:
         return send_file(svg_path)
+
+def get_decisionrule(filename, csv):
+    csv_path = discovery_algorithm.exist_csv(filename, csv)
+    if not csv_path:
+        return "No file found.", 404
+    folder = os.path.join(
+        current_app.config['RESULTS_FOLDER'], filename)
+    rule_path = os.path.join(folder, csv + '_decisionrule.txt')
+    if not os.path.exists(rule_path):
+        return "No decisiont rule found.", 404
+    else:
+        with open(rule_path, "r") as f:
+            rules = f.readlines()
+        i = 0
+        rules_dict = {}
+        for rule in rules:
+            rules_dict[i] = rule
+            i += 1
+        # return send_file(rule_path)
+        return rules_dict
 
 
 def filter(args, partial_log):
@@ -89,6 +109,63 @@ def visualize(clf, data, target, feature_names, target_names, svg_path):
     # dotFile.write(viz.dot)
     # dotFile.close()
 
+
+def get_rules(clf, feature_names, class_names):
+    tree_ = clf.tree_
+    feature_name = [
+        feature_names[i] if i != tree._tree.TREE_UNDEFINED else "undefined!"
+        for i in tree_.feature
+    ]
+
+    paths = []
+    path = []
+    
+    def recurse(node, path, paths):
+        
+        if tree_.feature[node] != tree._tree.TREE_UNDEFINED:
+            name = feature_name[node]
+            threshold = tree_.threshold[node]
+            p1, p2 = list(path), list(path)
+            p1 += [f"({name} <= {numpy.round(threshold, 3)})"]
+            recurse(tree_.children_left[node], p1, paths)
+            p2 += [f"({name} > {numpy.round(threshold, 3)})"]
+            recurse(tree_.children_right[node], p2, paths)
+        else:
+            path += [(tree_.value[node], tree_.n_node_samples[node])]
+            paths += [path]
+            
+    recurse(0, path, paths)
+
+    # sort by samples count
+    samples_count = [p[-1][1] for p in paths]
+    ii = list(numpy.argsort(samples_count))
+    paths = [paths[i] for i in reversed(ii)]
+    
+    rules = []
+    for path in paths:
+        rule = "if "
+        
+        for p in path[:-1]:
+            if rule != "if ":
+                rule += " and "
+            rule += str(p)
+        rule += " then "
+        if class_names is None:
+            rule += "response: "+str(numpy.round(path[-1][0][0][0],3))
+        else:
+            classes = path[-1][0][0]
+            l = numpy.argmax(classes)
+            rule += f"class: {class_names[l]} (proba: {numpy.round(100.0*classes[l]/numpy.sum(classes),2)}%)"
+        rule += f" | based on {path[-1][1]:,} samples"
+        rules += [rule]
+        
+    return rules
+
+
+
+
+
+
 def appy_algorithm(filename, csv, alg):
     args = request.args.copy()
     label = args.pop("classLabel", "")
@@ -137,12 +214,22 @@ def appy_algorithm(filename, csv, alg):
     
     clf = clf.fit(data, target)
 
+    # text_representation = tree.export_text(clf)
+    # print(text_representation)
+
     results_folder = os.path.join(
         current_app.config['RESULTS_FOLDER'], filename)
     if not os.path.exists(results_folder):
         os.makedirs(results_folder)
+        
+    rule_path = os.path.join(results_folder, csv + "_" + "decisionrule.txt")
+    rules = get_rules(clf, feature_names, target_names)
+    with open(rule_path, "w+") as f:
+        for r in rules:
+            print(r)
+            f.write(r + "\n")
+
     svg_path = os.path.join(results_folder, csv + "_" + alg + ".svg")
-    
     visualize(clf, data, target, feature_names, target_names, svg_path)
 
     if ccp_alpha == -1:

@@ -55,7 +55,7 @@
           >Filtering Method:</label
         >
         <select
-          v-model="filtering"
+          v-model="filteringMethod"
           class="form-select"
           id="filtering-method"
           aria-label="filtering-methodHelp"
@@ -101,7 +101,7 @@ export default {
       loading: false,
       variants: undefined,
       selectedVariantsIndex: [],
-      filtering: "0",
+      filteringMethod: "0", //default: 0 (positive), 1 (negative)
       error: "",
     };
   },
@@ -125,11 +125,17 @@ export default {
         });
     },
     apply_filter() {
-      if (this.filtering == 1) {
+      if (this.filteringMethod == 1) {
         for (var i = 0; i < this.selectedVariantsIndex.length; ++i) {
           this.selectedVariantsIndex[i] = !this.selectedVariantsIndex[i];
         }
-        this.filtering = 0;
+        this.filteringMethod = 0;
+      }
+      if (!this.selectedVariantsIndex.includes(true)) {
+        // all false
+        for (var j = 0; j < this.selectedVariantsIndex.length; ++j) {
+          this.selectedVariantsIndex[j] = true;
+        }
       }
     },
     modify() {

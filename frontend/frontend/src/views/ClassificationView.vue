@@ -51,15 +51,11 @@
 <script>
 import axios from "axios";
 import ClassificationTechniques from "../components/ClassificationTechniques.vue";
-// import ValueSelection from "../components/ValueSelection.vue";
-// import VariantFilter from "../components/VariantFilter.vue";
 import DecisionTree from "../components/DecisionTree.vue";
 export default {
   components: {
     ClassificationTechniques,
-    // ValueSelection,
     DecisionTree,
-    // VariantFilter,
   },
   props: {
     dataSet: {

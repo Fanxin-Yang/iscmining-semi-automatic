@@ -43,7 +43,7 @@
 
           <div class="row my-3">
             <h3 class="display-6" id="classification">
-              <u>Classification{{ !!this.$route.params.modified }}</u>
+              <u>Classification</u>
             </h3>
           </div>
           <div v-if="this.$route.params.modified">

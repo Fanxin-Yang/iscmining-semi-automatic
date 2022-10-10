@@ -74,7 +74,7 @@ def encoder_X_y(encoder, X, y):
         dtype_include='category')), remainder='passthrough', verbose_feature_names_out=False)
     # data_train = ct.fit_transform(X_train)
     # data_test = ct.fit_transform(X_test)
-    data = ct.fit_transform(X) if encoder == "0" else ct.fit_transform(X).toarray()
+    data = ct.fit_transform(X) #if encoder == "0" else ct.fit_transform(X).toarray()
     feature_names = ct.get_feature_names_out()
 
     encodery = preprocessing.OrdinalEncoder(
@@ -89,6 +89,7 @@ def encoder_X_y(encoder, X, y):
         #     y_test.values.reshape(-1, 1)).reshape(1, -1)[0]
         target = encodery.fit_transform(y.values.reshape(-1, 1)).reshape(1, -1)[0]
     target_names = y.unique()
+    # tmp = y.values.reshape(-1, 1)
     return data, target, feature_names, target_names
 
 def visualize(clf, data, target, feature_names, target_names, svg_path):
@@ -212,6 +213,7 @@ def appy_algorithm(filename, csv, alg):
         ccp_alpha = float(ccp_alpha)
         clf = tree.DecisionTreeClassifier(criterion="gini", splitter="random", ccp_alpha=ccp_alpha)
     
+    test_target = y.values.reshape(-1, 1)
     clf = clf.fit(data, target)
 
     # text_representation = tree.export_text(clf)
@@ -226,7 +228,6 @@ def appy_algorithm(filename, csv, alg):
     rules = get_rules(clf, feature_names, target_names)
     with open(rule_path, "w+") as f:
         for r in rules:
-            print(r)
             f.write(r + "\n")
 
     svg_path = os.path.join(results_folder, csv + "_" + alg + ".svg")

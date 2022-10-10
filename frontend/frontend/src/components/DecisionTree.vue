@@ -44,7 +44,7 @@
       </div> -->
   <img
     :src="
-      'http://localhost:5000/decisiontree/' +
+      'http://127.0.0.1:5000/decisiontree/' +
       dataSet +
       '/' +
       csv +
@@ -56,30 +56,35 @@
     v-if="this.ccp_alphas"
   />
 
-  <div class="col-md-12" v-if="Object.keys(rules).length > 0">
-    <label for="select-rules"> Decision Rules: </label>
-    <select
-      v-model="selectedRules"
-      multiple
-      class="form-select"
-      id="select-rules"
-    >
-      <!-- <option selected disabled value="">Choose a file</option> -->
-      <option v-for="(rule, index) in rules" :key="index">
-        {{ rule }}
-      </option>
-    </select>
+  <div class="table-responsive" id="rules-table" v-if="this.ccp_alphas">
+    <table class="table table-striped table-hover table-sm table-bordered">
+      <thead class="header">
+        <tr>
+          <th scope="col"></th>
+          <th>Decision Rules</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(rule, index) in rules" :key="index">
+          <th scope="row">
+            {{ index }}
+          </th>
+          {{
+            rule
+          }}
+        </tr>
+      </tbody>
+    </table>
   </div>
-  <div class="col-md-3">
-    <button
-      type="button"
-      class="btn btn-outline-primary btn-lg"
-      @click="download"
-      :disabled="!this.ccp_alpha"
-    >
-      Download Result as PDF
-    </button>
-  </div>
+
+  <button
+    type="button"
+    class="btn btn-primary btn-lg"
+    @click="download"
+    :disabled="!this.ccp_alpha"
+  >
+    Download Results as PDF
+  </button>
 </template>
 
 <script>

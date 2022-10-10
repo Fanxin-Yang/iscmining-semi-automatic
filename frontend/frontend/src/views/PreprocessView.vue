@@ -14,13 +14,41 @@
         id="perc"
       />
     </div>
-    <div class="col-md-12">
-      <ProcessModel
-        :dataSet="this.$route.params.dataSet"
-        :perc="this.perc / 100"
-      />
-    </div>
-    <ProjectionTransformation :dataSet="this.$route.params.dataSet" />
+
+    <nav>
+      <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <button
+          class="nav-link active"
+          id="nav-home-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#nav-home"
+          type="button"
+          role="tab"
+          aria-controls="nav-home"
+          aria-selected="true"
+          @click="click(this.processLogs[0])"
+        >
+          {{ this.processLogs[0] }}
+        </button>
+        <button
+          class="nav-link"
+          :id="'nav-tab' + dataSet"
+          data-bs-toggle="tab"
+          :data-bs-target="'#nav-' + dataSet"
+          type="button"
+          role="tab"
+          aria-controls="'nav-' + dataSet"
+          aria-selected="false"
+          v-for="(dataSet, index) in this.processLogs.slice(1)"
+          :key="index"
+          @click="click(dataSet)"
+        >
+          {{ dataSet }}
+        </button>
+      </div>
+    </nav>
+    <ProcessModel :dataSet="this.selectedLog" :perc="this.perc / 100" />
+    <ProjectionTransformation :processLogs="this.processLogs" />
   </form>
 </template>
 
@@ -34,8 +62,34 @@ export default {
   },
   data() {
     return {
-      perc: 100,
+      perc: 0,
+      processLogs: this.$route.params.dataSet.split("&"),
+      selectedLog: undefined,
     };
+  },
+  methods: {
+    click(dataSet) {
+      this.selectedLog = dataSet;
+    },
+  },
+  created() {
+    this.selectedLog = this.processLogs[0];
+  },
+  watch: {
+    "$route.params.dataSet": {
+      handler: function (val) {
+        this.processLogs = val.split("&");
+      },
+      deep: true,
+      immediate: true,
+    },
+    processLogs: {
+      handler: function (val) {
+        this.selectedLog = val[0];
+      },
+      deep: true,
+      immediate: true,
+    },
   },
 };
 </script>

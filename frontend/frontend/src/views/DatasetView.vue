@@ -24,15 +24,16 @@
     </div>
 
     <div class="col-md-4" v-if="status != 404">
-      <select id="selected-dataset" v-model="selectedFile" class="form-select">
-        <option selected disabled value="">Select a data set</option>
+      <select
+        multiple
+        id="selected-dataset"
+        v-model="processLogs"
+        class="form-select"
+      >
         <option v-for="(name, index) in availableDataSets" :key="index">
           {{ name }}
         </option>
       </select>
-      <!-- <label for="selected-dataset"
-        >Selected data set: {{ selectedFile }}</label
-      > -->
     </div>
 
     <div class="col-md-12">
@@ -76,7 +77,7 @@ export default {
     return {
       info: undefined,
       status: null,
-      selectedFile: undefined,
+      processLogs: [],
       dataSet: undefined,
       selectedFiles: FileList,
       availableDataSets: undefined,
@@ -108,11 +109,9 @@ export default {
       axios
         .post("upload", formData, { headers })
         .then((res) => {
-          console.log(res);
           this.get_dataSets();
           this.status = res.status;
           this.info = res.statusText;
-          this.selectedFile = this.selectedFiles[0].name;
         })
         .catch((err) => {
           console.error(err);
@@ -127,15 +126,26 @@ export default {
       }
       for (let i = 0; i < this.selectedFiles.length; i++) {
         this.upload_file(this.selectedFiles[i]);
+        this.processLogs[i] = this.selectedFiles[i].name;
       }
     },
   },
   watch: {
-    selectedFile: function (val) {
-      let tmp =
-        "/iscmining-semi-automatic/" +
-        val.substring(0, this.selectedFile.lastIndexOf("."));
-      this.$router.push(tmp);
+    processLogs: {
+      handler: function (val) {
+        if (val.length > 0) {
+          let tmp = "/iscmining-semi-automatic/";
+          for (let i = 0; i < val.length; i++) {
+            if (i > 0) {
+              tmp += "&";
+            }
+            tmp += val[i].substring(0, val[i].lastIndexOf("."));
+          }
+          this.$router.push(tmp);
+        }
+      },
+      deep: true,
+      immediate: true,
     },
   },
   created() {

@@ -50,7 +50,6 @@
             <ClassificationView
               :dataSet="this.$route.params.dataSet"
               :csv="this.$route.params.csv"
-              :level="this.$route.params.level"
               :modified="this.$route.params.modified"
             />
           </div>

@@ -44,7 +44,7 @@
       </div> -->
   <img
     :src="
-      'http://localhost:5000/decisiontree/' +
+      'http://127.0.0.1:5000/decisiontree/' +
       dataSet +
       '/' +
       csv +
@@ -55,13 +55,46 @@
     class="img-fluid"
     v-if="this.ccp_alphas"
   />
+
+  <div class="table-responsive" id="rules-table" v-if="this.ccp_alphas">
+    <table class="table table-striped table-hover table-sm table-bordered">
+      <thead class="header">
+        <tr>
+          <th scope="col"></th>
+          <th>Decision Rules</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(rule, index) in rules" :key="index">
+          <th scope="row">
+            {{ index }}
+          </th>
+          {{
+            rule
+          }}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <button
+    type="button"
+    class="btn btn-primary btn-lg"
+    @click="download"
+    :disabled="!this.ccp_alpha"
+  >
+    Download Results as PDF
+  </button>
 </template>
 
 <script>
+import axios from "axios";
 export default {
   data() {
     return {
       ccp_alpha: undefined,
+      rules: {},
+      selectedRules: new Array(),
       cacheKey: +new Date(),
     };
   },
@@ -78,17 +111,28 @@ export default {
       type: String,
       required: true,
     },
-    level: {
-      type: String,
-      required: true,
-    },
   },
   emits: ["apply"],
   methods: {
+    get_decisiionrules(dataSet, csv) {
+      console.log(csv);
+      axios
+        .get("decisionrule/" + dataSet + "/" + csv + "_modified")
+        .then((res) => {
+          this.rules = res.data;
+        })
+        .catch((err) => {
+          console.error(err);
+          this.error = err.response.data;
+        });
+    },
     apply_ccp() {
       this.cacheKey = +new Date();
       this.$emit("apply", this.ccp_alpha);
     },
+  },
+  created() {
+    this.get_decisiionrules(this.dataSet, this.csv);
   },
 };
 </script>

@@ -42,7 +42,6 @@
         :ccp_alphas="this.ccp_alphas"
         :dataSet="this.dataSet"
         :csv="this.csv"
-        :level="this.level"
         @apply="apply"
       />
     </div>
@@ -52,15 +51,11 @@
 <script>
 import axios from "axios";
 import ClassificationTechniques from "../components/ClassificationTechniques.vue";
-// import ValueSelection from "../components/ValueSelection.vue";
-// import VariantFilter from "../components/VariantFilter.vue";
 import DecisionTree from "../components/DecisionTree.vue";
 export default {
   components: {
     ClassificationTechniques,
-    // ValueSelection,
     DecisionTree,
-    // VariantFilter,
   },
   props: {
     dataSet: {
@@ -68,10 +63,6 @@ export default {
       required: true,
     },
     csv: {
-      type: String,
-      required: true,
-    },
-    level: {
       type: String,
       required: true,
     },
@@ -186,10 +177,6 @@ export default {
     },
     csv: function (val) {
       this.get_events(this.dataSet, val);
-    },
-    level: function (val) {
-      this.get_events(this.dataSet, this.csv);
-      console.log(val);
     },
     modified: function (val) {
       this.get_events(this.dataSet, this.csv);

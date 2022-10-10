@@ -1,10 +1,10 @@
 <template lang="">
-  <div class="col-md-4">
+  <div class="col-md-3">
     <select v-model="selectedAtt" class="form-select" id="select-attribute">
       <option selected disabled value="">
         Choose a event attribute (recommanded: org:resource)
       </option>
-      <option v-for="(att, index) in attributes" :key="index">
+      <option v-for="(att, index) in commonArr" :key="index">
         {{ att }}
       </option>
     </select>
@@ -23,31 +23,41 @@
     </button>
   </div>
 
-  <div class="col-md-4" v-if="Object.keys(projections).length > 0">
+  <div class="col-md-3" v-if="Object.keys(projections).length > 0">
     <select
       v-model="selectedProjection"
+      multiple
       class="form-select"
       id="select-projection"
     >
-      <option selected disabled value="">Choose a file</option>
-      <option v-for="(number, tmp) in projections" :key="tmp">
-        {{ tmp }}.csv
+      <!-- <option selected disabled value="">Choose a file</option> -->
+      <option v-for="(tmp, index) in projections" :key="index">
+        {{ tmp }}
       </option>
     </select>
-    <label for="select-projection">
-      Selected projection: {{ selectedProjection }}
-    </label>
+    <label for="select-projection"> Selected: {{ selectedProjection }} </label>
   </div>
-  <!-- <div class="col-md-4">
-      <button
-        type="button"
-        class="btn btn-primary"
-        @click="start_discovery"
-        :disabled="!selectedProjection"
-      >
-        Start Discovery
-      </button>
-    </div> -->
+  <div class="col-md-3" v-if="Object.keys(selectedProjection).length == 1">
+    <button
+      type="button"
+      class="btn btn-primary"
+      @click="start_discovery"
+      :disabled="!selectedProjection"
+    >
+      Start Discovery
+    </button>
+  </div>
+  <div class="col-md-3" v-else-if="Object.keys(selectedProjection).length > 1">
+    <button
+      type="button"
+      class="btn btn-primary"
+      @click="start_discovery"
+      :disabled="!selectedProjection"
+    >
+      Merge & Start Discovery
+    </button>
+  </div>
+
   <div class="col-md-12">
     <div
       class="text-center"
@@ -79,82 +89,110 @@
 import axios from "axios";
 export default {
   props: {
-    dataSet: {
-      type: String,
+    processLogs: {
+      type: Array,
       required: true,
     },
   },
   data() {
     return {
       attributes: {},
+      commonArr: new Array(),
       selectedAtt: undefined,
-      projections: {},
-      selectedProjection: undefined,
+      projections: new Array(),
+      selectedProjection: new Array(),
       loading: false,
     };
   },
   methods: {
-    get_attributes(val) {
-      axios
-        .get("projection_transformation/" + val)
-        .then((res) => {
-          this.attributes = res.data;
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+    get_common_attributes(val) {
+      for (var i = 0; i < val.length; ++i) {
+        const log = val[i];
+        axios
+          .get("projection_transformation/" + log)
+          .then((res) => {
+            this.attributes[log] = Object.values(res.data);
+            this.commonArr = Object.values(res.data);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
     },
     transformation() {
-      this.loading = true;
-      axios
-        .get(
-          "projection_transformation/" + this.dataSet + "/" + this.selectedAtt
-        )
-        .then((res) => {
-          this.loading = false;
-          this.projections = res.data;
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+      this.projections = new Array();
+      this.selectedProjection = new Array();
+      for (var i = 0; i < Object.keys(this.attributes).length; ++i) {
+        this.loading = true;
+        const log = Object.keys(this.attributes)[i];
+        axios
+          .get("projection_transformation/" + log + "/" + this.selectedAtt)
+          .then((res) => {
+            this.loading = false;
+            this.projections.push(...Object.keys(res.data));
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
     },
-    // start_discovery() {
-    //   let tmp =
-    //     this.$router.currentRoute.value.fullPath +
-    //     "/" +
-    //     this.selectedProjection.substring(
-    //       0,
-    //       this.selectedProjection.lastIndexOf(".")
-    //     );
-    //   this.$router.push(tmp);
-    // },
+    start_discovery() {
+      let tmp = "";
+      for (var i = 0; i < Object.keys(this.selectedProjection).length; ++i) {
+        if (i != 0) {
+          tmp += "&";
+        }
+        tmp += this.selectedProjection[i].split(" ").join("_");
+      }
+      let url =
+        "/iscmining-semi-automatic/" + this.processLogs.join("&") + "/" + tmp;
+      console.log(url);
+      if (Object.keys(this.selectedProjection).length > 1) {
+        axios
+          .get("merge/" + this.processLogs.join("&") + "/" + tmp)
+          .then((res) => {
+            this.loading = false;
+            console.log(res.data);
+            this.$router.push(url);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      } else {
+        this.$router.push(url);
+      }
+    },
   },
   watch: {
-    dataSet: function (val) {
-      this.get_attributes(val);
-      this.projections = {};
-      this.selectedProjection = undefined;
+    processLogs: function (val) {
+      this.commonArr = new Array();
+      this.attributes = {};
+      this.get_common_attributes(val);
+    },
+    attributes: {
+      handler: function (val) {
+        for (const log in val) {
+          this.commonArr = this.commonArr.filter((att) =>
+            this.attributes[log].includes(att)
+          );
+        }
+      },
+      deep: true,
+      immediate: true,
     },
     selectedProjection: function (val) {
-      if (val) {
-        let tmp =
-          "/iscmining-semi-automatic/" +
-          this.dataSet +
-          "/" +
-          val.substring(0, val.lastIndexOf("."));
-        this.$router.push(tmp);
-      }
+      console.log(val);
+      let tmp = "/iscmining-semi-automatic/" + this.processLogs.join("&");
+      this.$router.push(tmp);
     },
     selectedAtt: function (val) {
       console.log(val);
-      this.selectedProjection = undefined;
-      this.projections = {};
-      let tmp = "/iscmining-semi-automatic/" + this.dataSet;
-      this.$router.push(tmp);
+      this.selectedProjection = new Array();
+      this.projections = new Array();
     },
   },
   created() {
-    this.get_attributes(this.dataSet);
+    this.get_common_attributes(this.processLogs);
   },
 };
 </script>

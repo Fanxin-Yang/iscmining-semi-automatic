@@ -6,18 +6,13 @@
     class="col-md-12 text-center"
     v-if="Object.keys(events).length == 0 && error == ''"
   >
-    <div class="spinner-border m-5" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
+    Loading...
   </div>
-  <div v-if="error != ''" class="alert alert-danger" role="alert">
+  <div v-else-if="error != ''" class="alert alert-danger" role="alert">
     {{ error }}
   </div>
-  <div
-    class="table-responsive"
-    id="events-table"
-    v-if="Object.keys(events).length > 0"
-  >
+
+  <div class="table-responsive" id="events-table" v-else>
     <table class="table table-striped table-hover table-sm table-bordered">
       <thead class="header">
         <tr>

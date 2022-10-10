@@ -7,7 +7,7 @@ export default defineConfig(({ command, mode }) => {
   console.log(mode);
   if (command === "serve") {
     return {
-      base: "https://lehre.bpm.in.tum.de/",
+      base: "http://131.159.56.59:8051/",
       // dev specific config
       plugins: [vue()],
       // resolve: {

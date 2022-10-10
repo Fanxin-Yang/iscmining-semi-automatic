@@ -7,7 +7,7 @@ export default defineConfig(({ command, mode }) => {
   console.log(mode);
   if (command === "serve") {
     return {
-      base: "https://lehre.bpm.in.tum.de/ports/8051",
+      base: "https://lehre.bpm.in.tum.de/",
       // dev specific config
       plugins: [vue()],
       // resolve: {

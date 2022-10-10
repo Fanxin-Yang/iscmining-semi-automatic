@@ -7,7 +7,7 @@ export default defineConfig(({ command, mode }) => {
   console.log(mode);
   if (command === "serve") {
     return {
-      base: "http://131.159.56.59:8051/",
+      base: "https://lehre.bpm.in.tum.de/ports/8051/",
       // dev specific config
       plugins: [vue()],
       // resolve: {
@@ -16,7 +16,7 @@ export default defineConfig(({ command, mode }) => {
       //   },
       // },
       server: {
-        host: "[::1]",
+        host: "localhost",
         port: 8051,
         // strictPort: true,
         // open: true,

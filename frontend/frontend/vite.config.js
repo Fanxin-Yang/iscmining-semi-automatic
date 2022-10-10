@@ -16,8 +16,8 @@ export default defineConfig(({ command, mode }) => {
       //   },
       // },
       server: {
-        host: "localhost",
-        // port: 3000,
+        host: "[::1]",
+        port: 8051,
         // strictPort: true,
         // open: true,
         // proxy: {},

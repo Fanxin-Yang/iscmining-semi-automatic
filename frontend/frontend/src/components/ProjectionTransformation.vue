@@ -176,6 +176,7 @@ export default {
             this.attributes[log].includes(att)
           );
         }
+        this.selectedAtt = undefined;
       },
       deep: true,
       immediate: true,

@@ -80,7 +80,7 @@ export default {
       handler: function (val) {
         this.processLogs = val.split("&");
       },
-      deep: true,
+      deep: false,
       immediate: true,
     },
     processLogs: {

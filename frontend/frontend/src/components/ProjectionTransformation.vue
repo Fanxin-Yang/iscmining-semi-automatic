@@ -67,6 +67,9 @@
         <span class="visually-hidden">Loading...</span>
       </div>
     </div>
+    <div v-else-if="mergeInfo" class="alert alert-success" role="alert">
+      {{ mergeInfo }}
+    </div>
     <div
       v-else-if="Object.keys(projections).length > 15"
       class="alert alert-warning"
@@ -102,6 +105,7 @@ export default {
       projections: new Array(),
       selectedProjection: new Array(),
       loading: false,
+      mergeInfo: undefined,
     };
   },
   methods: {
@@ -129,6 +133,7 @@ export default {
           .get("projection_transformation/" + log + "/" + this.selectedAtt)
           .then((res) => {
             this.loading = false;
+            console.log(res.data);
             this.projections.push(...Object.keys(res.data));
           })
           .catch((err) => {
@@ -152,7 +157,7 @@ export default {
           .get("merge/" + this.processLogs.join("&") + "/" + tmp)
           .then((res) => {
             this.loading = false;
-            console.log(res.data);
+            this.mergeInfo = res.data;
             this.$router.push(url);
           })
           .catch((err) => {
@@ -181,15 +186,24 @@ export default {
       deep: true,
       immediate: true,
     },
-    selectedProjection: function (val) {
-      console.log(val);
-      let tmp = "/iscmining-semi-automatic/" + this.processLogs.join("&");
-      this.$router.push(tmp);
+    selectedProjection: {
+      handler: function (val) {
+        console.log(val);
+        this.mergeInfo = undefined;
+        let tmp = "/iscmining-semi-automatic/" + this.processLogs.join("&");
+        this.$router.push(tmp);
+      },
+      deep: true,
+      immediate: true,
     },
     selectedAtt: function (val) {
       console.log(val);
-      this.selectedProjection = new Array();
-      this.projections = new Array();
+      if (Object.keys(this.selectedProjection).length != 0) {
+        this.selectedProjection = new Array();
+      }
+      if (Object.keys(this.projections).length != 0) {
+        this.projections = new Array();
+      }
     },
   },
   created() {

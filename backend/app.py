@@ -34,7 +34,7 @@ app.add_url_rule(
     '/projection_transformation/<filename>/<att>',
     view_func=projection_transformation_algorithm.projection_transformation)
 app.add_url_rule(
-    '/merge/<filename>/<att>',
+    '/merge/<filename>/<projections>',
     view_func=projection_transformation_algorithm.merge)
 app.add_url_rule('/discovery/<filename>/<csv>',
                  view_func=discovery_algorithm.get_events)
@@ -86,8 +86,12 @@ def mining_process_model(file_path, bpmn_path, perc):
     # filtering on the paths percentage
     dfg, sa, ea, activities_count = dfg_filtering.filter_dfg_on_paths_percentage(dfg, sa, ea, activities_count, perc)
     filtered_log = pm4py.play_out(dfg, sa, ea)
-    tree = pm4py.discover_bpmn_inductive(filtered_log)
-    pm4py.write_bpmn(tree, bpmn_path)
+    bpmn = pm4py.discover_bpmn_inductive(filtered_log)
+    # dfg, sa, ea = pm4py.discover_directly_follows_graph(filtered_log)
+    # from pm4py.objects.conversion.dfg import converter as dfg_mining
+    # net, im, fm = dfg_mining.apply(dfg)
+    # bpmn = pm4py.convert_to_bpmn(net, im, fm)
+    pm4py.write_bpmn(bpmn, bpmn_path)
     return
     
 

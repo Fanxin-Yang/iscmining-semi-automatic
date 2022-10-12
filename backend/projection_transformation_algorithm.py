@@ -51,7 +51,7 @@ def projection_transformation(filename, att):
     if not os.path.exists("outputs/" + filename):
         os.makedirs("outputs/" + filename)
     for key in attValues.keys():
-        filterLog = pm4py.filter_event_attribute_values(log, att, [key], level="event", retain=True)
+        filterLog = pm4py.filter_event_attribute_values(log, att, [key], level="case", retain=True)
         dataframe = pm4py.convert_to_dataframe(filterLog)
         key_name = str(key).replace(" ", "_")
         if not os.path.exists("outputs/" + filename + "/" + key_name):
@@ -61,19 +61,17 @@ def projection_transformation(filename, att):
         dataframe.to_csv(output_path, index_label="No.")
     return attValues, 200
 
-def merge(filename, att):
+def merge(filename, projections):
     logs = filename.split("&")
-    print(logs)
-    atts = att.split("&")
-    print(atts)
+    atts = projections.split("&")
     df = pandas.DataFrame()
     for i in logs:
         for j in atts:
             input_path = os.path.join(current_app.config['OUTPUT_FOLDER'], i + "/" + j + "/" + j + ".csv")
-            # print(input_path)
             if os.path.exists(input_path): 
                 tmp = pandas.read_csv(input_path, index_col="No.")
-                df = df.append(tmp, ignore_index=True)
-    output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + "_" + att + ".csv")
+                if df.size == 0: df = pandas.concat([df, tmp], join="outer", ignore_index=True)
+                else: df = pandas.concat([df, tmp], join="inner", ignore_index=True)
+    output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + "_" + projections + ".csv")
     df.to_csv(output_path, index_label="No.")
     return "Merged csv file has been saved."

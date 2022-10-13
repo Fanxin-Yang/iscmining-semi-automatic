@@ -61,17 +61,17 @@ def projection_transformation(filename, att):
         dataframe.to_csv(output_path, index_label="No.")
     return attValues, 200
 
-def merge(filename, projections):
+def merge(filename, projection):
     logs = filename.split("&")
-    atts = projections.split("&")
+    projections = projection.split("&")
     df = pandas.DataFrame()
     for i in logs:
-        for j in atts:
+        for j in projections:
             input_path = os.path.join(current_app.config['OUTPUT_FOLDER'], i + "/" + j + "/" + j + ".csv")
             if os.path.exists(input_path): 
                 tmp = pandas.read_csv(input_path, index_col="No.")
                 if df.size == 0: df = pandas.concat([df, tmp], join="outer", ignore_index=True)
                 else: df = pandas.concat([df, tmp], join="inner", ignore_index=True)
-    output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + "_" + projections + ".csv")
+    output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + "_" + projection + ".csv")
     df.to_csv(output_path, index_label="No.")
     return "Merged csv file has been saved."

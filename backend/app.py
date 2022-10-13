@@ -34,7 +34,7 @@ app.add_url_rule(
     '/projection_transformation/<filename>/<att>',
     view_func=projection_transformation_algorithm.projection_transformation)
 app.add_url_rule(
-    '/merge/<filename>/<projections>',
+    '/merge/<filename>/<projection>',
     view_func=projection_transformation_algorithm.merge)
 app.add_url_rule('/discovery/<filename>/<csv>',
                  view_func=discovery_algorithm.get_events)

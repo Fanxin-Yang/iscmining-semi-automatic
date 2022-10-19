@@ -21,7 +21,9 @@ export default defineConfig(({ command, mode }) => {
         // strictPort: true,
         // open: true,
         proxy: {
-          "/": "http://lehre.bpm.in.tum.de/ports/8051",
+          "/ports/8051/.**": {
+            rewrite: (path) => path.replace("/ports/8051", ""),
+          },
         },
         // origin: "http://127.0.0.1:3000",
       },

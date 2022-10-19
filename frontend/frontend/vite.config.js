@@ -20,11 +20,11 @@ export default defineConfig(({ command, mode }) => {
         // port: 8051,
         // strictPort: true,
         // open: true,
-        proxy: {
-          "/ports/8051/.**": {
-            rewrite: (path) => path.replace("/ports/8051", ""),
-          },
-        },
+        // proxy: {
+        //   "/ports/8051/.**": {
+        //     rewrite: (path) => path.replace("/ports/8051", ""),
+        //   },
+        // },
         // origin: "http://127.0.0.1:3000",
       },
       build: {},

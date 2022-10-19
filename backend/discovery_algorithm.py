@@ -33,27 +33,27 @@ def exist_csv(filename, csv):
 
 
 def get_events(filename, csv):
-    label = request.args.get("label", "")
-    if label == "":
-        csv_path = exist_csv(filename, csv)
-        if not csv_path:
-            return "No file found.", 404
-        json_path = csv_path.rsplit(".", 1)[0] + '.json'
-        partial_log = pandas.read_csv(csv_path)
-        # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
-        partial_log.to_json(json_path, orient="records")
-        return send_file(json_path, as_attachment=False), 200
-    else:
-        csv_path = exist_csv(filename, csv)
-        if not csv_path:
-            return "No file found.", 404
-        partial_log = pandas.read_csv(csv_path)
-        dict = {}
-        i = 0
-        for l in partial_log[label].dropna().unique():
-            dict[i] = l
-            i += 1
-        return dict, 200
+    # label = request.args.get("label", "")
+    # if label == "":
+    csv_path = exist_csv(filename, csv)
+    if not csv_path:
+        return "No file found.", 404
+    json_path = csv_path.rsplit(".", 1)[0] + '.json'
+    partial_log = pandas.read_csv(csv_path)
+    # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
+    partial_log.to_json(json_path, orient="records")
+    return send_file(json_path, as_attachment=False), 200
+    # else:
+    #     csv_path = exist_csv(filename, csv)
+    #     if not csv_path:
+    #         return "No file found.", 404
+    #     partial_log = pandas.read_csv(csv_path)
+    #     dict = {}
+    #     i = 0
+    #     for l in partial_log[label].dropna().unique():
+    #         dict[i] = l
+    #         i += 1
+    #     return dict, 200
 
 
 def delete_event(filename, csv, eventIndex):

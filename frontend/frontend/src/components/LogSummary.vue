@@ -16,16 +16,16 @@
           <th scope="row">{{ this.dataSet.split("&").join(", ") }}</th>
           <td>{{ this.csv }}.csv</td>
           <td v-if="this.shape">
+            <b>{{ this.shape["variants"][0] }}</b
+            >/{{ this.shape["variants"][1] }}
+          </td>
+          <td v-if="this.shape">
             <b>{{ this.shape["cases"][0] }}</b
             >/{{ this.shape["cases"][1] }}
           </td>
           <td v-if="this.shape">
             <b>{{ this.shape["events"][0] }}</b
             >/{{ this.shape["events"][1] }}
-          </td>
-          <td v-if="this.shape">
-            <b>{{ this.shape["variants"][0] }}</b
-            >/{{ this.shape["variants"][1] }}
           </td>
         </tr>
       </tbody>

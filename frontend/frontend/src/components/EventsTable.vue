@@ -21,11 +21,19 @@
             <div v-if="value != 'case:concept:name'">
               {{ value }}
             </div>
+            <div v-else>case</div>
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(event, index) in events" :key="index">
+        <tr class="text-center" v-if="index > 1">
+          <td :colspan="Object.keys(events[0]).length + 1">
+            <button type="button" class="btn btn-link" @click="previous">
+              Previous
+            </button>
+          </td>
+        </tr>
+        <tr v-for="(event, index) in showEvents" :key="index">
           <th scope="row">
             <DeleteModal
               :eventIndex="event['No.']"
@@ -36,6 +44,34 @@
           </th>
           <td v-for="(value, key) in event" :key="key">{{ value }}</td>
         </tr>
+        <tr
+          class="text-center"
+          v-if="index > 0 && index * 100 < Object.keys(this.events).length"
+        >
+          <td :colspan="Object.keys(events[0]).length + 1">
+            <button type="button" class="btn btn-link" @click="next">
+              Next
+            </button>
+          </td>
+        </tr>
+        <tr class="text-center" v-else>
+          <td :colspan="Object.keys(events[0]).length + 1">
+            The End of the Event Table.
+          </td>
+        </tr>
+        <!-- <tr>
+          <nav aria-label="Page navigation example">
+            <ul class="pagination">
+              <li class="page-item">
+                <a class="page-link" href="#">Previous</a>
+              </li>
+              <li class="page-item"><a class="page-link" href="#">1</a></li>
+              <li class="page-item"><a class="page-link" href="#">2</a></li>
+              <li class="page-item"><a class="page-link" href="#">3</a></li>
+              <li class="page-item"><a class="page-link" href="#">Next</a></li>
+            </ul>
+          </nav>
+        </tr> -->
       </tbody>
     </table>
   </div>
@@ -71,8 +107,10 @@ export default {
   data() {
     return {
       events: {},
+      showEvents: {},
       error: "",
       info: "",
+      index: 0,
     };
   },
   methods: {
@@ -81,11 +119,18 @@ export default {
         .get("discovery/" + dataSet + "/" + csv)
         .then((res) => {
           this.events = res.data;
+          this.index = 1;
         })
         .catch((err) => {
           console.error(err);
           this.error = err.response.data;
         });
+    },
+    previous() {
+      this.index = this.index - 1;
+    },
+    next() {
+      this.index = this.index + 1;
     },
     update_info(data) {
       this.info = data;
@@ -94,6 +139,15 @@ export default {
   watch: {
     csv: function (val) {
       this.get_events(this.dataSet, val);
+    },
+    index: function (val) {
+      let j = 0;
+      this.showEvents = {};
+      const min = Math.min(val * 100, Object.keys(this.events).length);
+      for (var i = (val - 1) * 100; i < min; ++i) {
+        this.showEvents[j] = this.events[i];
+        ++j;
+      }
     },
   },
   created() {

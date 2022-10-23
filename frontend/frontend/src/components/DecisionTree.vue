@@ -100,8 +100,8 @@ export default {
   },
   props: {
     ccp_alphas: {
-      type: Object,
-      required: true,
+      // type: Object,
+      // required: true,
     },
     dataSet: {
       type: String,
@@ -115,7 +115,6 @@ export default {
   emits: ["apply"],
   methods: {
     get_decisiionrules(dataSet, csv) {
-      console.log(csv);
       axios
         .get("decisionrule/" + dataSet + "/" + csv + "_modified")
         .then((res) => {

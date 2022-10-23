@@ -33,15 +33,14 @@ def exist_csv(filename, csv):
 
 
 def get_events(filename, csv):
-    # label = request.args.get("label", "")
-    # if label == "":
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
     json_path = csv_path.rsplit(".", 1)[0] + '.json'
-    partial_log = pandas.read_csv(csv_path)
-    # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
-    partial_log.to_json(json_path, orient="records")
+    if not os.path.exists(json_path):
+        partial_log = pandas.read_csv(csv_path)
+        # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
+        partial_log.to_json(json_path, orient="records")
     return send_file(json_path, as_attachment=False), 200
     # else:
     #     csv_path = exist_csv(filename, csv)
@@ -135,6 +134,7 @@ def apply_variants_filter(csv_path, selectedVariants):
     filterVariants = []
     i = 0
     for var in variants:
+        if i == min([len(selectedVariants), len(variants)]): break
         if selectedVariants[i]=="true": filterVariants.append(var)
         i += 1
     fl = pm4py.filter_variants(partial_log, filterVariants)

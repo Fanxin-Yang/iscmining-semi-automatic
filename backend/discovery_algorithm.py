@@ -83,15 +83,28 @@ def modify(filename, csv, level):
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
+    print(csv_path)
     args = request.args.copy()
     selectedVariants = args.pop("variants", "").split(",")
     filtered_log = apply_variants_filter(csv_path, selectedVariants)
     coarsen_timestamps(filtered_log, level)
     csv_output_path = define_output_path(filename, csv)
+    print(csv_output_path)
     filtered_log.to_csv(csv_output_path, index=False)
     return f"File {csv}_modified.csv is saved."
 
 def define_output_path(filename, csv):
+    if len(csv.split("&")) == 1 and len(filename.split("&")) > 1:
+        for log in filename.split("&"):
+            print(log)
+            folder = os.path.join(
+                current_app.config['OUTPUT_FOLDER'], log)
+            csv_folder = os.path.join(folder, csv)
+            csv_path = os.path.join(csv_folder, csv + '.csv')
+            if os.path.exists(csv_path): 
+                csv_output_path = os.path.join(csv_folder, csv + '_modified.csv')
+                print("found")
+                return(csv_output_path)
     csv_path = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename + "_" + csv + ".csv")
     if os.path.exists(csv_path):

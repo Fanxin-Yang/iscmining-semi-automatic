@@ -14,16 +14,6 @@
       <option>Years</option>
     </select>
   </div>
-  <div class="col-md-12 text-center" v-if="loading">
-    <div class="spinner-border m-5" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
-  <div class="col-md-12">
-    <div class="alert alert-success" role="alert" v-if="!!info">
-      {{ info }}
-    </div>
-  </div>
 
   <label for="variant-list">Variants Filter</label>
   <ul class="list-group col-md-8" id="variant-list">
@@ -76,7 +66,16 @@
       </button>
     </div>
   </div>
-  <div class="col-md-3"></div>
+  <div class="col-md-12 text-center" v-if="loading">
+    <div class="spinner-border m-5" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div class="col-md-12" v-else>
+    <div class="alert alert-success" role="alert" v-if="!!info">
+      {{ info }}
+    </div>
+  </div>
 </template>
 
 <script>
@@ -94,11 +93,14 @@ export default {
     info: {
       required: true,
     },
+    loading: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
       timestampsLevel: "Seconds",
-      loading: false,
       variants: undefined,
       selectedVariantsIndex: [],
       filteringMethod: "0", //default: 0 (positive), 1 (negative)
@@ -156,6 +158,7 @@ export default {
     },
   },
   created() {
+    console.log(this.loading);
     this.get_variants(this.dataSet, this.csv);
   },
 };

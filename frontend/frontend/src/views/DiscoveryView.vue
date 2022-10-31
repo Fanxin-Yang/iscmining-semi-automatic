@@ -10,33 +10,24 @@
       :csv="this.csv"
       :refresh="this.cacheKey"
     />
-    <!-- <TimestampsCoarsen
-      :dataSet="this.dataSet"
-      :csv="this.csv"
-      @modify="modify"
-    />
-    <VariantFilter :dataSet="this.dataSet" :csv="this.csv" @modify="modify" /> -->
     <ModifyLog
       :dataSet="this.dataSet"
       :csv="this.csv"
       @modify="modify"
       :info="this.info"
+      :loading="this.modifyLoading"
     />
   </form>
 </template>
 
 <script>
 import EventsTable from "../components/EventsTable.vue";
-// import TimestampsCoarsen from "../components/TimestampsCoarsen.vue";
-// import VariantFilter from "../components/VariantFilter.vue";
 import LogSummary from "../components/LogSummary.vue";
 import ModifyLog from "../components/ModifyLog.vue";
 import axios from "axios";
 export default {
   components: {
     EventsTable,
-    // TimestampsCoarsen,
-    // VariantFilter,
     LogSummary,
     ModifyLog,
   },
@@ -46,17 +37,20 @@ export default {
       csv: this.$route.params.csv,
       error: "",
       info: undefined,
+      modifyLoading: false,
       cacheKey: +new Date(),
     };
   },
   methods: {
     modify(level, selectedVariantsIndex) {
+      this.modifyLoading = true;
       let url = "modify/" + this.dataSet + "/" + this.csv + "/" + level;
       const params = new URLSearchParams([["variants", selectedVariantsIndex]]);
       console.log(selectedVariantsIndex);
       axios
         .get(url, { params })
         .then((res) => {
+          this.modifyLoading = false;
           this.info = res.data;
           let tmp =
             "/iscmining-semi-automatic/" +
@@ -68,6 +62,7 @@ export default {
           this.cacheKey = +new Date();
         })
         .catch((err) => {
+          this.modifyLoading = false;
           console.error(err);
           this.error = err.response.data;
         });

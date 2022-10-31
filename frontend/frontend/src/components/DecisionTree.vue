@@ -35,13 +35,7 @@
       Pruning
     </button>
   </div>
-  <!-- <div class="alert alert-success" role="alert">
-        <div v-if="this.status == 200">{{ msg }}</div>
-        <div v-else-if="this.status == 201">
-          Decision tree with default parameters. You can choose other ccp_alpha
-          value to prune the decision tree.
-        </div>
-      </div> -->
+
   <img
     :src="
       'http://127.0.0.1:5000/decisiontree/' +
@@ -53,10 +47,14 @@
       this.cacheKey
     "
     class="img-fluid"
-    v-if="this.ccp_alphas"
+    v-if="this.status == 200 || this.status == 201"
   />
 
-  <div class="table-responsive" id="rules-table" v-if="this.ccp_alphas">
+  <div
+    class="table-responsive"
+    id="rules-table"
+    v-if="this.status == 200 || this.status == 201"
+  >
     <table class="table table-striped table-hover table-sm table-bordered">
       <thead class="header">
         <tr>
@@ -77,14 +75,14 @@
     </table>
   </div>
 
-  <button
+  <!-- <button
     type="button"
     class="btn btn-primary btn-lg"
     @click="download"
     :disabled="!this.ccp_alpha"
   >
     Download Results as PDF
-  </button>
+  </button> -->
 </template>
 
 <script>
@@ -109,6 +107,10 @@ export default {
     },
     csv: {
       type: String,
+      required: true,
+    },
+    status: {
+      type: Number,
       required: true,
     },
   },

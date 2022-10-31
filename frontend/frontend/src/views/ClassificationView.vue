@@ -37,11 +37,20 @@
       </div>
     </div>
 
-    <div class="row" v-else-if="this.status == 201 || this.status == 200">
+    <div
+      class="row"
+      v-else-if="this.status == 201 || this.status == 200 || this.status == 202"
+    >
+      <div v-if="this.status == 202" class="alert alert-warning" role="alert">
+        The decision tree has too much nodes. Please select a ccp_alpha to prune
+        it.
+      </div>
+
       <DecisionTree
         :ccp_alphas="this.ccp_alphas"
         :dataSet="this.dataSet"
         :csv="this.csv"
+        :status="this.status"
         @apply="apply"
       />
     </div>
@@ -84,8 +93,6 @@ export default {
       status: undefined,
       msg: undefined,
       ccp_alphas: undefined,
-      // ccp_alpha: undefined,
-      // cacheKey: +new Date(),
     };
   },
   methods: {
@@ -121,7 +128,6 @@ export default {
       this.inputSamples = selectedSamples;
       this.encoder = selectedEncoder;
       this.ccp_alphas = undefined;
-      // this.ccp_alpha = undefined;
     },
     apply(ccp_alpha) {
       this.applied = [
@@ -131,7 +137,6 @@ export default {
         this.filter,
         this.encoder,
       ];
-      // this.cacheKey = +new Date();
       this.status = 1;
       const params = new URLSearchParams([
         ["classLabel", this.classLabel],
@@ -142,10 +147,7 @@ export default {
         let ccp_alpha_float = parseFloat(ccp_alpha);
         params.append("ccp_alpha", ccp_alpha_float);
       }
-      for (let i = 0; i < Object.keys(this.filter).length; i++) {
-        const label = Object.keys(this.filter)[i];
-        params.append(label, this.filter[label]);
-      }
+
       axios
         .get(
           "classification/" +
@@ -158,7 +160,7 @@ export default {
         )
         .then((res) => {
           this.status = res.status;
-          if (this.status == 201) {
+          if (this.status == 201 || this.status == 202) {
             this.ccp_alphas = res.data;
           } else {
             this.msg = res.data;

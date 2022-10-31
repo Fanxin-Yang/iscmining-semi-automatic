@@ -215,6 +215,8 @@ def appy_algorithm(filename, csv, alg):
     
     test_target = y.values.reshape(-1, 1)
     clf = clf.fit(data, target)
+    print(clf.tree_.node_count)
+    if clf.tree_.node_count > 100: return options, 202
 
     # text_representation = tree.export_text(clf)
     # print(text_representation)
@@ -246,13 +248,19 @@ def cost_complexity_pruning(data, target, clf):
     ccp_alphas, impurities = path.ccp_alphas, path.impurities
     # print(f'ccp_alphas: {ccp_alphas}')
     ccp_alphas = [ccp for ccp in ccp_alphas if ccp >= 0]
+    # TODO!!! unique arraypp
+    print(ccp_alphas)
+    print("line divider")
+    ccp_alphas_set = set(ccp_alphas)
+    ccp_alphas = list(ccp_alphas_set)
+    print(ccp_alphas)
 
     clfs = []
     # Total impurity of leaves
     for ccp_alpha in ccp_alphas:
         clf = tree.DecisionTreeClassifier(random_state=0, ccp_alpha=ccp_alpha)
         clf.fit(data, target)
-        clfs.append(clf)
+        if clf.tree_.node_count < 100: clfs.append(clf)
         print(
             "Number of nodes in the last tree is: {} with ccp_alpha: {}".format(
                 clf.tree_.node_count, ccp_alpha
@@ -296,12 +304,9 @@ def cost_complexity_pruning(data, target, clf):
     # node_counts = [clf.tree_.node_count for clf in clfs]
     # depth = [clf.tree_.max_depth for clf in clfs]
 
-    unique_ccp_alphas = []
     options = {}
     index = 0
     for i in range(len(ccp_alphas)):
-        if not ccp_alphas[i] in unique_ccp_alphas:
-            unique_ccp_alphas.append(ccp_alphas[i])
-            options[index] = ccp_alphas[i]
-            index += 1
+        options[index] = ccp_alphas[i]
+        index += 1
     return options

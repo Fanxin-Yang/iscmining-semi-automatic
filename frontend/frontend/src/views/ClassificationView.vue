@@ -42,8 +42,8 @@
       v-else-if="this.status == 201 || this.status == 200 || this.status == 202"
     >
       <div v-if="this.status == 202" class="alert alert-warning" role="alert">
-        The decision tree has too much nodes. Please select a ccp_alpha to prune
-        it.
+        The decision tree has too much nodes. Please select other parmaeters or
+        try to prune the tree using different ccp_alpha value.
       </div>
 
       <DecisionTree

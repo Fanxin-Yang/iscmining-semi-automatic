@@ -8,6 +8,7 @@ export default defineConfig({
   server: {
     port: 8765,
     host: true,
+    open: false,
   },
 });
 // export default defineConfig(({ command, mode }) => {

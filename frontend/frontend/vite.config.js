@@ -4,11 +4,10 @@ import { defineConfig } from "vite";
 // import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
-  base: "/ports/8765",
+  base: "/ports/8765/",
   server: {
     port: 8765,
     host: true,
-    open: false,
   },
 });
 // export default defineConfig(({ command, mode }) => {

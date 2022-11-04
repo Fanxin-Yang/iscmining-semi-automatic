@@ -75,8 +75,7 @@ export default {
     csv: function (val) {
       this.summary(this.dataSet, val);
     },
-    refresh: function (val) {
-      console.log("cachekey changed: " + val);
+    refresh: function () {
       this.summary(this.dataSet, this.csv);
     },
   },

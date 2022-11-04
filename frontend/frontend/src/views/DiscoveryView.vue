@@ -46,7 +46,6 @@ export default {
       this.modifyLoading = true;
       let url = "modify/" + this.dataSet + "/" + this.csv + "/" + level;
       const params = new URLSearchParams([["variants", selectedVariantsIndex]]);
-      console.log(selectedVariantsIndex);
       axios
         .get(url, { params })
         .then((res) => {

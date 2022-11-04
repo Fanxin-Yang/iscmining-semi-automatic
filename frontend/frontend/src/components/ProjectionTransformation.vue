@@ -123,7 +123,6 @@ export default {
           .get("projection_transformation/" + log + "/" + this.selectedAtt)
           .then((res) => {
             this.loading = false;
-            console.log(res.data);
             for (let i = 0; i < Object.values(res.data).length; i++) {
               if (!this.projections.includes(Object.values(res.data)[i])) {
                 this.projections.push(...Object.values(res.data));
@@ -146,7 +145,6 @@ export default {
       }
       let url =
         "/iscmining-semi-automatic/" + this.processLogs.join("&") + "/" + tmp;
-      console.log(url);
       if (
         Object.keys(this.selectedProjection).length == 1 &&
         Object.keys(this.processLogs).length == 1
@@ -186,8 +184,7 @@ export default {
       immediate: true,
     },
     selectedProjection: {
-      handler: function (val) {
-        console.log(val);
+      handler: function () {
         this.mergeInfo = undefined;
         let tmp = "/iscmining-semi-automatic/" + this.processLogs.join("&");
         this.$router.push(tmp);
@@ -195,8 +192,7 @@ export default {
       deep: true,
       immediate: true,
     },
-    selectedAtt: function (val) {
-      console.log(val);
+    selectedAtt: function () {
       if (Object.keys(this.selectedProjection).length != 0) {
         this.selectedProjection = new Array();
       }

@@ -152,13 +152,11 @@ export default {
     csv: function (val) {
       this.get_variants(this.dataSet, val);
     },
-    timestampsLevel: function (val) {
-      console.log(val);
+    timestampsLevel: function () {
       this.modify();
     },
   },
   created() {
-    console.log(this.loading);
     this.get_variants(this.dataSet, this.csv);
   },
 };

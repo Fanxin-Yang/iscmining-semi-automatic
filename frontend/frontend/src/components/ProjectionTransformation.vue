@@ -1,5 +1,5 @@
 <template lang="">
-  <div class="col-md-3">
+  <div class="col-md-3" v-if="Object.keys(commonArr).length > 0">
     <select v-model="selectedAtt" class="form-select" id="select-attribute">
       <option selected disabled value="">
         Choose a event attribute (recommanded: org:resource)
@@ -12,7 +12,7 @@
       Selected event attribute: {{ selectedAtt }}
     </label>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-3" v-if="Object.keys(commonArr).length > 0">
     <button
       type="button"
       class="btn btn-outline-primary"
@@ -37,17 +37,7 @@
     </select>
     <label for="select-projection"> Selected: {{ selectedProjection }} </label>
   </div>
-  <div class="col-md-3" v-if="Object.keys(selectedProjection).length == 1">
-    <button
-      type="button"
-      class="btn btn-primary"
-      @click="start_discovery"
-      :disabled="!selectedProjection"
-    >
-      Start Discovery
-    </button>
-  </div>
-  <div class="col-md-3" v-else-if="Object.keys(selectedProjection).length > 1">
+  <div class="col-md-3" v-if="Object.keys(selectedProjection).length >= 1">
     <button
       type="button"
       class="btn btn-primary"
@@ -134,7 +124,12 @@ export default {
           .then((res) => {
             this.loading = false;
             console.log(res.data);
-            this.projections.push(...Object.keys(res.data));
+            for (let i = 0; i < Object.values(res.data).length; i++) {
+              if (!this.projections.includes(Object.values(res.data)[i])) {
+                this.projections.push(...Object.values(res.data));
+              }
+            }
+            // this.projections.push(...Object.values(res.data));
           })
           .catch((err) => {
             console.error(err);
@@ -152,19 +147,23 @@ export default {
       let url =
         "/iscmining-semi-automatic/" + this.processLogs.join("&") + "/" + tmp;
       console.log(url);
-      if (Object.keys(this.selectedProjection).length > 1) {
+      if (
+        Object.keys(this.selectedProjection).length == 1 &&
+        Object.keys(this.processLogs).length == 1
+      ) {
+        this.$router.push(url);
+      } else {
         axios
           .get("merge/" + this.processLogs.join("&") + "/" + tmp)
           .then((res) => {
             this.loading = false;
             this.mergeInfo = res.data;
+            console.log(res.data);
             this.$router.push(url);
           })
           .catch((err) => {
             console.error(err);
           });
-      } else {
-        this.$router.push(url);
       }
     },
   },

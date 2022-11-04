@@ -124,6 +124,7 @@ export default {
       if (this.selectedFiles.length == 0) {
         this.upload_file(this.$refs.file.files[0]);
       }
+      this.processLogs = [];
       for (let i = 0; i < this.selectedFiles.length; i++) {
         this.upload_file(this.selectedFiles[i]);
         this.processLogs[i] = this.selectedFiles[i].name;

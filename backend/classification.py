@@ -196,7 +196,6 @@ def apply_algorithm(filename, csv, alg):
     partial_log_new.dropna(inplace=True)
     if partial_log_new.empty:
         return "Selected target values input samples includes missing value.", 405
-    # print(partial_log_new.head)
     X = partial_log_new[samples]
     y = partial_log_new["label"]
 
@@ -229,13 +228,8 @@ def apply_algorithm(filename, csv, alg):
                 if(options[j] > ccp_alpha):
                     greaterOptions[i] = options[j]
                     i += 1
-            print("the length")
-            print(len(options))
-            print(len(greaterOptions))
             return greaterOptions, 202
 
-    # text_representation = tree.export_text(clf)
-    # print(text_representation)
 
     results_folder = os.path.join(
         current_app.config['RESULTS_FOLDER'], filename)
@@ -271,7 +265,6 @@ def cost_complexity_pruning(data, target, clf):
 
     clfs = []
     # Total impurity of leaves
-    # print(len(ccp_alphas))
     # for ccp_alpha in ccp_alphas:
     #     clf = tree.DecisionTreeClassifier(random_state=0, ccp_alpha=ccp_alpha)
     #     clf.fit(data, target)

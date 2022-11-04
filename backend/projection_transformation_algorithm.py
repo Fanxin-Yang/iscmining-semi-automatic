@@ -68,9 +68,7 @@ def projection_transformation(filename, att):
 
 def merge(filename, projection):
     logs = filename.split("&")
-    print(logs)
     projections = projection.split("&")
-    print(projections)
     df = pandas.DataFrame()
     for i in logs:
         for j in projections:

@@ -44,26 +44,33 @@ def projection_transformation(filename, att):
     if not input_path:
         return "No file found.", 404
     # check if att is contained in the file?
-    log = pm4py.read_xes(input_path)  
+    log = pm4py.read_xes(input_path)
+    df = pm4py.convert_to_dataframe(log)
+    df.dropna(axis=0, subset=att, inplace=True)
     # values: all attribute values of selected attribute and the number each of them occur
-    attValues = pm4py.get_event_attribute_values(log, att)
-
+    attValues = pm4py.get_event_attribute_values(df, att)
     if not os.path.exists("outputs/" + filename):
         os.makedirs("outputs/" + filename)
+    attValuesDict = {}
+    i = 0
     for key in attValues.keys():
-        filterLog = pm4py.filter_event_attribute_values(log, att, [key], level="case", retain=True)
-        dataframe = pm4py.convert_to_dataframe(filterLog)
+        filteredDf = pm4py.filter_event_attribute_values(df, att, [key], level="event", retain=True)
+        filteredDf.reset_index(drop=True, inplace=True)
         key_name = str(key).replace(" ", "_")
         if not os.path.exists("outputs/" + filename + "/" + key_name):
             os.makedirs("outputs/" + filename + "/" + key_name)
         output_path = os.path.join(
             current_app.config['OUTPUT_FOLDER'], filename + "/" + key_name + "/" + key_name + ".csv")
-        dataframe.to_csv(output_path, index_label="No.")
-    return attValues, 200
+        filteredDf.to_csv(output_path, index_label="No.")
+        attValuesDict[i] = key
+        i += 1
+    return attValuesDict, 200
 
 def merge(filename, projection):
     logs = filename.split("&")
+    print(logs)
     projections = projection.split("&")
+    print(projections)
     df = pandas.DataFrame()
     for i in logs:
         for j in projections:

@@ -21,8 +21,11 @@ def exist_csv(filename, csv):
                 return csv_path
     folder = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename)
-    if csv.rsplit("_", 1)[1] == "modified":
-        csv_folder = os.path.join(folder, csv.rsplit("_", 1)[0])
+    if len(csv.split("_")) > 1:
+        if csv.rsplit("_", 1)[1] == "modified":
+            csv_folder = os.path.join(folder, csv.rsplit("_", 1)[0])
+        else: 
+            csv_folder = os.path.join(folder, csv)
     else:
         csv_folder = os.path.join(folder, csv)
     csv_path = os.path.join(csv_folder, csv + '.csv')

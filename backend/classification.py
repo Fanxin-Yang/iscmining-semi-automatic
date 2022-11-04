@@ -76,6 +76,10 @@ def encoder_X_y(encoder, X, y):
     # data_test = ct.fit_transform(X_test)
     data = ct.fit_transform(X) #if encoder == "0" else ct.fit_transform(X).toarray()
     feature_names = ct.get_feature_names_out()
+    print(feature_names)
+    encoderX.fit(X)
+    print(len(encoderX.categories_))
+    print(encoderX.feature_names_in_)
 
     encodery = preprocessing.OrdinalEncoder(
         handle_unknown='use_encoded_value', unknown_value=-1)
@@ -167,7 +171,7 @@ def get_rules(clf, feature_names, class_names):
 
 
 
-def appy_algorithm(filename, csv, alg):
+def apply_algorithm(filename, csv, alg):
     args = request.args.copy()
     label = args.pop("classLabel", "")
     samples = args.pop("inputSamples", "").split(",")
@@ -215,9 +219,7 @@ def appy_algorithm(filename, csv, alg):
     options = cost_complexity_pruning(data, target, clf)    
     test_target = y.values.reshape(-1, 1)
     clf = clf.fit(data, target)
-    print(clf.tree_.node_count)
     if clf.tree_.node_count > 100: 
-        print("options:")
         if ccp_alpha == -1: return options, 202
         else: 
             # options bigger than ccp_alpha 

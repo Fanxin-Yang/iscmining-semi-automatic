@@ -48,7 +48,7 @@ app.add_url_rule('/modify/<filename>/<csv>/<string:level>',
 app.add_url_rule('/classification', view_func=classification.get_algorithms)
 app.add_url_rule('/classification/<filename>/<csv>/<string:alg>',
                  methods=['GET'],
-                 view_func=classification.appy_algorithm)
+                 view_func=classification.apply_algorithm)
 app.add_url_rule('/decisiontree/<filename>/<csv>',
                  methods=['GET'],
                  view_func=classification.get_decisiontree)

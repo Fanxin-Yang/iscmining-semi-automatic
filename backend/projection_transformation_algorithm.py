@@ -6,7 +6,9 @@
 
 import os
 from flask import current_app
-import pm4py, pandas
+import pm4py
+import pandas
+
 
 def exist_file(filename):
     input_path = os.path.join(
@@ -54,17 +56,27 @@ def projection_transformation(filename, att):
     attValuesDict = {}
     i = 0
     for key in attValues.keys():
-        filteredDf = pm4py.filter_event_attribute_values(df, att, [key], level="event", retain=True)
-        filteredDf.reset_index(drop=True, inplace=True)
+        filteredDf = pm4py.filter_event_attribute_values(
+            df, att, [key], level="event", retain=True)
+        filteredDf = pandas.DataFrame(filteredDf)
+        filteredDf.reset_index(drop=True, inplace=True)  # type: ignore
+        filteredDf.drop(["case:concept:name"], axis=1, inplace=True)
         key_name = str(key).replace(" ", "_")
         if not os.path.exists("outputs/" + filename + "/" + key_name):
             os.makedirs("outputs/" + filename + "/" + key_name)
         output_path = os.path.join(
             current_app.config['OUTPUT_FOLDER'], filename + "/" + key_name + "/" + key_name + ".csv")
+        output_path_arff = os.path.join(
+            current_app.config['OUTPUT_FOLDER'], filename + "/" + key_name + "/" + key_name + ".arff")
         filteredDf.to_csv(output_path, index_label="No.")
+        # timestamps type error!!
+        # import arff
+        # arff.dump(output_path_arff, filteredDf.values,
+        #           relation=key, names=filteredDf.columns)
         attValuesDict[i] = key
         i += 1
     return attValuesDict, 200
+
 
 def merge(filename, projection):
     logs = filename.split("&")
@@ -72,11 +84,17 @@ def merge(filename, projection):
     df = pandas.DataFrame()
     for i in logs:
         for j in projections:
-            input_path = os.path.join(current_app.config['OUTPUT_FOLDER'], i + "/" + j + "/" + j + ".csv")
-            if os.path.exists(input_path): 
+            input_path = os.path.join(
+                current_app.config['OUTPUT_FOLDER'], i + "/" + j + "/" + j + ".csv")
+            if os.path.exists(input_path):
                 tmp = pandas.read_csv(input_path, index_col="No.")
-                if df.size == 0: df = pandas.concat([df, tmp], join="outer", ignore_index=True)
-                else: df = pandas.concat([df, tmp], join="inner", ignore_index=True)
-    output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + "_" + projection + ".csv")
+                if df.size == 0:
+                    df = pandas.concat(
+                        [df, tmp], join="outer", ignore_index=True)
+                else:
+                    df = pandas.concat(
+                        [df, tmp], join="inner", ignore_index=True)
+    output_path = os.path.join(
+        current_app.config['OUTPUT_FOLDER'], filename + "_" + projection + ".csv")
     df.to_csv(output_path, index_label="No.")
     return "Merged csv file has been saved."

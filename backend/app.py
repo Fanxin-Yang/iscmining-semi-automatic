@@ -3,8 +3,11 @@ from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename
 from pm4py.objects.log.importer.xes import importer as xes_importer
-import pm4py, pandas
-import projection_transformation_algorithm, discovery_algorithm, classification
+import pm4py
+import pandas
+import projection_transformation_algorithm
+import discovery_algorithm
+import classification
 from pm4py.algo.filtering.dfg import dfg_filtering
 
 UPLOAD_FOLDER = "./uploads"
@@ -49,12 +52,19 @@ app.add_url_rule('/classification', view_func=classification.get_algorithms)
 app.add_url_rule('/classification/<filename>/<csv>/<string:alg>',
                  methods=['GET'],
                  view_func=classification.apply_algorithm)
-app.add_url_rule('/decisiontree/<filename>/<csv>',
+app.add_url_rule('/decisiontree/<filename>/<arff>/<string:alg>',
                  methods=['GET'],
                  view_func=classification.get_decisiontree)
 app.add_url_rule('/decisionrule/<filename>/<csv>',
                  methods=['GET'],
                  view_func=classification.get_decisionrule)
+app.add_url_rule('/classification_weka/<filename>/<arff>/<string:alg>',
+                 methods=['GET'],
+                 view_func=classification.apply_algorithm_weka)
+app.add_url_rule('/alg_description/<string:alg>',
+                 methods=['GET'],
+                 view_func=classification.get_alg_description)
+
 
 @app.route('/', methods=['GET'])
 def greetings():
@@ -64,7 +74,7 @@ def greetings():
 @app.route('/processmodel/<filename>', methods=['GET'])
 def get_processmodel(filename):
     if not os.path.exists(app.config['GRAPH_FOLDER']):
-                os.makedirs(app.config['GRAPH_FOLDER'])
+        os.makedirs(app.config['GRAPH_FOLDER'])
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename + ".xes")
     bpmn_path = os.path.join(app.config['GRAPH_FOLDER'], filename + ".bpmn")
     args = request.args.copy()
@@ -84,7 +94,8 @@ def mining_process_model(file_path, bpmn_path, perc):
     dfg, sa, ea = pm4py.discover_directly_follows_graph(log)
     activities_count = pm4py.get_event_attribute_values(log, "concept:name")
     # filtering on the paths percentage
-    dfg, sa, ea, activities_count = dfg_filtering.filter_dfg_on_paths_percentage(dfg, sa, ea, activities_count, perc)
+    dfg, sa, ea, activities_count = dfg_filtering.filter_dfg_on_paths_percentage(
+        dfg, sa, ea, activities_count, perc)
     filtered_log = pm4py.play_out(dfg, sa, ea)
     bpmn = pm4py.discover_bpmn_inductive(filtered_log)
     # dfg, sa, ea = pm4py.discover_directly_follows_graph(filtered_log)
@@ -93,7 +104,7 @@ def mining_process_model(file_path, bpmn_path, perc):
     # bpmn = pm4py.convert_to_bpmn(net, im, fm)
     pm4py.write_bpmn(bpmn, bpmn_path)
     return
-    
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -108,7 +119,7 @@ def upload_file():
             return "No file is selected.", 400
             # return redirect(request.url)
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
+            filename = secure_filename(file.filename)  # type: ignore
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
             return filename.rsplit(
@@ -129,12 +140,14 @@ def upload_file():
             i += 1
         return dataSets_dict, 200
 
+
 @app.route('/summary/<filename>/<csv>', methods=['GET'])
 def summary(filename, csv):
     csv_path = discovery_algorithm.exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
-    csv_modified_path = discovery_algorithm.exist_csv(filename, csv + "_modified")
+    csv_modified_path = discovery_algorithm.exist_csv(
+        filename, csv + "_modified")
     partial_log = pandas.read_csv(csv_path)
     events_sum = partial_log.shape[0]
     variants_sum = len(pm4py.get_variants_as_tuples(partial_log))
@@ -153,6 +166,7 @@ def summary(filename, csv):
     summary["cases"] = [cases, cases_sum]
     summary["events"] = [events, events_sum]
     return summary, 200
+
 
 # python3 app.py
 if __name__ == "__main__":

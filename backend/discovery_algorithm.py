@@ -7,7 +7,8 @@ import pm4py
 def exist_csv(filename, csv):
     csv_path = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename + "_" + csv + ".csv")
-    if os.path.exists(csv_path): return csv_path
+    if os.path.exists(csv_path):
+        return csv_path
     if len(csv.split("&")) == 1 and len(filename.split("&")) > 1:
         for log in filename.split("&"):
             folder = os.path.join(
@@ -17,14 +18,14 @@ def exist_csv(filename, csv):
             else:
                 csv_folder = os.path.join(folder, csv)
             csv_path = os.path.join(csv_folder, csv + '.csv')
-            if os.path.exists(csv_path): 
+            if os.path.exists(csv_path):
                 return csv_path
     folder = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename)
     if len(csv.split("_")) > 1:
         if csv.rsplit("_", 1)[1] == "modified":
             csv_folder = os.path.join(folder, csv.rsplit("_", 1)[0])
-        else: 
+        else:
             csv_folder = os.path.join(folder, csv)
     else:
         csv_folder = os.path.join(folder, csv)
@@ -66,7 +67,8 @@ def delete_event(filename, csv, eventIndex):
     partial_log.drop(eventIndex, axis=0, inplace=True)  # Raises error?
     partial_log.reset_index(drop=True, inplace=True)
     partial_log.drop(columns="No.", inplace=True)
-    partial_log.to_csv(csv_path, index_label="No.")  # without add an index column
+    # without add an index column
+    partial_log.to_csv(csv_path, index_label="No.")
     return "The chosen event from " + csv + ".csv has been successfully removed.", 200
 
 
@@ -82,6 +84,7 @@ def convert_level(level):
     if level == "Years":
         return "Y"
 
+
 def modify(filename, csv, level):
     csv_path = exist_csv(filename, csv)
     if not csv_path:
@@ -91,8 +94,9 @@ def modify(filename, csv, level):
     filtered_log = apply_variants_filter(csv_path, selectedVariants)
     coarsen_timestamps(filtered_log, level)
     csv_output_path = define_output_path(filename, csv)
-    filtered_log.to_csv(csv_output_path, index=False)
+    filtered_log.to_csv(csv_output_path, index=False)  # type: ignore
     return f"File {csv}_modified.csv is saved."
+
 
 def define_output_path(filename, csv):
     if len(csv.split("&")) == 1 and len(filename.split("&")) > 1:
@@ -101,22 +105,28 @@ def define_output_path(filename, csv):
                 current_app.config['OUTPUT_FOLDER'], log)
             csv_folder = os.path.join(folder, csv)
             csv_path = os.path.join(csv_folder, csv + '.csv')
-            if os.path.exists(csv_path): 
-                csv_output_path = os.path.join(csv_folder, csv + '_modified.csv')
+            if os.path.exists(csv_path):
+                csv_output_path = os.path.join(
+                    csv_folder, csv + '_modified.csv')
                 return(csv_output_path)
     csv_path = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename + "_" + csv + ".csv")
     if os.path.exists(csv_path):
-        csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '_' + csv + '_modified.csv')
-    else: 
-        csv_output_path = os.path.join(current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_modified.csv')
+        csv_output_path = os.path.join(
+            current_app.config['OUTPUT_FOLDER'], filename + '_' + csv + '_modified.csv')
+    else:
+        csv_output_path = os.path.join(
+            current_app.config['OUTPUT_FOLDER'], filename + '/' + csv + "/" + csv + '_modified.csv')
     return csv_output_path
+
 
 def coarsen_timestamps(filtered_log, level):
     lev = convert_level(level)
     for i in filtered_log.get("No."):
-        filtered_log.loc[i, "time:timestamp"] = pandas.Period(filtered_log.loc[i, "time:timestamp"], freq=lev)
+        filtered_log.loc[i, "time:timestamp"] = pandas.Period(
+            filtered_log.loc[i, "time:timestamp"], freq=lev)
     return None
+
 
 def exist_file(filename):
     input_path = os.path.join(
@@ -125,6 +135,7 @@ def exist_file(filename):
         return False
     else:
         return input_path
+
 
 def get_variants(filename, csv):
     csv_path = exist_csv(filename, csv)
@@ -139,14 +150,17 @@ def get_variants(filename, csv):
         i += 1
     return variants_dict, 200
 
+
 def apply_variants_filter(csv_path, selectedVariants):
     partial_log = pandas.read_csv(csv_path)
     variants = pm4py.get_variants_as_tuples(partial_log)
     filterVariants = []
     i = 0
     for var in variants:
-        if i == min([len(selectedVariants), len(variants)]): break
-        if selectedVariants[i]=="true": filterVariants.append(var)
+        if i == min([len(selectedVariants), len(variants)]):
+            break
+        if selectedVariants[i] == "true":
+            filterVariants.append(var)
         i += 1
     fl = pm4py.filter_variants(partial_log, filterVariants)
     return fl

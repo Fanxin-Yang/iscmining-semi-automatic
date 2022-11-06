@@ -18,6 +18,7 @@
         type="button"
         class="btn btn-outline-primary"
         @click="submit_file"
+        :disabled="this.selectedFiles.length == 0"
       >
         Upload
       </button>
@@ -100,7 +101,6 @@ export default {
     },
     select_files() {
       this.selectedFiles = this.$refs.file.files;
-      // this.status = null;
     },
     upload_file(file) {
       let formData = new FormData();
@@ -127,7 +127,6 @@ export default {
       this.processLogs = [];
       for (let i = 0; i < this.selectedFiles.length; i++) {
         this.upload_file(this.selectedFiles[i]);
-        this.processLogs[i] = this.selectedFiles[i].name;
       }
     },
   },

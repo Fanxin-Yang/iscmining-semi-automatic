@@ -9,9 +9,9 @@
       id="classification-technique"
       aria-label="techniqueHelp"
     >
-      <option selected disabled value="">
+      <!-- <option selected disabled value="">
         Choose a Classificaton Technique
-      </option>
+      </option> -->
       <option v-for="(ct, index) in classificationTechniques" :key="index">
         {{ ct }}
       </option>
@@ -31,8 +31,12 @@
       target variable by learning simple decision rules inferred from the data
       features. A tree can be seen as a piecewise constant approximation.
     </div>
+    <div v-else>
+      The selected algorithm: {{ selectedCT }} hasn't been implemented yet.
+      Please select Decision Tree Algorithm for now.
+    </div>
   </div>
-  <div v-if="!!selectedCT" class="row">
+  <div v-if="selectedCT == 'Decision Tree'" class="row">
     <div class="col-md-4">
       <label for="label" class="form-label"
         >The target values (class labels)</label

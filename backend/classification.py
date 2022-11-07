@@ -348,45 +348,47 @@ def apply_JRip(arff_path, cls_options, result_path):
     result_path += ".txt"
 
     import weka.core.jvm as jvm
-    jvm.start(max_heap_size="512m", system_cp=True)
-    print("----------------------------------------------------------------------")
-    import weka.core.converters as converters
-    loader = converters.Loader(classname="weka.core.converters.ArffLoader")
-    data = loader.load_file(arff_path, class_index="first")
-    # usually the first is "concept:name"
-    # the class label will not be removed by weka.filters.unsupervised.attribute.*
-    print(data.attribute_names(), data.num_instances)
-
-    # from weka.classifiers import Classifier
-    from weka.core.classes import to_commandline, from_commandline
-    # cls = Classifier(classname="weka.classifiers.rules.JRip",
-    #                  options=["-N", "5.0"])
-    # cmdline = 'weka.classifiers.rules.JRip -F 3 -N 5.0 -O 2 -S 1'
-    print(cls_cmdline)
-    cls = from_commandline(
-        cls_cmdline, classname="weka.classifiers.Classifier")
-
-    # Filter string because JRip cannot handle string
-    from weka.filters import Filter
-    remove = Filter(
-        classname="weka.filters.unsupervised.attribute.RemoveType", options=["-T", "string"])
-    remove.inputformat(data)
-    filtered_data = remove.filter(data)
-    print(f"Attributes after filter: {filtered_data.attribute_names()}")
-
-    from javabridge.jutil import JavaException
     try:
-        cls.build_classifier(filtered_data)  # type: ignore
-    except JavaException:
-        return "JRip cannot handle string class! Since string attributes have been removed. The class label is string type"
+        jvm.start(max_heap_size="512m", system_cp=True)
+        print("----------------------------------------------------------------------")
+        import weka.core.converters as converters
+        loader = converters.Loader(classname="weka.core.converters.ArffLoader")
+        data = loader.load_file(arff_path, class_index="first")
+        # usually the first is "concept:name"
+        # the class label will not be removed by weka.filters.unsupervised.attribute.*
+        print(data.attribute_names(), data.num_instances)
 
-    # save rule set in txt file
-    print(result_path)
-    with open(result_path, "w+") as f:
-        for r in str(cls).split("\n"):
-            f.write(r + "\n")
-    jvm.stop()
+        # from weka.classifiers import Classifier
+        from weka.core.classes import to_commandline, from_commandline
+        # cls = Classifier(classname="weka.classifiers.rules.JRip",
+        #                  options=["-N", "5.0"])
+        # cmdline = 'weka.classifiers.rules.JRip -F 3 -N 5.0 -O 2 -S 1'
+        print(cls_cmdline)
+        cls = from_commandline(
+            cls_cmdline, classname="weka.classifiers.Classifier")
 
+        # Filter string because JRip cannot handle string
+        from weka.filters import Filter
+        remove = Filter(
+            classname="weka.filters.unsupervised.attribute.RemoveType", options=["-T", "string"])
+        remove.inputformat(data)
+        filtered_data = remove.filter(data)
+        print(f"Attributes after filter: {filtered_data.attribute_names()}")
+
+        from javabridge.jutil import JavaException
+        try:
+            cls.build_classifier(filtered_data)  # type: ignore
+        except JavaException:
+            return "JRip cannot handle string class! Since string attributes have been removed. The class label is string type"
+
+        # save rule set in txt file
+        print(result_path)
+        with open(result_path, "w+") as f:
+            for r in str(cls).split("\n"):
+                f.write(r + "\n")
+        jvm.stop()
+    except:
+        return "Something went wrong!"
     return "The rule set by applying JRip is saved."
 
 

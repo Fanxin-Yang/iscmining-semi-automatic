@@ -88,13 +88,33 @@ def convert_level(level):
 def modify(filename, csv, level):
     csv_path = exist_csv(filename, csv)
     if not csv_path:
-        return "No file found.", 404
+        return "No CSV file found.", 404
     args = request.args.copy()
     selectedVariants = args.pop("variants", "").split(",")
     filtered_log = apply_variants_filter(csv_path, selectedVariants)
-    coarsen_timestamps(filtered_log, level)
+    coarsen_timestamps_Period(filtered_log, level)
     csv_output_path = define_output_path(filename, csv)
     filtered_log.to_csv(csv_output_path, index=False)  # type: ignore
+
+    xes_path = csv_path.rsplit(".", 1)[0] + ".xes"
+    arff_path = csv_path.rsplit(".", 1)[0] + ".arff"
+    log = pm4py.read_xes(xes_path)
+    df = pm4py.convert_to_dataframe(log)
+    print(df.dtypes)
+    if not os.path.exists(arff_path) or not os.path.exists(xes_path):
+        return "No ARFF or XES file found.", 404
+    coarsen_timestamps_Datetime(df, level)
+    import weka.core.jvm as jvm
+    try:
+        jvm.start(max_heap_size="512m", system_cp=True)
+        print("----------------------------------------------------------------------")
+        print(df["time:timestamp"][0])
+        arff_output_path = csv_output_path.rsplit(".", 1)[0] + ".arff"
+        import projection_transformation_algorithm
+        projection_transformation_algorithm.df2arff(df, arff_output_path, csv)
+        jvm.stop()
+    except:
+        return "Something went wrong!"
     return f"File {csv}_modified.csv is saved."
 
 
@@ -120,11 +140,46 @@ def define_output_path(filename, csv):
     return csv_output_path
 
 
-def coarsen_timestamps(filtered_log, level):
+def coarsen_timestamps_Period(filtered_log, level):
     lev = convert_level(level)
     for i in filtered_log.get("No."):
         filtered_log.loc[i, "time:timestamp"] = pandas.Period(
             filtered_log.loc[i, "time:timestamp"], freq=lev)
+    return None
+
+
+def coarsen_timestamps_Datetime(df, level):
+    flag = True
+    if level != "Seconds" and flag:
+        new_df = pandas.DataFrame(
+            {'time:timestamp': [x.replace(second=0) for x in df["time:timestamp"]]})
+        df.update(new_df, overwrite=True)
+    else:
+        flag = False
+    if level != "Minutes" and flag:
+        new_df = pandas.DataFrame(
+            {'time:timestamp': [x.replace(minute=0) for x in df["time:timestamp"]]})
+        df.update(new_df, overwrite=True)
+    else:
+        flag = False
+    if level != "Hours" and flag:
+        new_df = pandas.DataFrame(
+            {'time:timestamp': [x.replace(hour=0) for x in df["time:timestamp"]]})
+        df.update(new_df, overwrite=True)
+    else:
+        flag = False
+    if level != "Days" and flag:
+        new_df = pandas.DataFrame(
+            {'time:timestamp': [x.replace(day=1) for x in df["time:timestamp"]]})
+        df.update(new_df, overwrite=True)
+    else:
+        flag = False
+    if level != "Months" and flag:
+        new_df = pandas.DataFrame(
+            {'time:timestamp': [x.replace(month=1) for x in df["time:timestamp"]]})
+        df.update(new_df, overwrite=True)
+    else:
+        flag = False
     return None
 
 

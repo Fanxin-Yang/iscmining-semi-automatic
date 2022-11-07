@@ -59,23 +59,84 @@ def projection_transformation(filename, att):
         filteredDf = pm4py.filter_event_attribute_values(
             df, att, [key], level="event", retain=True)
         filteredDf = pandas.DataFrame(filteredDf)
+        # Remove the coloum is it is all NaN
+        filteredDf.dropna(axis=1, how="all", inplace=True)
         filteredDf.reset_index(drop=True, inplace=True)  # type: ignore
-        filteredDf.drop(["case:concept:name"], axis=1, inplace=True)
         key_name = str(key).replace(" ", "_")
         if not os.path.exists("outputs/" + filename + "/" + key_name):
             os.makedirs("outputs/" + filename + "/" + key_name)
         output_path = os.path.join(
             current_app.config['OUTPUT_FOLDER'], filename + "/" + key_name + "/" + key_name + ".csv")
+        filteredDf.to_csv(output_path, index_label="No.")
         output_path_arff = os.path.join(
             current_app.config['OUTPUT_FOLDER'], filename + "/" + key_name + "/" + key_name + ".arff")
-        filteredDf.to_csv(output_path, index_label="No.")
-        # timestamps type error!!
-        # import arff
-        # arff.dump(output_path_arff, filteredDf.values,
-        #           relation=key, names=filteredDf.columns)
+        filteredDf.drop(["case:concept:name"], axis=1, inplace=True)
+        # csv2arff(output_path, output_path_arff)
+        df2arff(filteredDf, output_path_arff, key)
         attValuesDict[i] = key
         i += 1
     return attValuesDict, 200
+
+
+def csv2arff(csv_path, output_path_arff):
+    return "csv2arff"
+
+
+def df2arff(df, output_path_arff, key):
+    print(
+        f"------------------------{output_path_arff}------------------------")
+    with open(output_path_arff, "w+") as arff:
+        arff.write("@RELATION " + key + "\n")
+        for att in df:
+            if df[att].dtype == "object":
+                if len(df[att].unique()) == 1:
+                    arff.write(f'@ATTRIBUTE "{att}" STRING\n')
+                else:
+                    arff.write(
+                        f'@ATTRIBUTE "{att}" {str(set(df[att].unique()))}\n')
+            elif df[att].dtype == "int64" or df[att].dtype == "float64":
+                arff.write(f'@ATTRIBUTE "{att}" NUMERIC\n')
+            elif type(df[att].dtype) == pandas.core.dtypes.dtypes.DatetimeTZDtype:
+                timestamps = df[att].unique()
+                timestamps_set = set(timestamps)
+                format_timestamps_set = {tt.isoformat()
+                                         for tt in timestamps_set}
+                # Return the time formatted according to ISO 8610.
+                arff.write(
+                    f'@ATTRIBUTE "{att}" {str(format_timestamps_set)}\n')
+        arff.write("@DATA\n")
+        for event in df.values:
+            line = ""
+            for i in range(df.shape[1]):
+                if str(event[i]) == "nan":
+                    line += '?'
+                elif type(event[i]) == pandas._libs.tslibs.timestamps.Timestamp:
+                    line += f'"{event[i].isoformat()}"'
+                elif type(event[i]) == int or type(event[i]) == float:
+                    line += str(event[i])
+                else:
+                    line += f'"{event[i]}"'
+                if i != df.shape[1] - 1:
+                    line += ', '
+            line += '\n'
+            arff.write(line)
+        # event = df.values[0]
+        # line = ""
+        # for i in range(df.shape[1]):
+        #     print(type(event[i]))
+        #     if str(event[i]) == "nan":
+        #         line += '?'
+        #     elif type(event[i]) == pandas._libs.tslibs.timestamps.Timestamp:
+        #         line += f'"{event[i].isoformat()}"'
+        #     elif type(event[i]) == int or type(event[i]) == float:
+        #         line += event[i]
+        #     else:
+        #         line += f'"{event[i]}"'
+        #     if i != df.shape[1] - 1:
+        #         line += ', '
+        # line += '\n'
+        # arff.write(line)
+    return "df2arff"
 
 
 def merge(filename, projection):

@@ -65,12 +65,13 @@ def projection_transformation(filename, att):
         key_name = str(key).replace(" ", "_")
         if not os.path.exists("outputs/" + filename + "/" + key_name):
             os.makedirs("outputs/" + filename + "/" + key_name)
-        output_path = os.path.join(
+        output_path_csv = os.path.join(
             current_app.config['OUTPUT_FOLDER'], filename + "/" + key_name + "/" + key_name + ".csv")
-        filteredDf.to_csv(output_path, index_label="No.")
-        output_path_arff = os.path.join(
-            current_app.config['OUTPUT_FOLDER'], filename + "/" + key_name + "/" + key_name + ".arff")
-        filteredDf.drop(["case:concept:name"], axis=1, inplace=True)
+        filteredDf.to_csv(output_path_csv, index_label="No.")
+        output_path_xes = output_path_csv.rsplit(".", 1)[0] + ".xes"
+        pm4py.write_xes(filteredDf, output_path_xes)
+        print(output_path_xes)
+        output_path_arff = output_path_csv.rsplit(".", 1)[0] + ".arff"
         # csv2arff(output_path, output_path_arff)
         df2arff(filteredDf, output_path_arff, key)
         attValuesDict[i] = key
@@ -83,8 +84,8 @@ def csv2arff(csv_path, output_path_arff):
 
 
 def df2arff(df, output_path_arff, key):
-    print(
-        f"------------------------{output_path_arff}------------------------")
+    df.drop(["case:concept:name"], axis=1, inplace=True)
+    print(df.dtypes)
     with open(output_path_arff, "w+") as arff:
         arff.write("@RELATION " + key + "\n")
         for att in df:

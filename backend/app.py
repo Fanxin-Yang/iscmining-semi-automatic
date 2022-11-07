@@ -150,6 +150,8 @@ def summary(filename, csv):
         filename, csv + "_modified")
     partial_log = pandas.read_csv(csv_path)
     events_sum = partial_log.shape[0]
+    # partial_log = pm4py.format_dataframe(
+    #     partial_log, case_id="case:concept:name", activity_key="concept:name", timestamp_key="time:timestamp")
     variants_sum = len(pm4py.get_variants_as_tuples(partial_log))
     cases_sum = len(partial_log["case:concept:name"].unique())
     if not csv_modified_path:

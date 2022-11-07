@@ -105,8 +105,10 @@ export default {
         axios
           .get("projection_transformation/" + log)
           .then((res) => {
-            this.attributes[log] = Object.values(res.data);
-            this.commonArr = Object.values(res.data);
+            if (Object.values(this.processLogs).includes(log)) {
+              this.attributes[log] = Object.values(res.data);
+              this.commonArr = Object.values(res.data);
+            }
           })
           .catch((err) => {
             console.error(err);

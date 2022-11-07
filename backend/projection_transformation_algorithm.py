@@ -109,6 +109,7 @@ def df2arff(df, output_path_arff, key):
             line = ""
             for i in range(df.shape[1]):
                 if str(event[i]) == "nan":
+                    # use ? for missing value
                     line += '?'
                 elif type(event[i]) == pandas._libs.tslibs.timestamps.Timestamp:
                     line += f'"{event[i].isoformat()}"'
@@ -120,22 +121,6 @@ def df2arff(df, output_path_arff, key):
                     line += ', '
             line += '\n'
             arff.write(line)
-        # event = df.values[0]
-        # line = ""
-        # for i in range(df.shape[1]):
-        #     print(type(event[i]))
-        #     if str(event[i]) == "nan":
-        #         line += '?'
-        #     elif type(event[i]) == pandas._libs.tslibs.timestamps.Timestamp:
-        #         line += f'"{event[i].isoformat()}"'
-        #     elif type(event[i]) == int or type(event[i]) == float:
-        #         line += event[i]
-        #     else:
-        #         line += f'"{event[i]}"'
-        #     if i != df.shape[1] - 1:
-        #         line += ', '
-        # line += '\n'
-        # arff.write(line)
     return "df2arff"
 
 

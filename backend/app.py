@@ -91,6 +91,13 @@ def allowed_file(filename):
 
 def mining_process_model(file_path, bpmn_path, perc):
     log = xes_importer.apply(file_path)
+    # only keep "start" events for process model
+    lifecycle_values = pm4py.get_event_attribute_values(
+        log, "lifecycle:transition")
+    start_includ = "start" in lifecycle_values or "START" in lifecycle_values or "Start" in lifecycle_values
+    if len(lifecycle_values) > 1 and start_includ:
+        log = pm4py.filter_event_attribute_values(log, "lifecycle:transition", [
+                                                  "start"], level="event", retain=True)
     dfg, sa, ea = pm4py.discover_directly_follows_graph(log)
     activities_count = pm4py.get_event_attribute_values(log, "concept:name")
     # filtering on the paths percentage

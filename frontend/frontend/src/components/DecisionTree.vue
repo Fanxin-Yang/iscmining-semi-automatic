@@ -124,7 +124,7 @@ export default {
     },
   },
   created() {
-    this.get_decisiionrules(this.dataSet, this.csv);
+    // this.get_decisiionrules(this.dataSet, this.csv);
   },
 };
 </script>

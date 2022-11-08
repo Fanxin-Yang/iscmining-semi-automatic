@@ -65,7 +65,12 @@
       Apply Algorithm (Weka)
     </button>
   </div>
-  <div class="col-md-12" v-if="this.status == 200">
+  <div class="text-center" v-if="this.status == 1">
+    <div class="spinner-border m-8" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div class="col-md-12" v-else-if="this.status == 200">
     <DecisionRule
       :dataSet="this.dataSet"
       :csv="this.csv"
@@ -129,6 +134,7 @@ export default {
         });
     },
     apply_weka() {
+      this.status = 1;
       let tmp = "";
       if (this.selectedCT == "JRip") {
         tmp = "-F 3 -N 2.0 -O 2 -S 1";
@@ -136,7 +142,10 @@ export default {
           tmp += " -P";
         }
       }
-      const params = new URLSearchParams([["cls_options", tmp]]);
+      const params = new URLSearchParams([
+        ["cls_options", tmp],
+        ["class_name", this.selectedLabel],
+      ]);
       axios
         .get(
           "/classification_weka/" +

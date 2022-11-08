@@ -9,7 +9,7 @@ from sklearn.compose import make_column_selector, make_column_transformer
 import discovery_algorithm
 
 
-def get_algorithms():
+def get_algorithms_scikit():
     algorithms = {}
     algorithms[0] = "Decision Tree"
     algorithms[1] = "Logistic Regression"
@@ -19,6 +19,12 @@ def get_algorithms():
     algorithms[5] = "K-nearest Neighbor"
     algorithms[6] = "Random Forest"
     algorithms[7] = "Gradient Boosting Classifier"
+    return algorithms, 200
+
+
+def get_algorithms_weka():
+    algorithms = {}
+    algorithms[0] = "JRip"
     return algorithms, 200
 
 
@@ -35,13 +41,13 @@ def get_decisiontree(filename, csv):
         return send_file(svg_path)
 
 
-def get_decisionrule(filename, csv):
+def get_decisionrule(filename, csv, alg):
     csv_path = discovery_algorithm.exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
     folder = os.path.join(
         current_app.config['RESULTS_FOLDER'], filename)
-    rule_path = os.path.join(folder, csv + '_decisionrule.txt')
+    rule_path = os.path.join(folder, csv + '_' + alg + '.txt')
     if not os.path.exists(rule_path):
         return "No decisiont rule found.", 404
     else:
@@ -52,7 +58,6 @@ def get_decisionrule(filename, csv):
         for rule in rules:
             rules_dict[i] = rule
             i += 1
-        # return send_file(rule_path)
         return rules_dict
 
 
@@ -178,7 +183,7 @@ def get_rules(clf, feature_names, class_names):
     return rules
 
 
-def apply_algorithm(filename, csv, alg):
+def apply_algorithm_scikit(filename, csv, alg):
     args = request.args.copy()
     label = args.pop("classLabel", "")
     samples = args.pop("inputSamples", "").split(",")
@@ -373,7 +378,7 @@ def apply_JRip(arff_path, cls_options, result_path):
             classname="weka.filters.unsupervised.attribute.RemoveType", options=["-T", "string"])
         remove.inputformat(data)
         filtered_data = remove.filter(data)
-        print(f"Attributes after filter: {filtered_data.attribute_names()}")
+        # print(f"Attributes after filter: {filtered_data.attribute_names()}")
 
         from javabridge.jutil import JavaException
         try:
@@ -427,10 +432,13 @@ def exist_arff(filename, arff):
 def get_alg_description(alg):
     if alg == "JRip":
         import weka.core.jvm as jvm
-        jvm.start(max_heap_size="512m", system_cp=True)
-        from weka.classifiers import Classifier
-        cls = Classifier(classname="weka.classifiers.rules.JRip",
-                         options=["-N", "5.0"])
-        description = cls.description()
-        jvm.stop()
-        return description
+        try:
+            jvm.start(max_heap_size="512m", system_cp=True)
+            from weka.classifiers import Classifier
+            cls = Classifier(classname="weka.classifiers.rules.JRip",
+                             options=["-N", "5.0"])
+            description = cls.description()
+            jvm.stop()
+        except:
+            return "Something went wrong!"
+        return str(description).split("\n", 1)[0]

@@ -48,14 +48,17 @@ app.add_url_rule('/filter/<filename>/<csv>',
                  view_func=discovery_algorithm.get_variants)
 app.add_url_rule('/modify/<filename>/<csv>/<string:level>',
                  view_func=discovery_algorithm.modify)
-app.add_url_rule('/classification', view_func=classification.get_algorithms)
+app.add_url_rule('/classification_scikit',
+                 view_func=classification.get_algorithms_scikit)
+app.add_url_rule('/classification_weka',
+                 view_func=classification.get_algorithms_weka)
 app.add_url_rule('/classification/<filename>/<csv>/<string:alg>',
                  methods=['GET'],
-                 view_func=classification.apply_algorithm)
-app.add_url_rule('/decisiontree/<filename>/<arff>/<string:alg>',
+                 view_func=classification.apply_algorithm_scikit)
+app.add_url_rule('/decisiontree/<filename>/<csv>',
                  methods=['GET'],
                  view_func=classification.get_decisiontree)
-app.add_url_rule('/decisionrule/<filename>/<csv>',
+app.add_url_rule('/decisionrule/<filename>/<csv>/<string:alg>',
                  methods=['GET'],
                  view_func=classification.get_decisionrule)
 app.add_url_rule('/classification_weka/<filename>/<arff>/<string:alg>',

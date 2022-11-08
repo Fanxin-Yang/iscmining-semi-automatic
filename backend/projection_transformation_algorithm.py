@@ -141,7 +141,15 @@ def merge(filename, projection):
                 else:
                     df = pandas.concat(
                         [df, tmp], join="inner", ignore_index=True)
-    output_path = os.path.join(
+    output_path_csv = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename + "_" + projection + ".csv")
-    df.to_csv(output_path, index_label="No.")
+    df.to_csv(output_path_csv, index_label="No.")
+
+    output_path_xes = os.path.join(
+        current_app.config['OUTPUT_FOLDER'], filename + "_" + projection + ".xes")
+    pm4py.write_xes(df, output_path_xes)
+
+    output_path_arff = os.path.join(
+        current_app.config['OUTPUT_FOLDER'], filename + "_" + projection + ".arff")
+    df2arff(df, output_path_arff, projection)
     return "Merged csv file has been saved."

@@ -1,13 +1,17 @@
 <template lang="">
   <form class="row g-3 border bg-light">
-    <div class="col-md-12" v-if="Object.keys(this.events).length > 0"></div>
     <div v-if="Object.keys(this.events).length > 0">
-      <ClassificationTechniques
+      <ClassificationTechniquesWeka
+        :dataSet="dataSet"
+        :csv="csv"
+        :labels="labels"
+      />
+      <ClassificationTechniquesScikit
         :labels="labels"
         @technique="update_technique"
       />
     </div>
-    <div class="d-grid col-4 mx-auto">
+    <div class="d-grid col-6 mx-auto">
       <div class="text-center" v-if="this.status == 1">
         <div class="spinner-border m-8" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -17,7 +21,7 @@
         v-else
         type="button"
         class="btn btn-primary btn-lg"
-        @click="apply(undefined)"
+        @click="apply_scikit(undefined)"
         :disabled="
           !inputSamples ||
           inputSamples.length == 0 ||
@@ -28,7 +32,7 @@
             applied[4] == encoder)
         "
       >
-        Apply Algorithm
+        Apply Algorithm (Scikit)
       </button>
     </div>
     <div class="col-md-12" v-if="this.status == 405">
@@ -51,7 +55,7 @@
         :dataSet="this.dataSet"
         :csv="this.csv"
         :status="this.status"
-        @apply="apply"
+        @apply="apply_scikit"
       />
     </div>
   </form>
@@ -59,11 +63,13 @@
 
 <script>
 import axios from "axios";
-import ClassificationTechniques from "../components/ClassificationTechniques.vue";
+import ClassificationTechniquesScikit from "../components/ClassificationTechniquesScikit.vue";
+import ClassificationTechniquesWeka from "../components/ClassificationTechniquesWeka.vue";
 import DecisionTree from "../components/DecisionTree.vue";
 export default {
   components: {
-    ClassificationTechniques,
+    ClassificationTechniquesScikit,
+    ClassificationTechniquesWeka,
     DecisionTree,
   },
   props: {
@@ -72,10 +78,6 @@ export default {
       required: true,
     },
     csv: {
-      type: String,
-      required: true,
-    },
-    modified: {
       type: String,
       required: true,
     },
@@ -97,10 +99,7 @@ export default {
   },
   methods: {
     get_events(dataSet, csv) {
-      let path = "/discovery/" + dataSet + "/" + csv;
-      if (this.$route.params.modified) {
-        path += "_modified";
-      }
+      let path = "/discovery/" + dataSet + "/" + csv + "_modified";
       axios
         .get(path)
         .then((res) => {
@@ -129,7 +128,7 @@ export default {
       this.encoder = selectedEncoder;
       this.ccp_alphas = undefined;
     },
-    apply(ccp_alpha) {
+    apply_scikit(ccp_alpha) {
       this.applied = [
         this.technique,
         this.classLabel,
@@ -179,10 +178,6 @@ export default {
     },
     csv: function (val) {
       this.get_events(this.dataSet, val);
-    },
-    modified: function (val) {
-      this.get_events(this.dataSet, this.csv);
-      console.log(val);
     },
   },
   created() {

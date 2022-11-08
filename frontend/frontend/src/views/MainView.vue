@@ -50,7 +50,6 @@
             <ClassificationView
               :dataSet="this.$route.params.dataSet"
               :csv="this.$route.params.csv"
-              :modified="this.$route.params.modified"
             />
           </div>
           <div v-else>Please apply filter or click Skip button.</div>

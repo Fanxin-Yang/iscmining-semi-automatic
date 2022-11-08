@@ -50,7 +50,7 @@
     v-if="this.status == 200 || this.status == 201"
   />
 
-  <div
+  <!-- <div
     class="table-responsive"
     id="rules-table"
     v-if="this.status == 200 || this.status == 201"
@@ -73,16 +73,7 @@
         </tr>
       </tbody>
     </table>
-  </div>
-
-  <!-- <button
-    type="button"
-    class="btn btn-primary btn-lg"
-    @click="download"
-    :disabled="!this.ccp_alpha"
-  >
-    Download Results as PDF
-  </button> -->
+  </div> -->
 </template>
 
 <script>

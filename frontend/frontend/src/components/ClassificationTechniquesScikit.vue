@@ -1,12 +1,12 @@
 <template lang="">
-  <label for="classification-technique"
-    >Choose a Classificaton Technique.</label
+  <label for="classification-technique-scikit"
+    >Choose a Classificaton Technique (Scikit-learn).</label
   >
   <div class="col-md-12">
     <select
       v-model="selectedCT"
       class="form-select"
-      id="classification-technique"
+      id="classification-technique-scikit"
       aria-label="techniqueHelp"
     >
       <!-- <option selected disabled value="">
@@ -139,7 +139,7 @@ export default {
   methods: {
     get_classification_techniques() {
       axios
-        .get("/classification")
+        .get("/classification_scikit")
         .then((res) => {
           this.classificationTechniques = res.data;
         })

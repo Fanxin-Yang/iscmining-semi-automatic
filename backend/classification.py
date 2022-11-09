@@ -90,10 +90,7 @@ def encoder_X_y(encoder, X, y):
     # if encoder == "0" else ct.fit_transform(X).toarray()
     data = ct.fit_transform(X)
     feature_names = ct.get_feature_names_out()
-    print(feature_names)
     encoderX.fit(X)
-    print(len(encoderX.categories_))
-    print(encoderX.feature_names_in_)
 
     encodery = preprocessing.OrdinalEncoder(
         handle_unknown='use_encoded_value', unknown_value=-1)
@@ -197,14 +194,24 @@ def apply_algorithm_scikit(filename, csv, alg):
         return "No file found.", 404
     partial_log = pandas.read_csv(csv_path, index_col="No.")
     partial_log = filter(args, partial_log)
+    # partial_log.drop(partial_log[(partial_log["concept:name"] !=
+    #                               "approve loan") & (partial_log["concept:name"] !=
+    #                                                  "arrange loan")].index, inplace=True)
+    # partial_log["time:timestamp"] = pandas.to_datetime(
+    #     partial_log["time:timestamp"])
+    # print(partial_log.dtypes)
+    # partial_log.sort_values(by="time:timestamp", inplace=True)
+    # partial_log["time:timestamp"] = pandas.to_numeric(
+    #     partial_log["time:timestamp"])
+    # partial_log["time:timestamp"] = partial_log["time:timestamp"] / \
+    #     1000000000000
+    # print(partial_log)
 
     # partial_log_convert = partial_log.astype({"time:timestamp": "datetime64"})
     for tmp in partial_log:
         if partial_log[tmp].dtype == object:
             partial_log[tmp] = partial_log[tmp].astype("category")
     partial_log_new = partial_log[samples].assign(label=partial_log[label])
-    if partial_log_new.empty:
-        return "No event exist after filtering.", 405
     partial_log_new.dropna(inplace=True)
     if partial_log_new.empty:
         return "Selected target values input samples includes missing value.", 405

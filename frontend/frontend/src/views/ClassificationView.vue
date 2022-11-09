@@ -105,7 +105,7 @@ export default {
         .then((res) => {
           this.events = res.data;
           this.labels = Object.keys(this.events[0]).filter(
-            (value) => value != "No."
+            (value) => value != "No." && value != "case:concept:name"
           );
         })
         .catch((err) => {

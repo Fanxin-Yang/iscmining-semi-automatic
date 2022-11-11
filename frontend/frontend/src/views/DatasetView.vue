@@ -147,6 +147,15 @@ export default {
       deep: true,
       immediate: true,
     },
+    "$route.params.dataSet": {
+      handler: function (val) {
+        if (val == "") {
+          this.processLogs = [];
+        }
+      },
+      deep: true,
+      immediate: true,
+    },
   },
   created() {
     this.get_dataSets();

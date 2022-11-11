@@ -194,20 +194,18 @@ def apply_algorithm_scikit(filename, csv, alg):
         return "No file found.", 404
     partial_log = pandas.read_csv(csv_path, index_col="No.")
     partial_log = filter(args, partial_log)
+
+    # Only for Loan_example: only keep two days
     # partial_log.drop(partial_log[(partial_log["concept:name"] !=
     #                               "approve loan") & (partial_log["concept:name"] !=
     #                                                  "arrange loan")].index, inplace=True)
-    # partial_log["time:timestamp"] = pandas.to_datetime(
-    #     partial_log["time:timestamp"])
-    # print(partial_log.dtypes)
-    # partial_log.sort_values(by="time:timestamp", inplace=True)
-    # partial_log["time:timestamp"] = pandas.to_numeric(
-    #     partial_log["time:timestamp"])
-    # partial_log["time:timestamp"] = partial_log["time:timestamp"] / \
-    #     1000000000000
+    # partial_log.drop(partial_log[(partial_log["time:timestamp"] !=
+    #                               "2016-07-19") & (partial_log["time:timestamp"] !=
+    #                                                "2016-07-20")].index, inplace=True)
     # print(partial_log)
+    # partial_log["time:timestamp"] = partial_log["time:timestamp"].astype(
+    #     'category')
 
-    # partial_log_convert = partial_log.astype({"time:timestamp": "datetime64"})
     for tmp in partial_log:
         if partial_log[tmp].dtype == object:
             partial_log[tmp] = partial_log[tmp].astype("category")

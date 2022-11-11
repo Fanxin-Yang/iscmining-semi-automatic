@@ -16,6 +16,35 @@
         >
       </div>
     </div> -->
+    <nav
+      class="navbar sticky-top navbar-dark navbar-expand-lg bg-primary"
+      id="menu"
+    >
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#" @click="reset">Reset All</a>
+        <div class="collapse navbar-collapse" id="navbarScroll">
+          <ul
+            class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll"
+            style="--bs-scroll-height: 100px"
+          >
+            <li class="nav-item">
+              <a class="nav-link active" href="#dataset">1. Dataset</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="#preprocess">2. Preprocess</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="#discovery">3. Discovery</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="#classification"
+                >4. Classification</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
     <div class="col-12">
       <div
         data-bs-spy="scroll"
@@ -71,6 +100,12 @@ export default {
     PreprocessView,
     DiscoveryView,
     ClassificationView,
+  },
+  methods: {
+    reset() {
+      let url = "/iscmining-semi-automatic/";
+      this.$router.push(url);
+    },
   },
 };
 </script>

@@ -41,36 +41,36 @@ def get_events(filename, csv):
     if not csv_path:
         return "No file found.", 404
     json_path = csv_path.rsplit(".", 1)[0] + '.json'
-    if not os.path.exists(json_path):
-        partial_log = pandas.read_csv(csv_path)
-        # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
-        partial_log.to_json(json_path, orient="records")
+    partial_log = pandas.read_csv(csv_path)
+    # "records" -- The format of the JSON string [{column -> value}, … , {column -> value}]
+    partial_log.to_json(json_path, orient="records")
     return send_file(json_path, as_attachment=False), 200
-    # else:
-    #     csv_path = exist_csv(filename, csv)
-    #     if not csv_path:
-    #         return "No file found.", 404
-    #     partial_log = pandas.read_csv(csv_path)
-    #     dict = {}
-    #     i = 0
-    #     for l in partial_log[label].dropna().unique():
-    #         dict[i] = l
-    #         i += 1
-    #     return dict, 200
 
 
-def delete_event(filename, csv, eventIndex):
+def delete_event(filename, csv):
+    args = request.args.copy()
+    eventIndex = int(args.pop("eventIndex", ""))
     csv_path = exist_csv(filename, csv)
     if not csv_path:
         return "No file found.", 404
-    partial_log = pandas.read_csv(csv_path)
-    partial_log.drop(eventIndex, axis=0, inplace=True)  # Raises error?
-    partial_log.reset_index(drop=True, inplace=True)
-    partial_log.drop(columns="No.", inplace=True)
+    log = pandas.read_csv(csv_path)
+    log = remove_with_index(log, eventIndex)
     # without add an index column
-    partial_log.to_csv(csv_path, index_label="No.")
+    log.to_csv(csv_path, index_label="No.")
+
+    csv_path_modified = csv_path.rsplit(".", 1)[0] + "_modified.csv"
+    print(csv_path_modified)
+    if os.path.exists(csv_path_modified):
+        log_modified = pandas.read_csv(csv_path)
+        log_modified = remove_with_index(log_modified, eventIndex)
+        log_modified.to_csv(csv_path_modified, index_label="No.")
     return "The chosen event from " + csv + ".csv has been successfully removed.", 200
 
+def remove_with_index(log, eventIndex):
+    log.drop(eventIndex, axis=0, inplace=True)  # Raises error?
+    log.reset_index(drop=True, inplace=True)
+    log.drop(columns="No.", inplace=True)
+    return log
 
 def convert_level(level):
     if level == "Minutes":

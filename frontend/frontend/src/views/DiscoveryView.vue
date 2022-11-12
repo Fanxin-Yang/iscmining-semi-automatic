@@ -8,13 +8,15 @@
     <EventsTable
       :dataSet="this.dataSet"
       :csv="this.csv"
+      @delete_event="delete_event"
       :refresh="this.cacheKey"
+      :deleteInfo="this.deleteInfo"
     />
     <ModifyLog
       :dataSet="this.dataSet"
       :csv="this.csv"
       @modify="modify"
-      :info="this.info"
+      :modifyInfo="this.modifyInfo"
       :loading="this.modifyLoading"
     />
   </form>
@@ -36,7 +38,8 @@ export default {
       dataSet: this.$route.params.dataSet,
       csv: this.$route.params.csv,
       error: "",
-      info: undefined,
+      modifyInfo: undefined,
+      deleteInfo: undefined,
       modifyLoading: false,
       cacheKey: +new Date(),
     };
@@ -50,7 +53,7 @@ export default {
         .get(url, { params })
         .then((res) => {
           this.modifyLoading = false;
-          this.info = res.data;
+          this.modifyInfo = res.data;
           let tmp =
             "/iscmining-semi-automatic/" +
             this.dataSet +
@@ -64,6 +67,18 @@ export default {
           this.modifyLoading = false;
           console.error(err);
           this.error = err.response.data;
+        });
+    },
+    delete_event(eventIndex) {
+      const params = new URLSearchParams([["eventIndex", eventIndex]]);
+      axios
+        .delete("discovery/" + this.dataSet + "/" + this.csv, { params })
+        .then((res) => {
+          this.deleteInfo = res.data;
+          this.cacheKey = +new Date();
+        })
+        .catch((err) => {
+          console.error(err);
         });
     },
   },

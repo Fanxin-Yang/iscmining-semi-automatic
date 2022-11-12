@@ -72,8 +72,8 @@
     </div>
   </div>
   <div class="col-md-12" v-else>
-    <div class="alert alert-success" role="alert" v-if="!!info">
-      {{ info }}
+    <div class="alert alert-success" role="alert" v-if="!!modifyInfo">
+      {{ modifyInfo }}
     </div>
   </div>
 </template>
@@ -90,7 +90,7 @@ export default {
       type: String,
       required: true,
     },
-    info: {
+    modifyInfo: {
       required: true,
     },
     loading: {

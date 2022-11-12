@@ -51,8 +51,11 @@ def projection_transformation(filename, att):
     df.dropna(axis=0, subset=att, inplace=True)
     # values: all attribute values of selected attribute and the number each of them occur
     attValues = pm4py.get_event_attribute_values(df, att)
-    if not os.path.exists("outputs/" + filename):
-        os.makedirs("outputs/" + filename)
+    if os.path.exists("outputs/" + filename):
+        # os.removedirs("outputs/" + filename) throws OSError: Directory not empty
+        import shutil
+        shutil.rmtree(("outputs/" + filename))
+    os.makedirs("outputs/" + filename)
     attValuesDict = {}
     i = 0
     for key in attValues.keys():
@@ -68,6 +71,7 @@ def projection_transformation(filename, att):
         output_path_csv = os.path.join(
             current_app.config['OUTPUT_FOLDER'], filename + "/" + key_name + "/" + key_name + ".csv")
         filteredDf.to_csv(output_path_csv, index_label="No.")
+        filteredDf.to_csv(output_path_csv.rsplit('.', 1)[0]+"_modified.csv", index_label="No.")
         output_path_xes = output_path_csv.rsplit(".", 1)[0] + ".xes"
         pm4py.write_xes(filteredDf, output_path_xes)
         print(output_path_xes)

@@ -53,7 +53,6 @@
 </template>
 
 <script>
-import axios from "axios";
 export default {
   props: {
     eventIndex: {
@@ -69,7 +68,7 @@ export default {
       required: true,
     },
   },
-  emits: ["info"],
+  emits: ["remove_event"],
   methods: {
     test() {
       console.log(this.dataSet);
@@ -77,17 +76,7 @@ export default {
       console.log(this.eventIndex);
     },
     remove_event() {
-      axios
-        .delete(
-          "discovery/" + this.dataSet + "/" + this.csv + "/" + this.eventIndex
-        )
-        .then((res) => {
-          this.$emit("info", res.data);
-          this.$parent.get_events(this.dataSet, this.csv);
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+      this.$emit("remove_event", this.eventIndex);
     },
   },
 };

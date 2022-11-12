@@ -60,8 +60,12 @@ export default {
   },
   methods: {
     summary(dataSet, csv) {
+      let tmp = "summary/" + dataSet + "/" + csv;
+      if (this.$route.params.modified) {
+        tmp += "_modified";
+      }
       axios
-        .get("summary/" + dataSet + "/" + csv)
+        .get(tmp)
         .then((res) => {
           this.shape = res.data;
         })

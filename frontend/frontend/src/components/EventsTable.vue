@@ -37,9 +37,9 @@
           <th scope="row">
             <DeleteModal
               :eventIndex="event['No.']"
-              @info="update_info"
               :dataSet="this.dataSet"
               :csv="this.csv"
+              @remove_event="remove_event"
             />
           </th>
           <td v-for="(value, key) in event" :key="key">{{ value }}</td>
@@ -59,25 +59,12 @@
             The End of the Event Table.
           </td>
         </tr>
-        <!-- <tr>
-          <nav aria-label="Page navigation example">
-            <ul class="pagination">
-              <li class="page-item">
-                <a class="page-link" href="#">Previous</a>
-              </li>
-              <li class="page-item"><a class="page-link" href="#">1</a></li>
-              <li class="page-item"><a class="page-link" href="#">2</a></li>
-              <li class="page-item"><a class="page-link" href="#">3</a></li>
-              <li class="page-item"><a class="page-link" href="#">Next</a></li>
-            </ul>
-          </nav>
-        </tr> -->
       </tbody>
     </table>
   </div>
   <div class="col-md-12">
-    <div v-if="!!info" class="alert alert-success" role="alert">
-      {{ this.info }}
+    <div v-if="!!deleteInfo" class="alert alert-success" role="alert">
+      {{ this.deleteInfo }}
     </div>
   </div>
 </template>
@@ -103,20 +90,27 @@ export default {
       type: Number,
       required: true,
     },
+    deleteInfo: {
+      type: String || undefined,
+      required: false,
+    },
   },
   data() {
     return {
       events: {},
       showEvents: {},
       error: "",
-      info: "",
       index: 0,
     };
   },
+  emits: ["delete_event"],
   methods: {
+    remove_event(eventIndex) {
+      this.$emit("delete_event", eventIndex);
+    },
     get_events(dataSet, csv) {
       axios
-        .get("discovery/" + dataSet + "/" + csv)
+        .get("discovery/" + dataSet + "/" + csv + "_modified")
         .then((res) => {
           this.events = res.data;
           this.index = 1;
@@ -132,9 +126,6 @@ export default {
     next() {
       this.index = this.index + 1;
     },
-    update_info(data) {
-      this.info = data;
-    },
   },
   watch: {
     csv: function (val) {
@@ -147,6 +138,15 @@ export default {
       for (var i = (val - 1) * 100; i < min; ++i) {
         this.showEvents[j] = this.events[i];
         ++j;
+      }
+    },
+    refresh: function () {
+      this.get_events(this.dataSet, this.csv);
+    },
+    events: function () {
+      this.showEvents = {};
+      for (var i = 0; i < 100; ++i) {
+        this.showEvents[i] = this.events[i];
       }
     },
   },

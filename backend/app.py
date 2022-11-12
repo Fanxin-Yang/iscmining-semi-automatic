@@ -41,7 +41,7 @@ app.add_url_rule(
     view_func=projection_transformation_algorithm.merge)
 app.add_url_rule('/discovery/<filename>/<csv>',
                  view_func=discovery_algorithm.get_events)
-app.add_url_rule('/discovery/<filename>/<csv>/<int:eventIndex>',
+app.add_url_rule('/discovery/<filename>/<csv>',
                  methods=['DELETE'],
                  view_func=discovery_algorithm.delete_event)
 app.add_url_rule('/filter/<filename>/<csv>',

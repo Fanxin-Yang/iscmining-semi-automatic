@@ -38,28 +38,24 @@
   </div>
   <div v-if="selectedCT == 'Decision Tree'" class="row">
     <div class="col-md-4">
-      <label for="label" class="form-label"
-        >The target values (class labels)</label
-      >
+      <label for="label" class="form-label">Target (class label)</label>
       <select
         v-model="selectedLabel"
         class="form-select"
         id="label"
         aria-label="labelHelp"
       >
-        <!-- <option disabled selected>Choose a class label</option> -->
         <option v-for="(l, index) in labels" :key="index">
           {{ l }}
         </option>
       </select>
       <div id="labelHelp" class="form-text">
-        y: array-like of shape (n_samples,) or (n_samples, n_outputs)
+        Choose an attribute whose values are to be modeled and classified by
+        others.
       </div>
     </div>
     <div class="col-md-4">
-      <label for="training" class="form-label"
-        >The training input samples</label
-      >
+      <label for="training" class="form-label">Input</label>
 
       <select
         v-model="selectedSamples"
@@ -69,9 +65,6 @@
         aria-label="trainingHelp"
         :disabled="!selectedLabel"
       >
-        <!-- <option disabled selected>
-          Drag or use Ctrl to select multiple samples
-        </option> -->
         <option
           v-for="(s, index) in labels"
           :key="index"
@@ -81,7 +74,8 @@
         </option>
       </select>
       <div id="trainingHelp" class="form-text">
-        X: {array-like, sparse matrix} of shape (n_samples, n_features)
+        Choose one or more attributes that will be used to calssify the target
+        values.
       </div>
     </div>
     <div class="col-md-3">

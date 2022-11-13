@@ -2,7 +2,9 @@
   <form class="row g-3 border bg-light">
     <div class="col-md-12">
       <label for="perc" class="form-label"
-        >Process Model Settings: {{ perc }}%</label
+        >Process Model Setting: {{ perc }}% <br />
+        According to percentage, only the most frequent paths are retained. For
+        the default value 0 the most frequent path is retrieved.</label
       >
       <input
         type="range"

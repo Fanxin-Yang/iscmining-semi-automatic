@@ -34,7 +34,6 @@
             type="button"
             class="btn btn-secondary"
             data-bs-dismiss="modal"
-            @click="test"
           >
             Cancel
           </button>
@@ -70,11 +69,6 @@ export default {
   },
   emits: ["remove_event"],
   methods: {
-    test() {
-      console.log(this.dataSet);
-      console.log(this.csv);
-      console.log(this.eventIndex);
-    },
     remove_event() {
       this.$emit("remove_event", this.eventIndex);
     },

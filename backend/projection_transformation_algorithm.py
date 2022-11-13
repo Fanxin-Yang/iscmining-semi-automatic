@@ -74,7 +74,6 @@ def projection_transformation(filename, att):
         filteredDf.to_csv(output_path_csv.rsplit('.', 1)[0]+"_modified.csv", index_label="No.")
         output_path_xes = output_path_csv.rsplit(".", 1)[0] + ".xes"
         pm4py.write_xes(filteredDf, output_path_xes)
-        print(output_path_xes)
         output_path_arff = output_path_csv.rsplit(".", 1)[0] + ".arff"
         # csv2arff(output_path, output_path_arff)
         df2arff(filteredDf, output_path_arff, key)
@@ -89,7 +88,6 @@ def csv2arff(csv_path, output_path_arff):
 
 def df2arff(df, output_path_arff, key):
     df.drop(["case:concept:name"], axis=1, inplace=True)
-    print(df.dtypes)
     with open(output_path_arff, "w+") as arff:
         arff.write("@RELATION " + key + "\n")
         for att in df:

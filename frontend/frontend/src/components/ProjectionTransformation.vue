@@ -158,7 +158,6 @@ export default {
           .then((res) => {
             this.loading = false;
             this.mergeInfo = res.data;
-            console.log(res.data);
             this.$router.push(url);
           })
           .catch((err) => {

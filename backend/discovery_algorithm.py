@@ -59,7 +59,6 @@ def delete_event(filename, csv):
     log.to_csv(csv_path, index_label="No.")
 
     csv_path_modified = csv_path.rsplit(".", 1)[0] + "_modified.csv"
-    print(csv_path_modified)
     if os.path.exists(csv_path_modified):
         log_modified = pandas.read_csv(csv_path)
         log_modified = remove_with_index(log_modified, eventIndex)
@@ -100,15 +99,12 @@ def modify(filename, csv, level):
     arff_path = csv_path.rsplit(".", 1)[0] + ".arff"
     log = pm4py.read_xes(xes_path)
     df = pm4py.convert_to_dataframe(log)
-    print(df.dtypes)
     if not os.path.exists(arff_path) or not os.path.exists(xes_path):
         return "No ARFF or XES file found.", 404
     coarsen_timestamps_Datetime(df, level)
     import weka.core.jvm as jvm
     try:
         jvm.start(max_heap_size="512m", system_cp=True)
-        print("----------------------------------------------------------------------")
-        print(df["time:timestamp"][0])
         arff_output_path = csv_output_path.rsplit(".", 1)[0] + ".arff"
         import projection_transformation_algorithm
         projection_transformation_algorithm.df2arff(df, arff_output_path, csv)

@@ -72,7 +72,6 @@ def filter(args, partial_log):
             elif partial_log[key].dtype == numpy.bool_:
                 arr = list(map(bool, arr))
             partial_log = partial_log[partial_log[key].isin(arr)]
-    # print(partial_log.head)
     return partial_log
 
 
@@ -361,7 +360,6 @@ def apply_JRip(arff_path, cls_options, class_name, result_path):
     import weka.core.jvm as jvm
     # try:
     jvm.start(max_heap_size="512m", system_cp=True)
-    print("----------------------------------------------------------------------")
     import weka.core.converters as converters
     loader = converters.Loader(classname="weka.core.converters.ArffLoader")
     data = loader.load_file(arff_path, class_index=0)
@@ -371,10 +369,8 @@ def apply_JRip(arff_path, cls_options, class_name, result_path):
         classIndex = 0
     if data.class_index != classIndex:
         data = loader.load_file(arff_path, class_index=classIndex)
-
     # usually the first is "concept:name"
     # the class label will not be removed by weka.filters.unsupervised.attribute.*
-    print(data.attribute_names(), data.num_instances)
 
     # classIndex = data.attribute_names().index("concept:name")
 
@@ -401,7 +397,6 @@ def apply_JRip(arff_path, cls_options, class_name, result_path):
         return "JRip cannot handle string class! Since string attributes have been removed. The class label is string type"
 
     # save rule set in txt file
-    print(result_path)
     with open(result_path, "w+") as f:
         for r in str(cls).split("\n"):
             f.write(r + "\n")

@@ -12,7 +12,7 @@
             aria-expanded="true"
             aria-controls="collapseOne"
           >
-            Step 1: Upload new process execution logs or select an existing one
+            Step 1: Upload New Process Execution Logs or Select an Existing One
           </button>
         </h2>
         <div
@@ -26,9 +26,7 @@
             repository. Selected files will be uploaded to the server by
             clicking <strong>"Upload"</strong> button. <br />
             You can see the if the upload is successful or failed. <br />
-            Then you can select one of the uploaded datasets that you want to
-            discover. Move to the next step with the button
-            <strong>"Start Pro-process"</strong>.
+            Then you can select one or more datasets that you want to analyze.
           </div>
         </div>
       </div>
@@ -42,7 +40,7 @@
             aria-expanded="false"
             aria-controls="collapseTwo"
           >
-            Step 2: Process model, Projection and transformation algorithm
+            Step 2: Process Model, Projection and Transformation Algorithm
           </button>
         </h2>
         <div
@@ -52,18 +50,17 @@
           data-bs-parent="#accordionExample"
         >
           <div class="accordion-body">
-            The process model using Petri Net of the process execution log is
-            providede to offer you a more clear insight of the whole process.
-            The model is mined using [Inductive Miner] by PM4PY.<br />
+            The process model of the process execution log is mined and depicted
+            to offer you a more clear insight of the whole process. The model is
+            mined using [Inductive Miner] by PM4PY.<br />
             Choose an instance-spanning event attribute and click the
             <strong>"Projection & Transformation"</strong> button to reduce
             dimensions which allows for discovering ISC candidates.<br />
             <strong><code>org:resource</code></strong> is hightly recommanded,
             since instance-spanning parts usually relate to organizational
             resources. <br />
-            Partial logs are transformed to <strong>CSV</strong> files. Then
-            select one of the CSV file and click
-            <strong>"Start Discovery"</strong> button to discover ISC
+            Then you can select one or more projections and click
+            <strong>"Merge & Start Discovery"</strong> button to discover ISC
             candidates.
           </div>
         </div>
@@ -78,7 +75,7 @@
             aria-expanded="false"
             aria-controls="collapseThree"
           >
-            Step 3: ISC candidate discovery algorithm per csv file
+            Step 3: ISC Candidates Discovery Algorithm
           </button>
         </h2>
         <div
@@ -88,14 +85,15 @@
           data-bs-parent="#accordionExample"
         >
           <div class="accordion-body">
-            Table, Delete<br />
-            <strong>"Timestamps Coarsen"</strong> <strong>"Next Step"</strong>
+            Events from the pre-processed log has been displayed in a table.<br />
+            You can delete any event by clicking the delete icon in fromt of
+            each row. By choosing a time level, the timestamps are corasened to
+            this level. And you can filter the log on tis variants.
             <br />
-            Filter: select value of each attribute <br />
-            Apply classification technique (Decision tree)
-            <strong>"Apply Decision Tree Algorithm"</strong>
-            Pruning with minimal cost-complexity decision tree model visualized
-            with dtreeviz
+            Different classification techniques from Weka and Scikit-learn can
+            be applied seperately on the log. According to the algorithms
+            parameters have to be determined. The results are displayed either
+            in a table or a figure.
           </div>
         </div>
       </div>

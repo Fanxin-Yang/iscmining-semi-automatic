@@ -8,7 +8,11 @@
   >
     Loading...
   </div>
-  <div v-else-if="error != ''" class="alert alert-danger" role="alert">
+  <div
+    v-else-if="Object.keys(events).length == 0 && error != ''"
+    class="alert alert-danger"
+    role="alert"
+  >
     {{ error }}
   </div>
 

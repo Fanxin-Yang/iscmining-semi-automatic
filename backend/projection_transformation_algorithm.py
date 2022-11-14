@@ -145,7 +145,10 @@ def merge(filename, projection):
                         [df, tmp], join="inner", ignore_index=True)
     output_path_csv = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename + "_" + projection + ".csv")
+    df["time:timestamp"] = pandas.to_datetime(df["time:timestamp"], utc=True)
+    print(df.dtypes)
     df.to_csv(output_path_csv, index_label="No.")
+    df.to_csv(output_path_csv.rsplit('.', 1)[0]+"_modified.csv", index_label="No.")
 
     output_path_xes = os.path.join(
         current_app.config['OUTPUT_FOLDER'], filename + "_" + projection + ".xes")

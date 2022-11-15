@@ -3,18 +3,13 @@ This project contains a web application, presented in the bachelor thesis "A Uni
 
 
 ## Dependencies and run
-This project is implemented in Python3 and JavaScript. The front end and the back end of this application have to be installed and started separately.
-### Front end
+This project is implemented in Python3 and JavaScript and requires JDK 17. The front end and the back end of this application have to be installed and started separately.
+
+### Back end
 ```sh
 cd frontend/frontend
-npm install
-
-npm run dev
 ```
 ### Back end
 ```sh
 cd backend
-pip3 install -r requirements.txt
-
-python3 -m flask run
 ```

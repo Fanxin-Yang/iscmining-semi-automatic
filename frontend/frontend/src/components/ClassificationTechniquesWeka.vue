@@ -182,6 +182,12 @@ export default {
   created() {
     this.get_classification_techniques();
   },
+  mounted() {
+    window.scrollTo(
+      0,
+      document.body.scrollHeight || document.documentElement.scrollHeight
+    );
+  },
 };
 </script>
 

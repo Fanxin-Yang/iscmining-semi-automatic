@@ -126,6 +126,12 @@ export default {
   created() {
     // this.get_decisiionrules(this.dataSet, this.csv);
   },
+  mounted() {
+    window.scrollTo(
+      0,
+      document.body.scrollHeight || document.documentElement.scrollHeight
+    );
+  },
 };
 </script>
 

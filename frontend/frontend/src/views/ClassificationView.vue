@@ -183,6 +183,12 @@ export default {
   created() {
     this.get_events(this.dataSet, this.csv);
   },
+  mounted() {
+    window.scrollTo(
+      0,
+      document.body.scrollHeight || document.documentElement.scrollHeight
+    );
+  },
 };
 </script>
 

@@ -98,6 +98,12 @@ export default {
       immediate: true,
     },
   },
+  mounted() {
+    window.scrollTo(
+      0,
+      document.body.scrollHeight || document.documentElement.scrollHeight
+    );
+  },
 };
 </script>
 
